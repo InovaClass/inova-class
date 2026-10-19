@@ -36,6 +36,15 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - `favicon.ico` stays directly in `src/app/`, not nested in a route group.
 - React Compiler is enabled (`reactCompiler: true` in `next.config.ts`, `babel-plugin-react-compiler` devDependency).
 
+### Database & local services
+
+- Postgres with **Drizzle ORM** and the `pg` (node-postgres) driver, so the same code runs against the local container and Neon in preview/production. `drizzle-orm` and `drizzle-kit` are on the `1.0.0` release candidate (installed from the `@rc` tag, as the current Drizzle docs do): check the types in `node_modules/drizzle-orm` before reaching for a v0 API (e.g. `drizzle()` no longer takes `schema`, and the config has no `casing`).
+- Infrastructure lives in `src/infra`: `compose.yml` declares the local services (Docker Compose, not `docker-compose.yml`), `scripts/` holds the startup helpers and `database/` holds `client.ts`, `schema.ts` and the generated `migrations/`. `drizzle.config.ts` stays at the root, where `drizzle-kit` looks for it.
+- Tables are declared with `snakeCase.table(...)` from `drizzle-orm/pg-core`, so camelCase keys map to snake_case columns.
+- Schema changes go through `pnpm migrations:generate --name <name>`, and the generated folder is committed. Don't edit a migration that was already applied; generate a new one.
+- `pnpm dev` is the startup script: `services:up` → `services:wait:database` → `migrations:up` → `next dev`. The compose services have no healthcheck because readiness is the wait script's job. Playwright's `webServer` (and so the pre-push hook and CI) goes through the same `pnpm dev`, so CI needs no service container.
+- Local settings live in the committed `.env.development` (only the local container's credentials, no secrets). There is no `.env`/`.env.example`. The compose services read it through `env_file`, so the `POSTGRES_*` values are declared once there; `DATABASE_URL` repeats them literally (`process.loadEnvFile` doesn't expand variables), so keep both in sync. `drizzle.config.ts` and the wait script load `.env.development` only when `DATABASE_URL` isn't already set, so hosted environments keep their injected value.
+
 ### Linting & formatting
 
 - ESLint uses native flat config (`eslint.config.mjs`), extending the `core-web-vitals`/`typescript` configs from `eslint-config-next`, plus `eslint-plugin-unicorn`, `eslint-plugin-simple-import-sort`, `eslint-plugin-tailwindcss`, `eslint-plugin-promise`, `eslint-plugin-prefer-arrow-functions`, `eslint-config-prettier`, and `@eslint/json`/`@eslint/markdown` for JSON/Markdown files. Markdown files use the `gfm` language with `frontmatter: 'yaml'`, so the frontmatter of issue templates (or any Markdown content) isn't parsed as Markdown. `eslint-plugin-tailwindcss` rule docs are in `node_modules/eslint-plugin-tailwindcss/docs/rules/` — check there before overriding a Tailwind lint rule.

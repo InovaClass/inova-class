@@ -6,20 +6,22 @@ Built with [Next.js](https://nextjs.org) (App Router), React, TypeScript and Tai
 
 ## Getting Started
 
-Install the dependencies and start the development server (Node version in `.nvmrc`, package manager: pnpm):
+Install the dependencies and start the development server (Node version in `.nvmrc`, package manager: pnpm, plus Docker with Compose for the local services):
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`pnpm dev` starts the local services (`src/infra/compose.yml`), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+The local settings live in the committed `.env.development`: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`) and the `DATABASE_URL` that points at it. There is no `.env`.
 
 ## Scripts
 
 | Script                                      | What it does                                            |
 | ------------------------------------------- | ------------------------------------------------------- |
-| `pnpm dev`                                  | Start the development server                            |
+| `pnpm dev`                                  | Start the services, migrate and run the dev server      |
 | `pnpm build`                                | Create the production build                             |
 | `pnpm start`                                | Serve the production build                              |
 | `pnpm type-check`                           | Generate route types and type-check with `tsc --noEmit` |
@@ -27,6 +29,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | `pnpm prettier:check` / `pnpm prettier:fix` | Check (and rewrite) formatting                          |
 | `pnpm test` / `pnpm test:watch`             | Run the Vitest unit tests                               |
 | `pnpm test:e2e` / `pnpm test:e2e:ui`        | Run the Playwright end-to-end tests                     |
+| `pnpm services:up` / `pnpm services:stop`   | Start (detached) or stop the local services             |
+| `pnpm services:down`                        | Remove the local service containers                     |
+| `pnpm services:wait:database`               | Wait until the database accepts connections             |
+| `pnpm migrations:generate --name <name>`    | Generate a migration from the Drizzle schema            |
+| `pnpm migrations:up`                        | Apply the pending migrations                            |
 | `pnpm shadcn:add <name>`                    | Add a shadcn/ui component                               |
 
 ## Project conventions
@@ -46,6 +53,13 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them.
 - Global styles live in `src/app/styles/globals.css`.
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.
+
+### Database
+
+- **Postgres** with **Drizzle ORM** (`drizzle-orm`/`drizzle-kit` on the `1.0.0` release candidate) and the `pg` driver, so the same code runs against the local container and Neon.
+- Everything infrastructure-related lives in `src/infra`: `compose.yml` for the local services, `scripts/` for the startup helpers and `database/` for the client (`client.ts`), the schema (`schema.ts`) and the generated migrations (`migrations/`).
+- Tables are declared with `snakeCase.table(...)`, so camelCase keys map to snake_case columns.
+- Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
 
 ### Styling and UI
 
