@@ -7,5 +7,9 @@ export default defineConfig({
   dialect: 'postgresql',
   schema: './src/infra/database/schema.ts',
   out: './src/infra/database/migrations',
-  dbCredentials: { url: process.env.DATABASE_URL! }
+  // Neon's pooled URL goes through PgBouncer in transaction mode, which isn't meant for migrations:
+  // https://neon.com/docs/connect/connection-pooling#connection-pooling-in-transaction-mode
+  dbCredentials: {
+    url: (process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL)!
+  }
 })

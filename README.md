@@ -15,7 +15,20 @@ pnpm dev
 
 `pnpm dev` starts the local services (`src/infra/compose.yml`), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-The local settings live in the committed `.env.development`: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`) and the `DATABASE_URL` that points at it. There is no `.env`.
+The local settings live in the committed `.env.development`: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`) and the `DATABASE_URL` that points at it. There is no `.env`. The git-ignored `.env.local` created by `vercel link` only holds the `VERCEL_OIDC_TOKEN`; never pull the Neon variables into it, since it would take precedence over `.env.development`.
+
+## Deployment
+
+The project is deployed on [Vercel](https://vercel.com) (project `inova-class`), with Postgres from [Neon](https://neon.com) provisioned through the Vercel Marketplace. Pushes to `main` deploy to Production, pull requests get a Preview deployment. To work with the Vercel CLI, run `vercel link` once.
+
+- **Build:** `vercel.json` sets the build command to `pnpm migrations:up && pnpm build`, so the pending migrations are applied before every deployment. It also pins the functions to `gru1` (São Paulo), the database's region.
+- **Previews:** each Preview deployment gets its own Neon branch, so the migrations of a pull request never touch the production database.
+
+| Variable                       | Environments        | Set by                                                           |
+| ------------------------------ | ------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`                 | Production, Preview | Neon integration (pooled connection, used by the app)            |
+| `DATABASE_URL_UNPOOLED`        | Production, Preview | Neon integration (direct connection, used by `drizzle-kit`)      |
+| `ENABLE_EXPERIMENTAL_COREPACK` | Production, Preview | Manually (`1`), so the build uses the pnpm from `packageManager` |
 
 ## Scripts
 
@@ -101,6 +114,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - `AGENTS.md` (imported by `CLAUDE.md`) documents the project conventions for coding agents.
 - `.mcp.json` configures the `context7` (library docs) and `playwright` MCP servers.
 - `.claude/` contains a `new-component` skill for adding shadcn or shared components, a `ui-reviewer` subagent that reviews UI semantics and accessibility, and a `settings.json` that asks for confirmation before every `git commit`.
+- `.agents/skills/` holds third-party agent skills (`neon`, `neon-postgres`, installed by the Neon integration), symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're vendored as they come, so ESLint and Prettier ignore `.agents/`.
 
 #### Context7 API key
 
