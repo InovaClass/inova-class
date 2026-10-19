@@ -1,0 +1,13 @@
+name: inova-class
+
+services:
+  database:
+    image: postgres:18
+    env_file: ../../.env.development
+    ports:
+      - '5432:5432'
+    volumes:
+      - database:/var/lib/postgresql
+
+volumes:
+  database:
