@@ -51,6 +51,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - Vercel project `inova-class` (scope `diasjoaovitors-projects`), linked to the GitHub repository: `main` deploys to Production, pull requests to Preview. Postgres is Neon, provisioned through the Vercel Marketplace (`vercel integration add neon`), in `gru1`.
 - `vercel.json` holds the Vercel settings: the build command `pnpm migrations:up && pnpm build` (migrations run before every deployment, not in the `build` script, so a local `pnpm build` never migrates) and `regions: ["gru1"]`, which keeps the functions next to the database.
 - Each Preview deployment gets its own Neon branch, so a pull request's migrations never reach the production database.
+- The Neon integration also installed the `neon` and `neon-postgres` agent skills: they live in `.agents/skills/`, are symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're third-party files, committed as they come and ignored by ESLint (`globalIgnores`) and Prettier (`.prettierignore`); don't edit or reformat them.
 - Hosted environment variables (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `ENABLE_EXPERIMENTAL_COREPACK`) are listed in the Deployment section of `README.md`; keep that table in sync when adding one.
 
 ### Linting & formatting
