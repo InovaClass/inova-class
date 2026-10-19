@@ -9,7 +9,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-press-start-2p);
+  --color-hp: var(--hp);
+  --color-xp: var(--xp);
+  --color-coin: var(--coin);
+  --color-class-warrior: var(--class-warrior);
+  --color-class-mage: var(--class-mage);
+  --color-class-healer: var(--class-healer);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,6 +87,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --hp: var(--color-red-500);
+  --xp: var(--color-sky-500);
+  --coin: var(--color-amber-500);
+  --class-warrior: var(--color-orange-500);
+  --class-mage: var(--color-violet-500);
+  --class-healer: var(--color-emerald-500);
+  --pixel-border: var(--foreground);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -116,6 +129,13 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    --hp: var(--color-red-400);
+    --xp: var(--color-sky-400);
+    --coin: var(--color-amber-400);
+    --class-warrior: var(--color-orange-400);
+    --class-mage: var(--color-violet-400);
+    --class-healer: var(--color-emerald-400);
+    --pixel-border: var(--ring);
   }
 }
 
@@ -128,5 +148,41 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Ported from 8bitcn's retro.css (MIT, https://github.com/theorcdev/8bitcn-ui) */
+@utility retro {
+  font-family: var(--font-press-start-2p);
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
+
+@utility pixelated {
+  image-rendering: pixelated;
+}
+
+/* Pseudo-elements instead of box-shadow, so the frame doesn't fight the focus ring utilities */
+@utility pixel-border {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-color: var(--pixel-border);
+    border-style: solid;
+    border-width: 0;
+  }
+
+  &::before {
+    inset: calc(var(--spacing) * -1.5) 0;
+    border-block-width: calc(var(--spacing) * 1.5);
+  }
+
+  &::after {
+    inset: 0 calc(var(--spacing) * -1.5);
+    border-inline-width: calc(var(--spacing) * 1.5);
   }
 }
