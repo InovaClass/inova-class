@@ -63,7 +63,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Project structure
 
 - `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files through the `@/` alias.
-- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them.
+- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them.
 - Global styles live in `src/app/styles/globals.css`.
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.
 
@@ -79,6 +79,9 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **Tailwind CSS v4** through `@tailwindcss/postcss`.
 - **shadcn/ui** (style `base-nova`, base color `neutral`, `lucide` icons) on top of [Base UI](https://base-ui.com), with `class-variance-authority` and the `cn()` helper from the `cn` package. It's the component library of choice: reach for a shadcn component before writing one from scratch. Components land in `src/app/components/ui/shadcn/`; add more with `pnpm shadcn:add <name>`.
 - **Default colors as they come:** the shadcn tokens and the Tailwind palette aren't retinted. Use the tokens (`bg-background`, `text-muted-foreground`, ...) for surfaces and text, and pick an existing palette color (e.g. `teal-500`) instead of a custom shade.
+- **Retro 8-bit identity:** `Press Start 2P` for headings (`--font-heading`) and Geist for body text, plus the `retro`, `pixelated` and `pixel-border` utilities in `globals.css`.
+- **Game tokens** `--hp`, `--xp`, `--coin`, `--class-warrior`, `--class-mage` and `--class-healer` (Tailwind palette colors, both themes), used as `bg-hp`, `text-coin`, ...
+- **8-bit components** in `src/app/components/ui/8bit/` are hand-ported from [8bitcn](https://github.com/theorcdev/8bitcn-ui) (MIT) onto our shadcn components and Base UI, with a credit comment in each file. 8bitcn is built on Radix, so it's never installed through the shadcn CLI.
 - **Dark mode** follows the system preference (`prefers-color-scheme`).
 - Links that look like buttons stay `<a>`/`Link` elements styled with `buttonVariants(...)`, never rendered through `Button`.
 
