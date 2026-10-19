@@ -43,7 +43,15 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - Tables are declared with `snakeCase.table(...)` from `drizzle-orm/pg-core`, so camelCase keys map to snake_case columns.
 - Schema changes go through `pnpm migrations:generate --name <name>`, and the generated folder is committed. Don't edit a migration that was already applied; generate a new one.
 - `pnpm dev` is the startup script: `services:up` → `services:wait:database` → `migrations:up` → `next dev`. The compose services have no healthcheck because readiness is the wait script's job. Playwright's `webServer` (and so the pre-push hook and CI) goes through the same `pnpm dev`, so CI needs no service container.
-- Local settings live in the committed `.env.development` (only the local container's credentials, no secrets). There is no `.env`/`.env.example`. The compose services read it through `env_file`, so the `POSTGRES_*` values are declared once there; `DATABASE_URL` repeats them literally (`process.loadEnvFile` doesn't expand variables), so keep both in sync. `drizzle.config.ts` and the wait script load `.env.development` only when `DATABASE_URL` isn't already set, so hosted environments keep their injected value.
+- Local settings live in the committed `.env.development` (only the local container's credentials, no secrets). There is no `.env`/`.env.example`. The compose services read it through `env_file`, so the `POSTGRES_*` values are declared once there; `DATABASE_URL` repeats them literally (`process.loadEnvFile` doesn't expand variables), so keep both in sync. `drizzle.config.ts` and the wait script load `.env.development` only when `DATABASE_URL` isn't already set, so hosted environments keep their injected value. `drizzle.config.ts` prefers `DATABASE_URL_UNPOOLED` (Neon's direct connection) over the pooled `DATABASE_URL`.
+- The git-ignored `.env.local` (created by `vercel link`) holds only the `VERCEL_OIDC_TOKEN`. Don't `vercel env pull` the Neon variables into it: `.env.local` takes precedence over `.env.development`, so `next dev` would hit Neon. The Neon integration is connected to Production and Preview only, not Development.
+
+### Deployment
+
+- Vercel project `inova-class` (scope `diasjoaovitors-projects`), linked to the GitHub repository: `main` deploys to Production, pull requests to Preview. Postgres is Neon, provisioned through the Vercel Marketplace (`vercel integration add neon`), in `gru1`.
+- `vercel.json` holds the Vercel settings: the build command `pnpm migrations:up && pnpm build` (migrations run before every deployment, not in the `build` script, so a local `pnpm build` never migrates) and `regions: ["gru1"]`, which keeps the functions next to the database.
+- Each Preview deployment gets its own Neon branch, so a pull request's migrations never reach the production database.
+- Hosted environment variables (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `ENABLE_EXPERIMENTAL_COREPACK`) are listed in the Deployment section of `README.md`; keep that table in sync when adding one.
 
 ### Linting & formatting
 

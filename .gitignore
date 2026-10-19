@@ -5,3 +5,5 @@ next-env.d.ts
 test-results
 .claude/settings.local.json
 .playwright-mcp
+.vercel
+.env*.local
