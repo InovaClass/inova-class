@@ -56,6 +56,7 @@ git switch -c 'feat(home)/hero#7'
 - Read the relevant guide in `node_modules/next/dist/docs/` before writing Next.js code: this version has breaking changes.
 - Use the Context7 MCP for the documentation of any other library, framework or CLI.
 - Adding a shadcn/ui or shared component? Use the `new-component` skill.
+- Building a page or section? Check the [8bitcn blocks](https://www.8bitcn.com/docs/blocks) first and port the matching one (see Styling & UI in [`AGENTS.md`](../AGENTS.md)).
 - Designing or reshaping UI? Use the `frontend-design` skill, keeping the shadcn tokens and Tailwind's default palette as they come (see Styling & UI in [`AGENTS.md`](../AGENTS.md)).
 - After changing anything under `src/app/components`, `src/app/(pages)` or `src/app/styles`, run the `ui-reviewer` subagent.
 - Install dependencies with `pnpm add -E <pkg>` (or `pnpm add -D -E <pkg>`), so versions stay pinned.

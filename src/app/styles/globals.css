@@ -7,8 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-press-start-2p);
+  --font-mono: var(--font-press-start-2p);
   --font-heading: var(--font-press-start-2p);
   --color-hp: var(--hp);
   --color-xp: var(--xp);
@@ -147,7 +147,7 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply retro;
   }
 }
 

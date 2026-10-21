@@ -79,9 +79,10 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **Tailwind CSS v4** through `@tailwindcss/postcss`.
 - **shadcn/ui** (style `base-nova`, base color `neutral`, `lucide` icons) on top of [Base UI](https://base-ui.com), with `class-variance-authority` and the `cn()` helper from the `cn` package. It's the component library of choice: reach for a shadcn component before writing one from scratch. Components land in `src/app/components/ui/shadcn/`; add more with `pnpm shadcn:add <name>`.
 - **Default colors as they come:** the shadcn tokens and the Tailwind palette aren't retinted. Use the tokens (`bg-background`, `text-muted-foreground`, ...) for surfaces and text, and pick an existing palette color (e.g. `teal-500`) instead of a custom shade.
-- **Retro 8-bit identity:** `Press Start 2P` for headings (`--font-heading`) and Geist for body text, plus the `retro`, `pixelated` and `pixel-border` utilities in `globals.css`.
+- **Retro 8-bit identity, full retro:** `Press Start 2P` for every text (`--font-sans`, `--font-mono` and `--font-heading`), with no modern font mixed in, plus the `retro`, `pixelated` and `pixel-border` utilities in `globals.css`.
 - **Game tokens** `--hp`, `--xp`, `--coin`, `--class-warrior`, `--class-mage` and `--class-healer` (Tailwind palette colors, both themes), used as `bg-hp`, `text-coin`, ...
 - **8-bit components** in `src/app/components/ui/8bit/` are hand-ported from [8bitcn](https://github.com/theorcdev/8bitcn-ui) (MIT) onto our shadcn components and Base UI, with a credit comment in each file. 8bitcn is built on Radix, so it's never installed through the shadcn CLI.
+- **8bitcn blocks first:** before building a page or section, check the [8bitcn blocks](https://www.8bitcn.com/docs/blocks) and port the matching one (source at `https://8bitcn.com/r/<block>.json`) onto our components and conventions, keeping its structure and spacing.
 - **Dark mode** follows the system preference (`prefers-color-scheme`).
 - Links that look like buttons stay `<a>`/`Link` elements styled with `buttonVariants(...)`, never rendered through `Button`.
 
