@@ -117,7 +117,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 
 - `AGENTS.md` (imported by `CLAUDE.md`) documents the project conventions for coding agents.
 - `.mcp.json` configures the `context7` (library docs) and `playwright` MCP servers.
-- `.claude/` contains a `new-component` skill for adding shadcn or shared components, a `ui-reviewer` subagent that reviews UI semantics and accessibility, and a `settings.json` that asks for confirmation before every `git commit`.
+- `.claude/` contains a `new-component` skill for adding shadcn or shared components, a `review-copy` skill that reviews naming, comments, test descriptions and UI copy, a `ui-reviewer` subagent that reviews UI semantics and accessibility, and a `settings.json` that asks for confirmation before every `git commit`.
 - `.agents/skills/` holds third-party agent skills (`neon`, `neon-postgres`, installed by the Neon integration), symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're vendored as they come, so ESLint and Prettier ignore `.agents/`.
 
 #### Context7 API key

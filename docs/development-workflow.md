@@ -62,6 +62,7 @@ git switch -c 'feat(home)/hero#7'
 - Install dependencies with `pnpm add -E <pkg>` (or `pnpm add -D -E <pkg>`), so versions stay pinned.
 - Add or update tests alongside the code: unit tests as `src/**/*.test.{ts,tsx}` (Vitest) and end-to-end tests in `src/tests/e2e` (Playwright). Test only our own logic (see Testing in [`AGENTS.md`](../AGENTS.md)); a task asking for any other test is dropped.
 - If the task changes a convention, update `AGENTS.md` and `README.md` in the same branch.
+- Before committing, run the `review-copy` skill on the diff to review naming, comments, test descriptions and UI copy.
 
 Check locally before committing:
 
