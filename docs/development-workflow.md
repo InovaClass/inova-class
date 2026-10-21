@@ -56,11 +56,13 @@ git switch -c 'feat(home)/hero#7'
 - Read the relevant guide in `node_modules/next/dist/docs/` before writing Next.js code: this version has breaking changes.
 - Use the Context7 MCP for the documentation of any other library, framework or CLI.
 - Adding a shadcn/ui or shared component? Use the `new-component` skill.
+- Building a page or section? Check the [8bitcn blocks](https://www.8bitcn.com/docs/blocks) first and port the matching one (see Styling & UI in [`AGENTS.md`](../AGENTS.md)).
 - Designing or reshaping UI? Use the `frontend-design` skill, keeping the shadcn tokens and Tailwind's default palette as they come (see Styling & UI in [`AGENTS.md`](../AGENTS.md)).
 - After changing anything under `src/app/components`, `src/app/(pages)` or `src/app/styles`, run the `ui-reviewer` subagent.
 - Install dependencies with `pnpm add -E <pkg>` (or `pnpm add -D -E <pkg>`), so versions stay pinned.
-- Add or update tests alongside the code: unit tests as `src/**/*.test.{ts,tsx}` (Vitest) and end-to-end tests in `src/tests/e2e` (Playwright). Test only our own logic (see Testing in [`AGENTS.md`](../AGENTS.md)); a task asking for any other test is dropped.
+- Add or update tests alongside the code: unit tests next to the file they test, as `*.test.{ts,tsx}` (Vitest), integration tests in `src/tests/integration`, mirroring the layer they test (Vitest), and end-to-end tests in `src/tests/e2e` (Playwright). Test only our own logic (see Testing in [`AGENTS.md`](../AGENTS.md)); a task asking for any other test is dropped.
 - If the task changes a convention, update `AGENTS.md` and `README.md` in the same branch.
+- Before committing, run the `review-copy` skill on the diff to review naming, comments, test descriptions and UI copy.
 
 Check locally before committing:
 
@@ -83,7 +85,7 @@ Follow the Commit Rules in [`AGENTS.md`](../AGENTS.md): English, imperative, low
 git push -u origin 'feat(home)/hero#7'
 ```
 
-`pre-push` runs `pnpm type-check` and the full Playwright suite. The push is rejected if either fails.
+`pre-push` runs `pnpm type-check`, the integration tests and the full Playwright suite. The push is rejected if any of them fails.
 
 ## 8. Open the pull request
 
@@ -91,7 +93,7 @@ Open a pull request against `main` (`gh pr create` or the GitHub UI):
 
 - **Title:** a short summary of the change.
 - **Body:** a `Summary` (what changed and why), a `Test plan` (what was checked) and `Closes #<issue>` so that merging closes the issue.
-- **CI** (`.github/workflows/ci.yml`) runs commitlint over the PR's commits, type-check, ESLint, Prettier, unit tests and E2E tests. Everything must be green.
+- **CI** (`.github/workflows/ci.yml`) runs commitlint over the PR's commits, type-check, ESLint, Prettier, unit, integration and E2E tests. Everything must be green.
 
 ## 9. Merge and close
 

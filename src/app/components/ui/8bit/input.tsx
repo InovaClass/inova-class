@@ -15,7 +15,7 @@ const inputVariants = cva(
       }
     },
     defaultVariants: {
-      font: 'normal'
+      font: 'retro'
     }
   }
 )

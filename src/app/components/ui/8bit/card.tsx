@@ -20,7 +20,7 @@ const cardVariants = cva(
       }
     },
     defaultVariants: {
-      font: 'normal'
+      font: 'retro'
     }
   }
 )
