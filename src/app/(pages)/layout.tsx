@@ -10,7 +10,7 @@ const pressStart2P = Press_Start_2P({
 })
 
 export const metadata: Metadata = {
-  title: 'inova.class',
+  title: { default: 'inova.class', template: '%s | inova.class' },
   description: 'Gestão de sala de aula gamificada'
 }
 

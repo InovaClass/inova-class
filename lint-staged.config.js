@@ -10,7 +10,7 @@ const eslint = (filenames) =>
   `pnpm exec eslint --fix ${relativeFiles(filenames)}`
 
 const test = (filenames) =>
-  `pnpm exec vitest related --passWithNoTests ${relativeFiles(filenames)}`
+  `pnpm exec vitest related --project unit --passWithNoTests ${relativeFiles(filenames)}`
 
 export default {
   '*.{js,jsx,ts,tsx,mjs,cjs}': [eslint, prettier, test],

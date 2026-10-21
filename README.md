@@ -13,9 +13,9 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` starts the local services (`src/infra/compose.yml`), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`pnpm dev` starts the local services (`src/infra/compose.yml`: Postgres and [Mailpit](https://mailpit.axllent.org)), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Every email the app sends locally (account verification, password reset) is caught by Mailpit, at [http://localhost:8025](http://localhost:8025).
 
-The local settings live in the committed `.env.development`: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`) and the `DATABASE_URL` that points at it. There is no `.env`. The git-ignored `.env.local` created by `vercel link` only holds the `VERCEL_OIDC_TOKEN`; never pull the Neon variables into it, since it would take precedence over `.env.development`.
+The local settings live in the committed `.env.development`, all of them local-only values: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`), the `DATABASE_URL` that points at it, a `BETTER_AUTH_SECRET` used only by local runs and the Mailpit `SMTP_URL`. There is no `.env`. The git-ignored `.env.local` created by `vercel link` only holds the `VERCEL_OIDC_TOKEN`; never pull the Neon variables into it, since it would take precedence over `.env.development`.
 
 ## Deployment
 
@@ -23,12 +23,16 @@ The project is deployed on [Vercel](https://vercel.com) (project `inova-class`),
 
 - **Build:** `vercel.json` sets the build command to `pnpm migrations:up && pnpm build`, so the pending migrations are applied before every deployment. It also pins the functions to `gru1` (São Paulo), the database's region.
 - **Previews:** each Preview deployment gets its own Neon branch, so the migrations of a pull request never touch the production database.
+- **Email:** [Resend](https://resend.com), provisioned through the Vercel Marketplace for Production and Preview only, sends the auth emails over SMTP.
 
 | Variable                       | Environments        | Set by                                                           |
 | ------------------------------ | ------------------- | ---------------------------------------------------------------- |
 | `DATABASE_URL`                 | Production, Preview | Neon integration (pooled connection, used by the app)            |
 | `DATABASE_URL_UNPOOLED`        | Production, Preview | Neon integration (direct connection, used by `drizzle-kit`)      |
 | `ENABLE_EXPERIMENTAL_COREPACK` | Production, Preview | Manually (`1`), so the build uses the pnpm from `packageManager` |
+| `BETTER_AUTH_SECRET`           | Production, Preview | Manually (sensitive, `openssl rand -base64 32`)                  |
+| `RESEND_API_KEY`               | Production, Preview | Resend integration (also the SMTP password)                      |
+| `RESEND_EMAIL_DOMAIN`          | Production, Preview | Resend integration (`inovaclass.diasjoaovitor.com.br`, sender)   |
 
 ## Scripts
 
@@ -41,6 +45,7 @@ The project is deployed on [Vercel](https://vercel.com) (project `inova-class`),
 | `pnpm eslint:check` / `pnpm eslint:fix`     | Lint (and auto-fix) with ESLint                         |
 | `pnpm prettier:check` / `pnpm prettier:fix` | Check (and rewrite) formatting                          |
 | `pnpm test` / `pnpm test:watch`             | Run the Vitest unit tests                               |
+| `pnpm test:integration`                     | Start the services, migrate and run integration tests   |
 | `pnpm test:e2e` / `pnpm test:e2e:ui`        | Run the Playwright end-to-end tests                     |
 | `pnpm services:up` / `pnpm services:stop`   | Start (detached) or stop the local services             |
 | `pnpm services:down`                        | Remove the local service containers                     |
@@ -63,9 +68,21 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Project structure
 
 - `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files through the `@/` alias.
-- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them.
+- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them. Parts shared only by the pages of one route group live in that group's `_components/` (e.g. `(pages)/(auth)/_components/`).
 - Global styles live in `src/app/styles/globals.css`.
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.
+- Server code is layered and imports only flow down, `app` → `models` → `infra`:
+  - `src/models/<domain>-model/`: business rules (`model.ts`) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
+  - `src/infra/`: auth, database, email, the error classes, the wrapper every form's Server Action goes through (`form-action.ts`) and the per-request session (`session.ts`).
+  - `src/constants/`: values shared across layers, such as user roles and password bounds.
+  - `src/repositories/` and `src/dtos/` are added with their first use.
+- `action.ts` (`'use server'`) is only for mutations; a Server Component's data reads go in `data.ts`.
+
+### Forms
+
+- **TanStack Form** with the model's **Zod** schema, submitted to **Server Actions**. Each form has an `action.ts` and a `<name>-form.tsx` in its route's `_components/`.
+- The action wraps the model call in `formAction` (`src/infra/form-action.ts`), which turns validation errors into field errors, `AppError`s into a form message with what to do next, and anything unexpected into a generic message.
+- The client form renders the `Form` and `Field` returned by `useFormAction` (`src/app/hooks/use-form-action.ts`), plus `FormMessage` and `SubmitButton`; the page wraps it in `FormCard`. All of them live in `src/app/components/ui/custom/`. Forms still work without JavaScript, validate on the client when it's available and show server errors on the field they belong to.
 
 ### Database
 
@@ -73,6 +90,13 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Everything infrastructure-related lives in `src/infra`: `compose.yml` for the local services, `scripts/` for the startup helpers and `database/` for the client (`client.ts`), the schema (`schema.ts`) and the generated migrations (`migrations/`).
 - Tables are declared with `snakeCase.table(...)`, so camelCase keys map to snake_case columns.
 - Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
+
+### Auth and email
+
+- **Better Auth** with the Drizzle adapter (`relations-v2`, since Drizzle is on `1.0.0`). The config lives in `src/infra/auth.ts` and its tables (`users`, `sessions`, `accounts`, `verifications`) in `src/infra/database/schema.ts`, written by hand in our `snakeCase.table` style from the output of `pnpm dlx auth@latest generate`.
+- Every account has a fixed `role` (`teacher` or `student`) that the client can never set: public sign-up only creates teachers.
+- The auth pages (`/cadastro`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.
+- Emails go out over SMTP with `nodemailer` (`src/infra/email/`): Mailpit locally, Resend's SMTP when `RESEND_API_KEY` is set.
 
 ### Styling and UI
 
@@ -98,8 +122,9 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 
 ### Testing
 
-- **Unit tests:** Vitest with `jsdom` and Testing Library. Run `pnpm test` (once) or `pnpm test:watch`. Only `src/**/*.test.{ts,tsx}` files are picked up.
-- **E2E tests:** Playwright (Chromium) in `src/tests/e2e`. Run `pnpm test:e2e` or `pnpm test:e2e:ui`. The dev server starts automatically.
+- **Unit tests:** Vitest with `jsdom` and Testing Library, next to the code they test. Run `pnpm test` (once) or `pnpm test:watch`.
+- **Integration tests:** Vitest in `node`, in `src/tests/integration`, calling the models against the local Postgres and Mailpit. Run `pnpm test:integration`, which starts the services first. Shared helpers, including the test data generated with [Faker](https://fakerjs.dev), live in `src/tests/orchestrator.ts`.
+- **E2E tests:** Playwright (Chromium) in `src/tests/e2e`. Run `pnpm test:e2e` or `pnpm test:e2e:ui`. The dev server starts automatically. Tests that need an email read it from Mailpit through the orchestrator.
 - Only the logic we wrote is tested, not library or framework behavior.
 
 ### Git hooks and CI
@@ -107,18 +132,18 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **Husky hooks:**
   - `pre-commit` runs `lint-staged` (Prettier, ESLint and `vitest related` on staged files).
   - `commit-msg` adds the emoji prefix and runs `commitlint`.
-  - `pre-push` runs `pnpm type-check` and `pnpm test:e2e`.
+  - `pre-push` runs `pnpm type-check`, `pnpm test:integration` and `pnpm test:e2e`.
 - **Commit messages** are written in English, in the imperative mood and lowercase, with a semantic prefix, for example `✨ feat: add product page`. Typing `feat: ...` is enough, since the hook adds the emoji.
 - **Branches:** work for each issue goes on a new branch named `<scope>/<title>#<issue>`, where `<scope>` is the commit prefix without the emoji, for example `feat/home-page#3`. For very specific work, add an optional target in parentheses (a page, component or other area), for example `fix(card)/focus-ring#7`. Nothing for an issue is committed directly to `main`.
 - **Issues** are created from the **Task** template (`.github/ISSUE_TEMPLATE/task.md`). Tick every completed checklist item in the issue body before closing it.
-- **GitHub Actions** (`.github/workflows/ci.yml`) runs on every pull request: commitlint, type-check, ESLint, Prettier, unit tests and E2E tests.
+- **GitHub Actions** (`.github/workflows/ci.yml`) runs on every pull request: commitlint, type-check, ESLint, Prettier, unit, integration and E2E tests.
 
 ### AI assistant setup
 
 - `AGENTS.md` (imported by `CLAUDE.md`) documents the project conventions for coding agents.
 - `.mcp.json` configures the `context7` (library docs) and `playwright` MCP servers.
 - `.claude/` contains a `new-component` skill for adding shadcn or shared components, a `review-copy` skill that reviews naming, comments, test descriptions and UI copy, a `ui-reviewer` subagent that reviews UI semantics and accessibility, and a `settings.json` that asks for confirmation before every `git commit`.
-- `.agents/skills/` holds third-party agent skills (`neon`, `neon-postgres`, installed by the Neon integration), symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're vendored as they come, so ESLint and Prettier ignore `.agents/`.
+- `.agents/skills/` holds third-party agent skills installed by the Marketplace integrations (`neon` and `neon-postgres` by Neon; `resend`, `resend-cli`, `react-email`, `email-best-practices` and `agent-email-inbox` by Resend), symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're vendored as they come, so ESLint and Prettier ignore `.agents/`.
 
 #### Context7 API key
 
