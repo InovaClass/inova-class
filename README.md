@@ -15,7 +15,7 @@ pnpm dev
 
 `pnpm dev` starts the local services (`src/infra/compose.yml`: Postgres and [Mailpit](https://mailpit.axllent.org)), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Every email the app sends locally (account verification, password reset) is caught by Mailpit, at [http://localhost:8025](http://localhost:8025).
 
-The local settings live in the committed `.env.development`, all of them local-only values: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`), the `DATABASE_URL` that points at it, a `BETTER_AUTH_SECRET` used only by local runs and the Mailpit `SMTP_URL`. There is no `.env`. The git-ignored `.env.local` created by `vercel link` only holds the `VERCEL_OIDC_TOKEN`; never pull the Neon variables into it, since it would take precedence over `.env.development`.
+The local settings live in the committed `.env.development`, all of them local-only values: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`), the `DATABASE_URL` that points at it, a `BETTER_AUTH_SECRET` used only by local runs and the Mailpit `SMTP_URL`. There is no `.env`. The git-ignored `.env.local` created by `vercel link` holds the `VERCEL_OIDC_TOKEN` and, optionally, the Google credentials (see [Google sign-in](#google-sign-in)); never pull the Neon variables into it, since it would take precedence over `.env.development`.
 
 ## Deployment
 
@@ -25,14 +25,28 @@ The project is deployed on [Vercel](https://vercel.com) (project `inova-class`),
 - **Previews:** each Preview deployment gets its own Neon branch, so the migrations of a pull request never touch the production database.
 - **Email:** [Resend](https://resend.com), provisioned through the Vercel Marketplace for Production and Preview only, sends the auth emails over SMTP.
 
-| Variable                       | Environments        | Set by                                                           |
-| ------------------------------ | ------------------- | ---------------------------------------------------------------- |
-| `DATABASE_URL`                 | Production, Preview | Neon integration (pooled connection, used by the app)            |
-| `DATABASE_URL_UNPOOLED`        | Production, Preview | Neon integration (direct connection, used by `drizzle-kit`)      |
-| `ENABLE_EXPERIMENTAL_COREPACK` | Production, Preview | Manually (`1`), so the build uses the pnpm from `packageManager` |
-| `BETTER_AUTH_SECRET`           | Production, Preview | Manually (sensitive, `openssl rand -base64 32`)                  |
-| `RESEND_API_KEY`               | Production, Preview | Resend integration (also the SMTP password)                      |
-| `RESEND_EMAIL_DOMAIN`          | Production, Preview | Resend integration (`inovaclass.diasjoaovitor.com.br`, sender)   |
+| Variable                       | Environments        | Set by                                                              |
+| ------------------------------ | ------------------- | ------------------------------------------------------------------- |
+| `DATABASE_URL`                 | Production, Preview | Neon integration (pooled connection, used by the app)               |
+| `DATABASE_URL_UNPOOLED`        | Production, Preview | Neon integration (direct connection, used by `drizzle-kit`)         |
+| `ENABLE_EXPERIMENTAL_COREPACK` | Production, Preview | Manually (`1`), so the build uses the pnpm from `packageManager`    |
+| `BETTER_AUTH_SECRET`           | Production, Preview | Manually (sensitive, `openssl rand -base64 32`)                     |
+| `RESEND_API_KEY`               | Production, Preview | Resend integration (also the SMTP password)                         |
+| `RESEND_EMAIL_DOMAIN`          | Production, Preview | Resend integration (`inovaclass.diasjoaovitor.com.br`, sender)      |
+| `GOOGLE_CLIENT_ID`             | Production, Preview | Manually, from the Google Cloud OAuth client                        |
+| `GOOGLE_CLIENT_SECRET`         | Production, Preview | Manually (sensitive), from the Google Cloud OAuth client            |
+| `OAUTH_PROXY_SECRET`           | Production, Preview | Manually (sensitive, `openssl rand -base64 32`), same value in both |
+
+### Google sign-in
+
+The "Continuar com Google" button only shows up when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set, so the app runs without them. To set them up (#44):
+
+1. Create a project in the [Google Cloud console](https://console.cloud.google.com).
+2. In Google Auth Platform, configure the consent screen: user type **External**, app name, support email, the authorized domain `diasjoaovitor.com.br` and only the `openid`, `email` and `profile` scopes. Then **Publish app**: in _Testing_ mode only the listed test users can sign in.
+3. Create an OAuth client (_Web application_) with the origins `http://localhost:3000` and `https://inova-class.vercel.app`, and the redirect URIs `http://localhost:3000/api/auth/callback/google` and `https://inova-class.vercel.app/api/auth/callback/google`.
+4. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `OAUTH_PROXY_SECRET` to Vercel for Production and Preview (`vercel env add <name> production`, then `preview`). To use Google locally, add the first two to `.env.local`, never to `.env.development`.
+
+Google doesn't accept wildcard redirect URIs, so Preview deployments sign in through the production callback with Better Auth's [OAuth proxy](https://www.better-auth.com/docs/plugins/oauth-proxy), which needs the same `OAUTH_PROXY_SECRET` in Production and Preview.
 
 ## Scripts
 
@@ -68,7 +82,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Project structure
 
 - `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files through the `@/` alias.
-- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them. Parts shared only by the pages of one route group live in that group's `_components/` (e.g. `(pages)/(auth)/_components/`).
+- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them. Parts shared only by the pages of one route group live in that group's `_components/` (e.g. `(pages)/(auth)/_components/`), while a helper that isn't a component or a form's action sits at the root of the route or group it serves.
 - Global styles live in `src/app/styles/globals.css`.
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.
 - Server code is layered and imports only flow down, `app` → `models` → `infra`:
@@ -95,6 +109,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 
 - **Better Auth** with the Drizzle adapter (`relations-v2`, since Drizzle is on `1.0.0`). The config lives in `src/infra/auth.ts` and its tables (`users`, `sessions`, `accounts`, `verifications`) in `src/infra/database/schema.ts`, written by hand in our `snakeCase.table` style from the output of `pnpm dlx auth@latest generate`.
 - Every account has a fixed `role` (`teacher` or `student`) that the client can never set: public sign-up only creates teachers.
+- Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up page does, and Google links to an existing account only when both sides verified the same email.
 - The auth pages (`/cadastro`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.
 - Emails go out over SMTP with `nodemailer` (`src/infra/email/`): Mailpit locally, Resend's SMTP when `RESEND_API_KEY` is set.
 

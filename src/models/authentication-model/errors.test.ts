@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { UnauthorizedError, ValidationError } from '@/infra/errors'
 import {
   authErrorFromCode,
+  googleErrorFromCode,
   toAppError
 } from '@/models/authentication-model/errors'
 
@@ -21,6 +22,22 @@ describe('authErrorFromCode', () => {
     expect(authErrorFromCode(undefined)).toEqual(
       authErrorFromCode('INVALID_TOKEN')
     )
+  })
+})
+
+describe('googleErrorFromCode', () => {
+  test('returns the message and action of a known code', () => {
+    expect(googleErrorFromCode('signup_disabled')).toEqual({
+      message: 'Não encontramos uma conta para este e-mail do Google.',
+      action: 'Crie uma conta para continuar.'
+    })
+  })
+
+  test('treats an unknown code as a failed Google sign-in', () => {
+    expect(googleErrorFromCode('invalid_code')).toEqual({
+      message: 'Não foi possível continuar com o Google.',
+      action: 'Tente novamente em instantes.'
+    })
   })
 })
 
