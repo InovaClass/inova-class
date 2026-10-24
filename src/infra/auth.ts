@@ -1,6 +1,7 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { betterAuth } from 'better-auth'
 import { nextCookies } from 'better-auth/next-js'
+import { oAuthProxy } from 'better-auth/plugins'
 import { after } from 'next/server'
 
 import {
@@ -15,6 +16,24 @@ import {
   resetPasswordTemplate,
   verifyEmailTemplate
 } from '@/infra/email/templates'
+
+const PRODUCTION_URL = 'https://inova-class.vercel.app'
+
+const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env
+
+// Without credentials (CI, a fresh clone) the app runs with email and password only (#44)
+const google =
+  GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET
+    ? {
+        clientId: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
+        prompt: 'select_account' as const,
+        // Sign-in never creates an account, so the role is always chosen on a sign-up page (#4)
+        disableImplicitSignUp: true
+      }
+    : undefined
+
+export const isGoogleSignInEnabled = Boolean(google)
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -67,5 +86,19 @@ export const auth = betterAuth({
       after(() => sendEmail({ to: user.email, ...verifyEmailTemplate(url) }))
     }
   },
-  plugins: [nextCookies()]
+  socialProviders: { google },
+  plugins: [
+    // Google doesn't accept wildcard redirect URIs, so Previews go through the production
+    // callback; localhost has its own registered URI and never shares the proxy secret:
+    // https://www.better-auth.com/docs/plugins/oauth-proxy
+    ...(process.env.VERCEL
+      ? [
+          oAuthProxy({
+            productionURL: PRODUCTION_URL,
+            secret: process.env.OAUTH_PROXY_SECRET
+          })
+        ]
+      : []),
+    nextCookies()
+  ]
 })

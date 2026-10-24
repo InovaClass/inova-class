@@ -1,10 +1,8 @@
 import { UnauthorizedError, ValidationError } from '@/infra/errors'
 
-type AuthErrorCopy = {
-  kind: 'validation' | 'unauthorized'
-  message: string
-  action: string
-}
+type ErrorCopy = { message: string; action: string }
+
+type AuthErrorCopy = ErrorCopy & { kind: 'validation' | 'unauthorized' }
 
 const INVALID_LINK: AuthErrorCopy = {
   kind: 'validation',
@@ -32,6 +30,32 @@ export const authErrorFromCode = (code: string | undefined) => {
   const copy = (code && AUTH_ERRORS[code]) || INVALID_LINK
   return { message: copy.message, action: copy.action }
 }
+
+const GOOGLE_FAILED: ErrorCopy = {
+  message: 'Não foi possível continuar com o Google.',
+  action: 'Tente novamente em instantes.'
+}
+
+// OAuth callback codes we expect, received as `?error=` when signing in with Google fails
+const GOOGLE_ERRORS: Record<string, ErrorCopy> = {
+  // Linking needs the email verified on both sides:
+  // https://www.better-auth.com/docs/concepts/users-accounts#account-linking
+  account_not_linked: {
+    message: 'Já existe uma conta com este e-mail.',
+    action: 'Entre com seu e-mail e senha para usar esta conta.'
+  },
+  signup_disabled: {
+    message: 'Não encontramos uma conta para este e-mail do Google.',
+    action: 'Crie uma conta para continuar.'
+  },
+  access_denied: {
+    message: 'O acesso com o Google foi cancelado.',
+    action: 'Tente novamente ou use seu e-mail e senha.'
+  }
+}
+
+export const googleErrorFromCode = (code: string): ErrorCopy =>
+  GOOGLE_ERRORS[code] || GOOGLE_FAILED
 
 export const toAppError = (code: string | undefined, cause: unknown) => {
   const copy = code ? AUTH_ERRORS[code] : undefined

@@ -41,6 +41,26 @@ const signIn = async (input: unknown, { headers }: RequestContext) => {
   return translateErrors(auth.api.signInEmail({ body: data, headers }))
 }
 
+const signInWithGoogle = async ({
+  headers,
+  errorCallbackURL,
+  requestSignUp
+}: RequestContext & { errorCallbackURL: string; requestSignUp: boolean }) => {
+  const { url } = await translateErrors(
+    auth.api.signInSocial({
+      body: {
+        provider: 'google',
+        callbackURL: '/',
+        errorCallbackURL,
+        requestSignUp
+      },
+      headers
+    })
+  )
+  if (!url) throw new Error('Google sign-in returned no authorization URL')
+  return url
+}
+
 const requestPasswordReset = async (
   input: unknown,
   { headers, redirectTo }: RequestContext & { redirectTo: string }
@@ -68,6 +88,7 @@ const resetPassword = async (
 export const authenticationModel = {
   signUp,
   signIn,
+  signInWithGoogle,
   requestPasswordReset,
   resetPassword
 }
