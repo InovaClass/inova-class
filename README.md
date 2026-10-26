@@ -21,6 +21,7 @@ The local settings live in the committed `.env.development`, all of them local-o
 
 The project is deployed on [Vercel](https://vercel.com) (project `inova-class`), with Postgres from [Neon](https://neon.com) provisioned through the Vercel Marketplace. Pushes to `main` deploy to Production, pull requests get a Preview deployment. To work with the Vercel CLI, run `vercel link` once.
 
+- **Domain:** Production is served at `inovaclass.diasjoaovitor.com.br`, a `CNAME` set in the `diasjoaovitor.com.br` zone at Registro.br (the apex hosts another site), and `inova-class.vercel.app` redirects to it. Changing the production domain means updating `PRODUCTION_URL` and `allowedHosts` in `src/infra/auth.ts` and the Google OAuth client.
 - **Build:** `vercel.json` sets the build command to `pnpm migrations:up && pnpm build`, so the pending migrations are applied before every deployment. It also pins the functions to `gru1` (São Paulo), the database's region.
 - **Previews:** each Preview deployment gets its own Neon branch, so the migrations of a pull request never touch the production database.
 - **Email:** [Resend](https://resend.com), provisioned through the Vercel Marketplace for Production and Preview only, sends the auth emails over SMTP.
@@ -43,8 +44,8 @@ The "Continuar com Google" button only shows up when `GOOGLE_CLIENT_ID` and `GOO
 
 1. Create a project in the [Google Cloud console](https://console.cloud.google.com).
 2. In Google Auth Platform, configure the consent screen: user type **External**, app name, support email, the authorized domain `diasjoaovitor.com.br` and only the `openid`, `email` and `profile` scopes. Then **Publish app**: in _Testing_ mode only the listed test users can sign in.
-3. Create an OAuth client (_Web application_) with the origins `http://localhost:3000` and `https://inova-class.vercel.app`, and the redirect URIs `http://localhost:3000/api/auth/callback/google` and `https://inova-class.vercel.app/api/auth/callback/google`.
-4. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `OAUTH_PROXY_SECRET` to Vercel for Production and Preview (`vercel env add <name> production`, then `preview`). To use Google locally, add the first two to `.env.local`, never to `.env.development`.
+3. Create an OAuth client (_Web application_) with the origins `http://localhost:3000` and `https://inovaclass.diasjoaovitor.com.br`, and the redirect URIs `http://localhost:3000/api/auth/callback/google` and `https://inovaclass.diasjoaovitor.com.br/api/auth/callback/google`.
+4. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `OAUTH_PROXY_SECRET` to Vercel for Production and Preview (`vercel env add <name> -e production -e preview --sensitive`). To use Google locally, add the first two to `.env.local`, never to `.env.development`.
 
 Google doesn't accept wildcard redirect URIs, so Preview deployments sign in through the production callback with Better Auth's [OAuth proxy](https://www.better-auth.com/docs/plugins/oauth-proxy), which needs the same `OAUTH_PROXY_SECRET` in Production and Preview.
 
