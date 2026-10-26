@@ -17,7 +17,7 @@ import {
   verifyEmailTemplate
 } from '@/infra/email/templates'
 
-const PRODUCTION_URL = 'https://inova-class.vercel.app'
+const PRODUCTION_URL = 'https://inovaclass.diasjoaovitor.com.br'
 
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env
 
@@ -46,6 +46,7 @@ export const auth = betterAuth({
   baseURL: {
     allowedHosts: [
       'localhost:3000',
+      'inovaclass.diasjoaovitor.com.br',
       'inova-class.vercel.app',
       'inova-class-*-diasjoaovitors-projects.vercel.app'
     ],
