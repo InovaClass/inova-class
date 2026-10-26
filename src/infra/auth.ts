@@ -96,6 +96,12 @@ export const auth = betterAuth({
       ? [
           oAuthProxy({
             productionURL: PRODUCTION_URL,
+            // Server Actions call auth.api with headers only, so without it the plugin compares
+            // against VERCEL_URL, the deployment URL, and proxies Production too (#44)
+            currentURL:
+              process.env.VERCEL_ENV === 'production'
+                ? PRODUCTION_URL
+                : undefined,
             secret: process.env.OAUTH_PROXY_SECRET
           })
         ]
