@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
-import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@/constants/user'
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN
+} from '@/constants/user'
 
 // Imported by the client forms too, so it must not import anything server-only
 
@@ -9,6 +15,31 @@ const email = z
   .trim()
   .min(1, 'Informe seu e-mail.')
   .pipe(z.email('Informe um e-mail válido.'))
+
+const name = z
+  .string()
+  .trim()
+  .min(1, 'Informe seu nome.')
+  .max(100, 'O nome pode ter no máximo 100 caracteres.')
+
+// Better Auth stores usernames in lowercase, so the form checks the value it will store
+const username = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, 'Informe um nome de usuário.')
+  .min(
+    USERNAME_MIN_LENGTH,
+    `O nome de usuário precisa ter pelo menos ${USERNAME_MIN_LENGTH} caracteres.`
+  )
+  .max(
+    USERNAME_MAX_LENGTH,
+    `O nome de usuário pode ter no máximo ${USERNAME_MAX_LENGTH} caracteres.`
+  )
+  .regex(
+    USERNAME_PATTERN,
+    'Use apenas letras sem acento, números, ponto e sublinhado.'
+  )
 
 const newPassword = z
   .string()
@@ -36,21 +67,23 @@ const passwordsMatch = z.refine<{
 })
 
 export const signUpSchema = z
+  .object({ name, email, password: newPassword, passwordConfirmation })
+  .check(passwordsMatch)
+export type SignUpInput = z.input<typeof signUpSchema>
+
+export const studentSignUpSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(1, 'Informe seu nome.')
-      .max(100, 'O nome pode ter no máximo 100 caracteres.'),
+    name,
+    username,
     email,
     password: newPassword,
     passwordConfirmation
   })
   .check(passwordsMatch)
-export type SignUpInput = z.input<typeof signUpSchema>
+export type StudentSignUpInput = z.input<typeof studentSignUpSchema>
 
 export const signInSchema = z.object({
-  email,
+  identifier: z.string().trim().min(1, 'Informe seu e-mail ou usuário.'),
   password: z.string().min(1, 'Informe sua senha.')
 })
 export type SignInInput = z.input<typeof signInSchema>
@@ -62,3 +95,6 @@ export const resetPasswordSchema = z
   .object({ password: newPassword, passwordConfirmation })
   .check(passwordsMatch)
 export type ResetPasswordInput = z.input<typeof resetPasswordSchema>
+
+export const changePasswordSchema = resetPasswordSchema
+export type ChangePasswordInput = z.input<typeof changePasswordSchema>

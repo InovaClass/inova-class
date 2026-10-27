@@ -38,7 +38,7 @@ const SignInPage = async ({ searchParams }: PageProps<'/entrar'>) => {
   return (
     <FormCard
       title="Entrar"
-      description="Acesse sua conta de professor."
+      description="Acesse sua conta de professor ou aluno."
       footer={
         <p>
           Ainda não tem uma conta?{' '}

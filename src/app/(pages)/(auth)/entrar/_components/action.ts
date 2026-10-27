@@ -14,6 +14,8 @@ export const signIn = async (
   formData: FormData
 ): Promise<SignInState> =>
   formAction(formData, async (input) => {
-    await authenticationModel.signIn(input, { headers: await headers() })
-    redirect('/')
+    const { mustChangePassword } = await authenticationModel.signIn(input, {
+      headers: await headers()
+    })
+    redirect(mustChangePassword ? '/alterar-senha' : '/')
   })

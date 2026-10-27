@@ -25,7 +25,10 @@ export const users = snakeCase.table('users', {
   email: text().notNull().unique(),
   emailVerified: boolean().notNull().default(false),
   image: text(),
+  username: text().unique(),
+  displayUsername: text(),
   role: text({ enum: USER_ROLES }).notNull(),
+  mustChangePassword: boolean().notNull().default(false),
   ...timestamps
 })
 

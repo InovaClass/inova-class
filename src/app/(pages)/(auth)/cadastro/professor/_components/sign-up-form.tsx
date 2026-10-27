@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 
-import { signUp } from '@/app/(pages)/(auth)/cadastro/_components/action'
+import { signUp } from '@/app/(pages)/(auth)/cadastro/professor/_components/action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
