@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest'
+import { z } from 'zod'
 
 import { UnauthorizedError, ValidationError } from '@/infra/errors'
 import {
   authErrorFromCode,
   googleErrorFromCode,
-  toAppError
+  toAppError,
+  toFieldError
 } from '@/models/authentication-model/errors'
 
 describe('authErrorFromCode', () => {
@@ -45,7 +47,13 @@ describe('toAppError', () => {
   test('maps credential errors to UnauthorizedError', () => {
     const error = toAppError('INVALID_EMAIL_OR_PASSWORD', undefined)
     expect(error).toBeInstanceOf(UnauthorizedError)
-    expect(error?.message).toBe('E-mail ou senha incorretos.')
+    expect(error?.message).toBe('E-mail, usuário ou senha incorretos.')
+  })
+
+  test('gives an email and a username sign-in the same copy', () => {
+    expect(toAppError('INVALID_USERNAME_OR_PASSWORD', undefined)).toEqual(
+      toAppError('INVALID_EMAIL_OR_PASSWORD', undefined)
+    )
   })
 
   test('maps link errors to ValidationError', () => {
@@ -56,5 +64,19 @@ describe('toAppError', () => {
 
   test('leaves codes without a message to the caller', () => {
     expect(toAppError('SOMETHING_ELSE', undefined)).toBeUndefined()
+  })
+})
+
+describe('toFieldError', () => {
+  test('maps a taken username to an error on its field', () => {
+    const error = toFieldError('USERNAME_IS_ALREADY_TAKEN')
+    expect(error).toBeInstanceOf(z.ZodError)
+    expect(z.flattenError(error!).fieldErrors).toEqual({
+      username: ['Este nome de usuário já está em uso.']
+    })
+  })
+
+  test('leaves codes of the whole form to toAppError', () => {
+    expect(toFieldError('INVALID_EMAIL_OR_PASSWORD')).toBeUndefined()
   })
 })

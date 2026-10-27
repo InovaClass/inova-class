@@ -1,12 +1,16 @@
 import { isAPIError } from 'better-auth/api'
 
-import { auth } from '@/infra/auth'
-import { toAppError } from '@/models/authentication-model/errors'
+import type { UserRole } from '@/constants/user'
+import { auth, withSignUpRole } from '@/infra/auth'
+import { UnauthorizedError } from '@/infra/errors'
+import { toAppError, toFieldError } from '@/models/authentication-model/errors'
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   signInSchema,
-  signUpSchema
+  signUpSchema,
+  studentSignUpSchema
 } from '@/models/authentication-model/schema'
 
 // Better Auth reads the host (dynamic baseURL), the IP (rate limiting) and the cookies from the
@@ -18,7 +22,9 @@ const translateErrors = async <T>(request: Promise<T>): Promise<T> => {
     return await request
   } catch (error) {
     // Codes without a user-facing message stay unexpected errors
-    throw (isAPIError(error) && toAppError(error.body?.code, error)) || error
+    if (!isAPIError(error)) throw error
+    const code = error.body?.code
+    throw toFieldError(code) || toAppError(code, error) || error
   }
 }
 
@@ -36,26 +42,60 @@ const signUp = async (
   return { name, email }
 }
 
+const signUpStudent = async (
+  input: unknown,
+  { headers, callbackURL }: RequestContext & { callbackURL: string }
+) => {
+  const { name, username, email, password } = studentSignUpSchema.parse(input)
+  await translateErrors(
+    withSignUpRole('student', () =>
+      auth.api.signUpEmail({
+        body: { name, username, email, password, callbackURL },
+        headers
+      })
+    )
+  )
+  return { name, username, email }
+}
+
+type SignedInUser = Partial<typeof auth.$Infer.Session.user>
+
+// A username can't contain `@` (USERNAME_PATTERN), so it tells the two apart
 const signIn = async (input: unknown, { headers }: RequestContext) => {
-  const data = signInSchema.parse(input)
-  return translateErrors(auth.api.signInEmail({ body: data, headers }))
+  const { identifier, password } = signInSchema.parse(input)
+  // The plugin types its user without the additional fields, but returns them like signInEmail
+  const { user } = await translateErrors<{ user: SignedInUser }>(
+    identifier.includes('@')
+      ? auth.api.signInEmail({ body: { email: identifier, password }, headers })
+      : auth.api.signInUsername({
+          body: { username: identifier, password },
+          headers
+        })
+  )
+  return { mustChangePassword: Boolean(user.mustChangePassword) }
 }
 
 const signInWithGoogle = async ({
   headers,
   errorCallbackURL,
-  requestSignUp
-}: RequestContext & { errorCallbackURL: string; requestSignUp: boolean }) => {
-  const { url } = await translateErrors(
+  signUpRole
+}: RequestContext & {
+  errorCallbackURL: string
+  // Only a sign-up page passes it; signing in never creates an account
+  signUpRole?: UserRole
+}) => {
+  const request = () =>
     auth.api.signInSocial({
       body: {
         provider: 'google',
         callbackURL: '/',
         errorCallbackURL,
-        requestSignUp
+        requestSignUp: Boolean(signUpRole)
       },
       headers
     })
+  const { url } = await translateErrors(
+    signUpRole ? withSignUpRole(signUpRole, request) : request()
   )
   if (!url) throw new Error('Google sign-in returned no authorization URL')
   return url
@@ -85,10 +125,27 @@ const resetPassword = async (
   )
 }
 
+// The user just proved the temporary password by signing in, so it isn't asked again (#5)
+const changePassword = async (input: unknown, { headers }: RequestContext) => {
+  const { password } = changePasswordSchema.parse(input)
+  const session = await auth.api.getSession({ headers })
+  if (!session) throw new UnauthorizedError()
+  const context = await auth.$context
+  await context.internalAdapter.updatePassword(
+    session.user.id,
+    await context.password.hash(password)
+  )
+  await context.internalAdapter.updateUser(session.user.id, {
+    mustChangePassword: false
+  })
+}
+
 export const authenticationModel = {
   signUp,
+  signUpStudent,
   signIn,
   signInWithGoogle,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  changePassword
 }

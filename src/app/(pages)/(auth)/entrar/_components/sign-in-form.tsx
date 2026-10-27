@@ -15,14 +15,20 @@ export const SignInForm = ({ notice }: { notice?: SignInState }) => {
   const { Form, Field, state, pending, announcement, formProps } =
     useFormAction({
       schema: signInSchema,
-      defaultValues: { email: '', password: '' },
+      defaultValues: { identifier: '', password: '' },
       action: signIn,
       initialState: notice
     })
 
   return (
     <Form {...formProps} className="flex flex-col gap-6">
-      <Field name="email" label="E-mail" type="email" autoComplete="username" />
+      <Field
+        name="identifier"
+        label="E-mail ou usuário"
+        autoComplete="username"
+        autoCapitalize="none"
+        spellCheck={false}
+      />
       <Field
         name="password"
         label="Senha"

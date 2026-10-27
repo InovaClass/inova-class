@@ -1,13 +1,24 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
+
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { betterAuth } from 'better-auth'
+import {
+  addOAuthServerContext,
+  createAuthMiddleware,
+  getOAuthState
+} from 'better-auth/api'
 import { nextCookies } from 'better-auth/next-js'
-import { oAuthProxy } from 'better-auth/plugins'
+import { oAuthProxy, username } from 'better-auth/plugins'
 import { after } from 'next/server'
 
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
-  USER_ROLES
+  USER_ROLES,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN,
+  type UserRole
 } from '@/constants/user'
 import { database } from '@/infra/database/client'
 import * as schema from '@/infra/database/schema'
@@ -29,11 +40,23 @@ const google =
         clientSecret: GOOGLE_CLIENT_SECRET,
         prompt: 'select_account' as const,
         // Sign-in never creates an account, so the role is always chosen on a sign-up page (#4)
-        disableImplicitSignUp: true
+        disableImplicitSignUp: true,
+        // Keeps only what the sign-up form would collect (#5)
+        mapProfileToUser: () => ({ image: undefined })
       }
     : undefined
 
 export const isGoogleSignInEnabled = Boolean(google)
+
+// `role` is `input: false`, so the role of a sign-up comes from the server flow that runs it, never
+// from the request (#5)
+const signUpRole = new AsyncLocalStorage<UserRole>()
+
+export const withSignUpRole = <T>(role: UserRole, signUp: () => Promise<T>) =>
+  signUpRole.run(role, signUp)
+
+const isUserRole = (value: unknown): value is UserRole =>
+  USER_ROLES.includes(value as UserRole)
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -60,10 +83,41 @@ export const auth = betterAuth({
       role: {
         type: [...USER_ROLES],
         required: true,
-        // Roles are fixed per account (#3): public sign-up only creates teachers, students are
-        // created server-side (#5)
+        // Roles are fixed per account (#3): a request without a server-set role creates a
+        // teacher, students only come from `withSignUpRole` (#5)
         defaultValue: 'teacher',
         input: false
+      },
+      // Set for accounts created with a temporary password (#10)
+      mustChangePassword: {
+        type: 'boolean',
+        required: true,
+        defaultValue: false,
+        input: false
+      }
+    }
+  },
+  hooks: {
+    // Google's callback is a later request, so the role rides the OAuth state, which the client
+    // can't change (`addOAuthServerContext`)
+    before: createAuthMiddleware(async (context) => {
+      const role = signUpRole.getStore()
+      if (role && context.path === '/sign-in/social') {
+        await addOAuthServerContext({ role })
+      }
+    })
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const oAuthState = await getOAuthState()
+          const oAuthRole = oAuthState?.serverContext?.role
+          const role =
+            signUpRole.getStore() ??
+            (isUserRole(oAuthRole) ? oAuthRole : undefined)
+          if (role) return { data: { ...user, role } }
+        }
       }
     }
   },
@@ -89,6 +143,12 @@ export const auth = betterAuth({
   },
   socialProviders: { google },
   plugins: [
+    username({
+      minUsernameLength: USERNAME_MIN_LENGTH,
+      maxUsernameLength: USERNAME_MAX_LENGTH,
+      usernameValidator: (value) => USERNAME_PATTERN.test(value),
+      validationOrder: { username: 'post-normalization' }
+    }),
     // Google doesn't accept wildcard redirect URIs, so Previews go through the production
     // callback; localhost has its own registered URI and never shares the proxy secret:
     // https://www.better-auth.com/docs/plugins/oauth-proxy
@@ -105,7 +165,7 @@ export const auth = betterAuth({
             secret: process.env.OAUTH_PROXY_SECRET
           })
         ]
-      : []),
+      : ([] as const)),
     nextCookies()
   ]
 })

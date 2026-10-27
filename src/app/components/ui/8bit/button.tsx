@@ -3,7 +3,10 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 
-import { Button as ShadcnButton } from '@/app/components/ui/shadcn/button'
+import {
+  Button as ShadcnButton,
+  buttonVariants as shadcnButtonVariants
+} from '@/app/components/ui/shadcn/button'
 
 const buttonVariants = cva(
   'rounded-none focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-offset-9 focus-visible:outline-foreground focus-visible:outline-solid active:not-aria-[haspopup]:translate-y-1 dark:focus-visible:outline-ring',
@@ -69,4 +72,18 @@ const Button = ({
   </ShadcnButton>
 )
 
-export { Button }
+// Links keep link semantics, so they take the button's classes instead of rendering through it.
+// Only variants without a bevel, which classes alone can't draw
+const linkButtonVariants = ({
+  variant,
+  size,
+  font
+}: Pick<ButtonProps, 'size' | 'font'> & {
+  variant?: 'outline' | 'ghost' | 'link'
+} = {}) =>
+  cn(
+    shadcnButtonVariants({ variant, size }),
+    buttonVariants({ font, frame: hasFrame(variant) })
+  )
+
+export { Button, linkButtonVariants }

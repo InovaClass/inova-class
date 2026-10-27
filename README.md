@@ -109,9 +109,11 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Auth and email
 
 - **Better Auth** with the Drizzle adapter (`relations-v2`, since Drizzle is on `1.0.0`). The config lives in `src/infra/auth.ts` and its tables (`users`, `sessions`, `accounts`, `verifications`) in `src/infra/database/schema.ts`, written by hand in our `snakeCase.table` style from the output of `pnpm dlx auth@latest generate`.
-- Every account has a fixed `role` (`teacher` or `student`) that the client can never set: public sign-up only creates teachers.
-- Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up page does, and Google links to an existing account only when both sides verified the same email.
-- The auth pages (`/cadastro`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.
+- Every account has a fixed `role` (`teacher` or `student`) that the client can never set: the server flow behind each sign-up page sets it (`withSignUpRole` in `src/infra/auth.ts`), and any other sign-up creates a teacher.
+- Every account has a verified email. Students also pick a username (Better Auth `username` plugin) and can sign in with either; `/entrar` takes an email or a username in the same field.
+- An account flagged with `mustChangePassword` (a temporary password) is sent to `/alterar-senha` after signing in.
+- Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up pages do (keeping the name and email, not the picture), and Google links to an existing account only when both sides verified the same email.
+- The auth pages (`/cadastro` with the role choice, `/cadastro/professor`, `/cadastro/aluno`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`, `/alterar-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.
 - Emails go out over SMTP with `nodemailer` (`src/infra/email/`): Mailpit locally, Resend's SMTP when `RESEND_API_KEY` is set.
 
 ### Styling and UI
@@ -124,7 +126,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **8-bit components** in `src/app/components/ui/8bit/` are hand-ported from [8bitcn](https://github.com/theorcdev/8bitcn-ui) (MIT) onto our shadcn components and Base UI, with a credit comment in each file. 8bitcn is built on Radix, so it's never installed through the shadcn CLI.
 - **8bitcn blocks first:** before building a page or section, check the [8bitcn blocks](https://www.8bitcn.com/docs/blocks) and port the matching one (source at `https://8bitcn.com/r/<block>.json`) onto our components and conventions, keeping its structure and spacing.
 - **Dark mode** follows the system preference (`prefers-color-scheme`).
-- Links that look like buttons stay `<a>`/`Link` elements styled with `buttonVariants(...)`, never rendered through `Button`.
+- Links that look like buttons stay `<a>`/`Link` elements styled with `buttonVariants(...)` (or `linkButtonVariants(...)` from `ui/8bit/button`), never rendered through `Button`.
 
 ### Linting and formatting
 

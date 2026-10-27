@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { UnauthorizedError, ValidationError } from '@/infra/errors'
 
 type ErrorCopy = { message: string; action: string }
@@ -10,13 +12,22 @@ const INVALID_LINK: AuthErrorCopy = {
   action: 'Peça um novo link.'
 }
 
+// One copy for every way a sign-in can fail, so it doesn't tell which part was wrong
+const INVALID_CREDENTIALS: AuthErrorCopy = {
+  kind: 'unauthorized',
+  message: 'E-mail, usuário ou senha incorretos.',
+  action: 'Confira os dados e tente novamente.'
+}
+
 // Better Auth error codes we expect, also received as `?error=` when an email link fails
 const AUTH_ERRORS: Record<string, AuthErrorCopy> = {
-  INVALID_EMAIL_OR_PASSWORD: {
-    kind: 'unauthorized',
-    message: 'E-mail ou senha incorretos.',
-    action: 'Confira os dados e tente novamente.'
-  },
+  INVALID_EMAIL_OR_PASSWORD: INVALID_CREDENTIALS,
+  INVALID_USERNAME_OR_PASSWORD: INVALID_CREDENTIALS,
+  // The sign-in field accepts any username, so the plugin's own length and character checks
+  // only ever reject one that can't exist
+  USERNAME_TOO_SHORT: INVALID_CREDENTIALS,
+  USERNAME_TOO_LONG: INVALID_CREDENTIALS,
+  INVALID_USERNAME: INVALID_CREDENTIALS,
   EMAIL_NOT_VERIFIED: {
     kind: 'unauthorized',
     message: 'Confirme seu e-mail antes de entrar.',
@@ -56,6 +67,27 @@ const GOOGLE_ERRORS: Record<string, ErrorCopy> = {
 
 export const googleErrorFromCode = (code: string): ErrorCopy =>
   GOOGLE_ERRORS[code] || GOOGLE_FAILED
+
+// Codes that belong to a single field, shown next to it
+const FIELD_ERRORS: Record<string, { field: string; message: string }> = {
+  USERNAME_IS_ALREADY_TAKEN: {
+    field: 'username',
+    message: 'Este nome de usuário já está em uso.'
+  }
+}
+
+export const toFieldError = (code: string | undefined) => {
+  const copy = code ? FIELD_ERRORS[code] : undefined
+  if (!copy) return
+  return new z.ZodError([
+    {
+      code: 'custom',
+      path: [copy.field],
+      message: copy.message,
+      input: undefined
+    }
+  ])
+}
 
 export const toAppError = (code: string | undefined, cause: unknown) => {
   const copy = code ? AUTH_ERRORS[code] : undefined

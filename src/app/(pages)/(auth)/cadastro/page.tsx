@@ -1,38 +1,47 @@
+import { cn } from 'cn'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { signUpWithGoogle } from '@/app/(pages)/(auth)/_components/google-sign-in-action'
-import { GoogleSignInForm } from '@/app/(pages)/(auth)/_components/google-sign-in-form'
-import { SignUpForm } from '@/app/(pages)/(auth)/cadastro/_components/sign-up-form'
-import { googleNoticeFrom } from '@/app/(pages)/(auth)/google-notice'
+import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { FormCard } from '@/app/components/ui/custom/form-card'
-import { isGoogleSignInEnabled } from '@/infra/auth'
 
 export const metadata: Metadata = { title: 'Criar conta' }
 
-const SignUpPage = async ({ searchParams }: PageProps<'/cadastro'>) => {
-  const googleNotice = googleNoticeFrom(await searchParams)
+const SIGN_UP_OPTIONS = [
+  { href: '/cadastro/professor', label: 'Sou professor' },
+  { href: '/cadastro/aluno', label: 'Sou aluno' }
+] as const
 
-  return (
-    <FormCard
-      title="Criar conta"
-      description="Cadastre-se como professor para criar e gerenciar suas turmas."
-      footer={
-        <p>
-          Já tem uma conta?{' '}
-          <Link href="/entrar" className="underline underline-offset-4">
-            Entrar
+const RoleChoicePage = () => (
+  <FormCard
+    title="Criar conta"
+    description="Escolha como você vai usar o inova.class."
+    footer={
+      <p>
+        Já tem uma conta?{' '}
+        <Link href="/entrar" className="underline underline-offset-4">
+          Entrar
+        </Link>
+      </p>
+    }
+  >
+    {/* Tailwind's `list-style: none` makes Safari drop the list semantics */}
+    <ul role="list" className="flex flex-col gap-6">
+      {SIGN_UP_OPTIONS.map(({ href, label }) => (
+        <li key={href}>
+          <Link
+            href={href}
+            className={cn(
+              linkButtonVariants({ variant: 'outline', size: 'lg' }),
+              'w-full'
+            )}
+          >
+            {label}
           </Link>
-        </p>
-      }
-    >
-      <SignUpForm>
-        {isGoogleSignInEnabled && (
-          <GoogleSignInForm action={signUpWithGoogle} notice={googleNotice} />
-        )}
-      </SignUpForm>
-    </FormCard>
-  )
-}
+        </li>
+      ))}
+    </ul>
+  </FormCard>
+)
 
-export default SignUpPage
+export default RoleChoicePage
