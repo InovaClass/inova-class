@@ -142,7 +142,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 
 - **Unit tests:** Vitest with `jsdom` and Testing Library, next to the code they test. Run `pnpm test` (once) or `pnpm test:watch`.
 - **Integration tests:** Vitest in `node`, in `src/tests/integration`, calling the models against the local Postgres and Mailpit. Run `pnpm test:integration`, which starts the services first. Shared helpers, including the test data generated with [Faker](https://fakerjs.dev), live in `src/tests/orchestrator.ts`.
-- **E2E tests:** Playwright (Chromium) in `src/tests/e2e`. Run `pnpm test:e2e` or `pnpm test:e2e:ui`. The dev server starts automatically. Tests that need an email read it from Mailpit through the orchestrator.
+- **E2E tests:** Playwright (Chromium) in `src/tests/e2e`. Run `pnpm test:e2e` or `pnpm test:e2e:ui`. The dev server starts automatically and compiles each route on its first request, so assertions wait up to 15s. Tests that need an email read it from Mailpit through the orchestrator.
 - Only the logic we wrote is tested, not library or framework behavior.
 
 ### Git hooks and CI
