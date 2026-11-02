@@ -78,17 +78,19 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **Package manager:** pnpm only. Versions in `dependencies` and `devDependencies` are pinned exact (install with `pnpm add -E <pkg>`).
 - **Node:** version pinned in `.nvmrc` (`lts/krypton`) and, for hosts that ignore `.nvmrc` such as Vercel, in `engines.node` (`24.x`) in `package.json`.
 - **React Compiler:** enabled via `reactCompiler: true` in `next.config.ts`.
-- **Path alias:** `@/*` resolves to `src/*`.
+- **Path alias:** `@/*` resolves to `src/*`. Imports of the same folder or a direct subfolder are relative (`./file`); `../` is rejected by ESLint.
+- **New releases:** `minimumReleaseAge` in `pnpm-workspace.yaml` keeps pnpm from resolving a version published less than 7 days ago.
 
 ### Project structure
 
-- `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files through the `@/` alias.
-- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`), `providers/` for context providers and `layouts/` for page shells, whose private parts live in a `_components/` folder next to them. Parts shared only by the pages of one route group live in that group's `_components/` (e.g. `(pages)/(auth)/_components/`), while a helper that isn't a component or a form's action sits at the root of the route or group it serves.
+- `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files.
+- Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`) and `providers/` for context providers. A layout stays in the `layout.tsx` of its route or route group, with its private parts in a `_components/` folder next to it. Parts shared only by the pages of one route group live in that group's `_components/` (e.g. `(pages)/(auth)/_components/`), while a helper that isn't a component or a form's action sits at the root of the route or group it serves.
 - Global styles live in `src/app/styles/globals.css`.
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.
-- Server code is layered and imports only flow down, `app` → `models` → `infra`:
-  - `src/models/<domain>-model/`: business rules (`model.ts`) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
-  - `src/infra/`: auth, database, email, the error classes, the wrapper every form's Server Action goes through (`form-action.ts`) and the per-request session (`session.ts`).
+- Server code is layered and imports only flow down, `app` → `entry` → `dtos`/`models` → `repositories` → `infra`, which ESLint enforces:
+  - `src/entry/`: adapts Server Components and Server Actions to the models, with the wrapper every form's Server Action goes through (`form-action.ts`) and the per-request session (`session.ts`).
+  - `src/models/<domain>/`: business rules (`model.ts`) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
+  - `src/infra/`: auth, database, email and the error classes.
   - `src/constants/`: values shared across layers, such as user roles and password bounds.
   - `src/repositories/` and `src/dtos/` are added with their first use.
 - `action.ts` (`'use server'`) is only for mutations; a Server Component's data reads go in `data.ts`.
@@ -96,7 +98,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Forms
 
 - **TanStack Form** with the model's **Zod** schema, submitted to **Server Actions**. Each form has an `action.ts` and a `<name>-form.tsx` in its route's `_components/`.
-- The action wraps the model call in `formAction` (`src/infra/form-action.ts`), which turns validation errors into field errors, `AppError`s into a form message with what to do next, and anything unexpected into a generic message.
+- The action wraps the model call in `formAction` (`src/entry/form-action.ts`), which turns validation errors into field errors, `AppError`s into a form message with what to do next, and anything unexpected into a generic message.
 - The client form renders the `Form` and `Field` returned by `useFormAction` (`src/app/hooks/use-form-action.ts`), plus `FormMessage` and `SubmitButton`; the page wraps it in `FormCard`. All of them live in `src/app/components/ui/custom/`. Forms still work without JavaScript, validate on the client when it's available and show server errors on the field they belong to.
 
 ### Database

@@ -3,10 +3,11 @@ import Link from 'next/link'
 
 import { signUpTeacherWithGoogle } from '@/app/(pages)/(auth)/_components/google-sign-in-action'
 import { GoogleSignInForm } from '@/app/(pages)/(auth)/_components/google-sign-in-form'
-import { SignUpForm } from '@/app/(pages)/(auth)/cadastro/professor/_components/sign-up-form'
 import { googleNoticeFrom } from '@/app/(pages)/(auth)/google-notice'
 import { FormCard } from '@/app/components/ui/custom/form-card'
 import { isGoogleSignInEnabled } from '@/infra/auth'
+
+import { SignUpForm } from './_components/sign-up-form'
 
 export const metadata: Metadata = { title: 'Criar conta de professor' }
 

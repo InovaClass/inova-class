@@ -4,13 +4,14 @@ import { redirect } from 'next/navigation'
 
 import { signInWithGoogle } from '@/app/(pages)/(auth)/_components/google-sign-in-action'
 import { GoogleSignInForm } from '@/app/(pages)/(auth)/_components/google-sign-in-form'
-import { SignInForm } from '@/app/(pages)/(auth)/entrar/_components/sign-in-form'
 import { googleNoticeFrom } from '@/app/(pages)/(auth)/google-notice'
 import { FormCard } from '@/app/components/ui/custom/form-card'
+import { formError, type FormState, formSuccess } from '@/entry/form-action'
+import { getSession } from '@/entry/session'
 import { isGoogleSignInEnabled } from '@/infra/auth'
-import { formError, type FormState, formSuccess } from '@/infra/form-action'
-import { getSession } from '@/infra/session'
-import { authErrorFromCode } from '@/models/authentication-model/errors'
+import { authErrorFromCode } from '@/models/authentication/errors'
+
+import { SignInForm } from './_components/sign-in-form'
 
 export const metadata: Metadata = { title: 'Entrar' }
 

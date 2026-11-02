@@ -21,7 +21,7 @@ import {
   type ActionFormFields,
   type TextFieldApi
 } from '@/app/components/ui/custom/action-form'
-import type { FormState } from '@/infra/form-action'
+import type { FormState } from '@/entry/form-action'
 
 type FormActionOptions<TSchema extends z.ZodObject> = {
   schema: TSchema

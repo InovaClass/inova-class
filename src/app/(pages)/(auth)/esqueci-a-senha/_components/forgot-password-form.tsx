@@ -1,10 +1,11 @@
 'use client'
 
-import { requestPasswordReset } from '@/app/(pages)/(auth)/esqueci-a-senha/_components/action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
-import { forgotPasswordSchema } from '@/models/authentication-model/schema'
+import { forgotPasswordSchema } from '@/models/authentication/schema'
+
+import { requestPasswordReset } from './action'
 
 export const ForgotPasswordForm = () => {
   const { Form, Field, state, pending, announcement, formProps } =

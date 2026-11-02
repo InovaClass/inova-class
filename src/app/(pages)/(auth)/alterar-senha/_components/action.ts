@@ -3,9 +3,9 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import { formAction, type FormState } from '@/infra/form-action'
-import { authenticationModel } from '@/models/authentication-model/model'
-import type { ChangePasswordInput } from '@/models/authentication-model/schema'
+import { formAction, type FormState } from '@/entry/form-action'
+import { authenticationModel } from '@/models/authentication/model'
+import type { ChangePasswordInput } from '@/models/authentication/schema'
 
 type ChangePasswordState = FormState<ChangePasswordInput>
 

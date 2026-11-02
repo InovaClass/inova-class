@@ -3,7 +3,7 @@
 import { cn } from 'cn'
 import { useEffect, useRef } from 'react'
 
-import type { FormState } from '@/infra/form-action'
+import type { FormState } from '@/entry/form-action'
 
 type FormMessageProps = {
   state: FormState<never>

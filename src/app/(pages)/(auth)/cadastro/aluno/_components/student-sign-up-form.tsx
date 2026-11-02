@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react'
 
-import { signUpStudent } from '@/app/(pages)/(auth)/cadastro/aluno/_components/action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
@@ -11,7 +10,9 @@ import {
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH
 } from '@/constants/user'
-import { studentSignUpSchema } from '@/models/authentication-model/schema'
+import { studentSignUpSchema } from '@/models/authentication/schema'
+
+import { signUpStudent } from './action'
 
 // Like the teacher's form, it hides Google after sign-up: Google can't link to an unverified account
 export const StudentSignUpForm = ({ children }: { children?: ReactNode }) => {

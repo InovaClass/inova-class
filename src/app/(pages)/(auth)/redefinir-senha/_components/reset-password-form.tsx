@@ -1,11 +1,12 @@
 'use client'
 
-import { resetPassword } from '@/app/(pages)/(auth)/redefinir-senha/_components/action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
 import { PASSWORD_MIN_LENGTH } from '@/constants/user'
-import { resetPasswordSchema } from '@/models/authentication-model/schema'
+import { resetPasswordSchema } from '@/models/authentication/schema'
+
+import { resetPassword } from './action'
 
 export const ResetPasswordForm = ({ token }: { token: string }) => {
   const { Form, Field, state, pending, announcement, formProps } =

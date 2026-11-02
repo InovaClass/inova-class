@@ -4,8 +4,8 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import type { UserRole } from '@/constants/user'
-import { formAction, type FormState } from '@/infra/form-action'
-import { authenticationModel } from '@/models/authentication-model/model'
+import { formAction, type FormState } from '@/entry/form-action'
+import { authenticationModel } from '@/models/authentication/model'
 
 export type GoogleSignInState = FormState<never>
 

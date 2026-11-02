@@ -3,7 +3,8 @@ import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
 
 import { ValidationError } from '@/infra/errors'
-import { formAction, formSuccess } from '@/infra/form-action'
+
+import { formAction, formSuccess } from './form-action'
 
 const formData = (entries: Record<string, string>) => {
   const data = new FormData()

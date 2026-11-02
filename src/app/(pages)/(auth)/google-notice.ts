@@ -1,5 +1,5 @@
-import { formError } from '@/infra/form-action'
-import { googleErrorFromCode } from '@/models/authentication-model/errors'
+import { formError } from '@/entry/form-action'
+import { googleErrorFromCode } from '@/models/authentication/errors'
 
 export const googleNoticeFrom = ({
   error,

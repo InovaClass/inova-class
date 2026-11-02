@@ -10,6 +10,12 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss'
 import unicorn from 'eslint-plugin-unicorn'
 
+const NO_PARENT_IMPORTS = {
+  group: ['../*'],
+  message:
+    'Use `./` for the same folder or a direct subfolder and the `@/` alias otherwise.'
+}
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -48,6 +54,43 @@ const eslintConfig = defineConfig([
       ]
     }
   },
+  {
+    files: ['src/app/**', 'src/tests/**'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [NO_PARENT_IMPORTS] }]
+    }
+  },
+  ...Object.entries({
+    'src/entry/**': ['app'],
+    'src/{dtos,models,types}/**': ['app', 'entry'],
+    'src/repositories/**': ['app', 'entry', 'dtos', 'models', 'types'],
+    'src/infra/**': ['app', 'entry', 'dtos', 'models', 'repositories', 'types'],
+    'src/constants/**': [
+      'app',
+      'entry',
+      'dtos',
+      'models',
+      'repositories',
+      'infra',
+      'types'
+    ]
+  }).map(([files, layers]) => ({
+    files: [files],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: `^@/(${layers.join('|')})(/|$)`,
+              message: 'Imports only flow down the layers (see AGENTS.md).'
+            },
+            NO_PARENT_IMPORTS
+          ]
+        }
+      ]
+    }
+  })),
   {
     plugins: { 'simple-import-sort': simpleImportSort },
     rules: {
