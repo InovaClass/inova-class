@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { ResetPasswordForm } from '@/app/(pages)/(auth)/redefinir-senha/_components/reset-password-form'
 import { FormCard } from '@/app/components/ui/custom/form-card'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
-import { formError } from '@/infra/form-action'
-import { authErrorFromCode } from '@/models/authentication-model/errors'
+import { formError } from '@/entry/form-action'
+import { authErrorFromCode } from '@/models/authentication/errors'
+
+import { ResetPasswordForm } from './_components/reset-password-form'
 
 export const metadata: Metadata = { title: 'Redefinir senha' }
 

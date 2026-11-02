@@ -3,10 +3,11 @@ import Link from 'next/link'
 
 import { signUpStudentWithGoogle } from '@/app/(pages)/(auth)/_components/google-sign-in-action'
 import { GoogleSignInForm } from '@/app/(pages)/(auth)/_components/google-sign-in-form'
-import { StudentSignUpForm } from '@/app/(pages)/(auth)/cadastro/aluno/_components/student-sign-up-form'
 import { googleNoticeFrom } from '@/app/(pages)/(auth)/google-notice'
 import { FormCard } from '@/app/components/ui/custom/form-card'
 import { isGoogleSignInEnabled } from '@/infra/auth'
+
+import { StudentSignUpForm } from './_components/student-sign-up-form'
 
 export const metadata: Metadata = { title: 'Criar conta de aluno' }
 

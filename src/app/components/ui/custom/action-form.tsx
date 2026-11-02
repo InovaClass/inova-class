@@ -8,7 +8,7 @@ import {
   use
 } from 'react'
 
-import { FormField } from '@/app/components/ui/custom/form-field'
+import { FormField } from './form-field'
 
 // Only what fieldProps reads, so any text field fits whatever the form's validator types are
 export type TextFieldApi = {

@@ -2,12 +2,13 @@ import { describe, expect, test } from 'vitest'
 import { z } from 'zod'
 
 import { UnauthorizedError, ValidationError } from '@/infra/errors'
+
 import {
   authErrorFromCode,
   googleErrorFromCode,
   toAppError,
   toFieldError
-} from '@/models/authentication-model/errors'
+} from './errors'
 
 describe('authErrorFromCode', () => {
   test('returns the message and action of a known code', () => {

@@ -2,9 +2,10 @@
 
 import { useActionState } from 'react'
 
-import type { GoogleSignInState } from '@/app/(pages)/(auth)/_components/google-sign-in-action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
+
+import type { GoogleSignInState } from './google-sign-in-action'
 
 type GoogleSignInFormProps = {
   action: (

@@ -2,9 +2,9 @@
 
 import { headers } from 'next/headers'
 
-import { formAction, type FormState, formSuccess } from '@/infra/form-action'
-import { authenticationModel } from '@/models/authentication-model/model'
-import type { StudentSignUpInput } from '@/models/authentication-model/schema'
+import { formAction, type FormState, formSuccess } from '@/entry/form-action'
+import { authenticationModel } from '@/models/authentication/model'
+import type { StudentSignUpInput } from '@/models/authentication/schema'
 
 type StudentSignUpState = FormState<StudentSignUpInput>
 

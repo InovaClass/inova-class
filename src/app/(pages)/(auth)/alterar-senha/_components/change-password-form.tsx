@@ -1,11 +1,12 @@
 'use client'
 
-import { changePassword } from '@/app/(pages)/(auth)/alterar-senha/_components/action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
 import { PASSWORD_MIN_LENGTH } from '@/constants/user'
-import { changePasswordSchema } from '@/models/authentication-model/schema'
+import { changePasswordSchema } from '@/models/authentication/schema'
+
+import { changePassword } from './action'
 
 export const ChangePasswordForm = ({ username }: { username: string }) => {
   const { Form, Field, state, pending, announcement, formProps } =

@@ -20,13 +20,11 @@ import {
   USERNAME_PATTERN,
   type UserRole
 } from '@/constants/user'
-import { database } from '@/infra/database/client'
-import * as schema from '@/infra/database/schema'
-import { sendEmail } from '@/infra/email/mailer'
-import {
-  resetPasswordTemplate,
-  verifyEmailTemplate
-} from '@/infra/email/templates'
+
+import { database } from './database/client'
+import * as schema from './database/schema'
+import { sendEmail } from './email/mailer'
+import { resetPasswordTemplate, verifyEmailTemplate } from './email/templates'
 
 const PRODUCTION_URL = 'https://inovaclass.diasjoaovitor.com.br'
 

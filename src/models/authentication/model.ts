@@ -3,7 +3,8 @@ import { isAPIError } from 'better-auth/api'
 import type { UserRole } from '@/constants/user'
 import { auth, withSignUpRole } from '@/infra/auth'
 import { UnauthorizedError } from '@/infra/errors'
-import { toAppError, toFieldError } from '@/models/authentication-model/errors'
+
+import { toAppError, toFieldError } from './errors'
 import {
   changePasswordSchema,
   forgotPasswordSchema,
@@ -11,7 +12,7 @@ import {
   signInSchema,
   signUpSchema,
   studentSignUpSchema
-} from '@/models/authentication-model/schema'
+} from './schema'
 
 // Better Auth reads the host (dynamic baseURL), the IP (rate limiting) and the cookies from the
 // request, so every call takes its headers; passing them in keeps the model testable outside Next

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { ForgotPasswordForm } from '@/app/(pages)/(auth)/esqueci-a-senha/_components/forgot-password-form'
 import { FormCard } from '@/app/components/ui/custom/form-card'
+
+import { ForgotPasswordForm } from './_components/forgot-password-form'
 
 export const metadata: Metadata = { title: 'Esqueci minha senha' }
 

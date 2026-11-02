@@ -13,7 +13,7 @@ Check specifically for:
 - **Base UI primitive misuse**: cross-check any non-trivial Base UI usage (props, composition, ARIA) against `node_modules/@base-ui/react/docs/react/components/<name>.md` for that primitive.
 - **Interactive elements**: no `<div onClick>` where a real `button`/`a`/Base UI primitive belongs; focus states and keyboard handling preserved.
 - **Tailwind class consistency**: flag anything `eslint-plugin-tailwindcss` would flag (class order, no-custom-classname, contradicting classnames) even if lint hasn't been run yet.
-- **Direct imports**: there are no `index.ts` barrels; components under `src/app` are imported directly from their files through the `@/` alias, and a layout's `_components/` are only imported by that layout.
+- **Direct imports**: there are no `index.ts` barrels; components under `src/app` are imported directly from their files (relative within the same folder or a direct subfolder, otherwise through the `@/` alias), and a `_components/` folder is only imported by the page or layout next to it and the parts inside it.
 - **Server/Client boundary**: a component doesn't need `'use client'` unless it actually uses state, effects, or browser-only APIs — shadcn components are meant to stay Server Components by default.
 
 Report findings with the `ReportFindings` tool, ranked most-severe first. You review and report only — you don't edit files.

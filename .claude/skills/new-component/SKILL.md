@@ -8,7 +8,7 @@ description: Add a new shadcn/ui component, port an 8bitcn component or block, o
 1. Run `pnpm shadcn:add <name>` (wraps `pnpm dlx shadcn@latest add`). Aliases and target paths come from `components.json` (style `base-nova`, base color `neutral`, icon library `lucide`) — components land under `src/app/components/ui/shadcn/`.
 2. Before wiring up any interactive part of the new component, check `node_modules/@base-ui/react/docs/react/components/<name>.md` (if it exists) for the primitive's semantics and keyboard behavior — Base UI enforces role/keyboard handling that can differ from other headless kits.
 3. If the component (or something using it) needs to render a link that looks like a `Button`, keep it a plain `<a>`/`Link` styled with `buttonVariants(...)` — never render a link through `Button` itself.
-4. Don't create or update an `index.ts` barrel: consumers import the component directly from its file through the `@/` alias (e.g. `@/app/components/ui/shadcn/button`).
+4. Don't create or update an `index.ts` barrel: consumers import the component directly from its file, relative within the same folder or a direct subfolder (`./button`), otherwise through the `@/` alias (e.g. `@/app/components/ui/shadcn/button`).
 5. Run `pnpm eslint:check` and `pnpm prettier:check`; add a Vitest unit test (`@testing-library/react`) if the component has non-trivial logic.
 
 ## Adding a new shared (non-shadcn) component

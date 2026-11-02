@@ -6,7 +6,7 @@ import { auth } from '@/infra/auth'
 import { database } from '@/infra/database/client'
 import { users } from '@/infra/database/schema'
 import { UnauthorizedError } from '@/infra/errors'
-import { authenticationModel } from '@/models/authentication-model/model'
+import { authenticationModel } from '@/models/authentication/model'
 import { orchestrator } from '@/tests/orchestrator'
 
 const headers = new Headers({ host: 'localhost:3000' })
@@ -51,7 +51,7 @@ const sessionHeadersOf = async (email: string, password: string) => {
     headers,
     returnHeaders: true
   })
-  const cookie = response.headers.get('set-cookie')!.split(';', 1)[0]
+  const cookie = response.headers.get('set-cookie')!.split(';', 1)[0]!
   return new Headers({ host: 'localhost:3000', cookie })
 }
 

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { ChangePasswordForm } from '@/app/(pages)/(auth)/alterar-senha/_components/change-password-form'
 import { FormCard } from '@/app/components/ui/custom/form-card'
-import { getSession } from '@/infra/session'
+import { getSession } from '@/entry/session'
+
+import { ChangePasswordForm } from './_components/change-password-form'
 
 export const metadata: Metadata = { title: 'Alterar senha' }
 

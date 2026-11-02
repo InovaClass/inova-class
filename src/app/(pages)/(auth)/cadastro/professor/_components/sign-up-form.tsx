@@ -2,12 +2,13 @@
 
 import type { ReactNode } from 'react'
 
-import { signUp } from '@/app/(pages)/(auth)/cadastro/professor/_components/action'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
 import { PASSWORD_MIN_LENGTH } from '@/constants/user'
-import { signUpSchema } from '@/models/authentication-model/schema'
+import { signUpSchema } from '@/models/authentication/schema'
+
+import { signUp } from './action'
 
 // Other ways to sign up (Google) go away with the form: after sign-up the email still needs
 // confirming, and Google can't link to an unverified account
