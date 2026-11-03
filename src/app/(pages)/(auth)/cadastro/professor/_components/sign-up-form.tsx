@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 
+import { FormCheckbox } from '@/app/components/ui/custom/form-checkbox'
 import { FormField } from '@/app/components/ui/custom/form-field'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
@@ -13,17 +14,25 @@ import { signUp } from './action'
 
 // Other ways to sign up (Google) go away with the form: after sign-up the email still needs
 // confirming, and Google can't link to an unverified account
-export const SignUpForm = ({ children }: { children?: ReactNode }) => {
-  const { field, state, pending, announcement, formProps } = useFormAction({
-    schema: signUpSchema,
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      passwordConfirmation: ''
-    },
-    action: signUp
-  })
+export const SignUpForm = ({
+  termsLabel,
+  children
+}: {
+  termsLabel: ReactNode
+  children?: ReactNode
+}) => {
+  const { field, control, state, pending, announcement, formProps } =
+    useFormAction({
+      schema: signUpSchema,
+      defaultValues: {
+        name: '',
+        email: '',
+        password: '',
+        passwordConfirmation: '',
+        acceptedTerms: false
+      },
+      action: signUp
+    })
 
   if (state.status === 'success') return <FormMessage state={state} />
 
@@ -49,6 +58,11 @@ export const SignUpForm = ({ children }: { children?: ReactNode }) => {
           type="password"
           autoComplete="new-password"
           {...field('passwordConfirmation')}
+        />
+        <FormCheckbox
+          control={control}
+          name="acceptedTerms"
+          label={termsLabel}
         />
         <FormMessage state={state} announcement={announcement} />
         <SubmitButton pending={pending}>Criar conta</SubmitButton>

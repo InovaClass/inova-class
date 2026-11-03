@@ -3,6 +3,10 @@ import Link from 'next/link'
 
 import { signUpStudentWithGoogle } from '@/app/(pages)/(auth)/_components/google-sign-in-action'
 import { GoogleSignInForm } from '@/app/(pages)/(auth)/_components/google-sign-in-form'
+import {
+  GoogleTermsNotice,
+  TermsCheckboxLabel
+} from '@/app/(pages)/(auth)/_components/terms-consent'
 import { googleNoticeFrom } from '@/app/(pages)/(auth)/google-notice'
 import { FormCard } from '@/app/components/ui/custom/form-card'
 import { isGoogleSignInEnabled } from '@/infra/auth'
@@ -29,12 +33,15 @@ const StudentSignUpPage = async ({
         </p>
       }
     >
-      <StudentSignUpForm>
+      <StudentSignUpForm termsLabel={<TermsCheckboxLabel />}>
         {isGoogleSignInEnabled && (
-          <GoogleSignInForm
-            action={signUpStudentWithGoogle}
-            notice={googleNotice}
-          />
+          <>
+            <GoogleTermsNotice />
+            <GoogleSignInForm
+              action={signUpStudentWithGoogle}
+              notice={googleNotice}
+            />
+          </>
         )}
       </StudentSignUpForm>
     </FormCard>

@@ -117,6 +117,7 @@ export const useFormAction = <TValues extends FieldValues>({
 
   return {
     field,
+    control: form.control,
     state,
     pending,
     announcement,

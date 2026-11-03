@@ -10,6 +10,7 @@ export const signUpTeacher = async (page: Page) => {
   await page.getByLabel('E-mail').fill(teacher.email)
   await page.getByLabel('Senha', { exact: true }).fill(teacher.password)
   await page.getByLabel('Confirmar senha').fill(teacher.password)
+  await page.getByRole('checkbox', { name: /^Li e aceito/ }).click()
   await page.getByRole('button', { name: 'Criar conta' }).click()
   await expect(
     page.getByText(`Enviamos um link de confirmação para ${teacher.email}`)
@@ -30,6 +31,7 @@ export const signUpStudent = async (page: Page) => {
   await page.getByLabel('E-mail').fill(student.email)
   await page.getByLabel('Senha', { exact: true }).fill(student.password)
   await page.getByLabel('Confirmar senha').fill(student.password)
+  await page.getByRole('checkbox', { name: /^Li e aceito/ }).click()
   await page.getByRole('button', { name: 'Criar conta' }).click()
   await expect(
     page.getByText(`Enviamos um link de confirmação para ${student.email}`)

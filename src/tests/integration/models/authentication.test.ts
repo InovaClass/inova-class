@@ -14,7 +14,7 @@ const headers = new Headers({ host: 'localhost:3000' })
 const signUp = async () => {
   const user = orchestrator.newUser()
   await authenticationModel.signUp(
-    { ...user, passwordConfirmation: user.password },
+    { ...user, passwordConfirmation: user.password, acceptedTerms: true },
     { headers, callbackURL: '/entrar' }
   )
   return user
@@ -23,7 +23,7 @@ const signUp = async () => {
 const signUpStudent = async () => {
   const student = orchestrator.newStudent()
   await authenticationModel.signUpStudent(
-    { ...student, passwordConfirmation: student.password },
+    { ...student, passwordConfirmation: student.password, acceptedTerms: true },
     { headers, callbackURL: '/entrar' }
   )
   return student
@@ -69,6 +69,33 @@ describe('authenticationModel', () => {
       const link = await orchestrator.waitForLinkSentTo(email)
       expect(link.pathname).toBe('/api/auth/verify-email')
     })
+
+    test('records when the terms were accepted', async () => {
+      const { email } = await signUp()
+
+      const user = await findUser(email)
+      expect(user?.termsAcceptedAt).toBeInstanceOf(Date)
+    })
+
+    test('rejects a sign-up without accepting the terms', async () => {
+      const user = orchestrator.newUser()
+
+      const attempt = authenticationModel.signUp(
+        { ...user, passwordConfirmation: user.password, acceptedTerms: false },
+        { headers, callbackURL: '/entrar' }
+      )
+      await expect(attempt).rejects.toThrow(z.ZodError)
+      expect(await findUser(user.email)).toBeUndefined()
+    })
+
+    test('rejects a request that skips the sign-up flow', async () => {
+      const user = orchestrator.newUser()
+
+      await expect(
+        auth.api.signUpEmail({ body: user, headers })
+      ).rejects.toThrow()
+      expect(await findUser(user.email)).toBeUndefined()
+    })
   })
 
   describe('signUpStudent', () => {
@@ -91,7 +118,8 @@ describe('authenticationModel', () => {
         {
           ...student,
           username: student.username.toUpperCase(),
-          passwordConfirmation: student.password
+          passwordConfirmation: student.password,
+          acceptedTerms: true
         },
         { headers, callbackURL: '/entrar' }
       )
@@ -106,7 +134,11 @@ describe('authenticationModel', () => {
       const student = { ...orchestrator.newStudent(), username }
 
       const attempt = authenticationModel.signUpStudent(
-        { ...student, passwordConfirmation: student.password },
+        {
+          ...student,
+          passwordConfirmation: student.password,
+          acceptedTerms: true
+        },
         { headers, callbackURL: '/entrar' }
       )
       await expect(attempt).rejects.toThrow(z.ZodError)
