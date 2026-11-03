@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 
 import { archiveClass } from './action'
-import { ArchiveClassDialog } from './archive-class-dialog'
+import { ConfirmActionDialog } from './confirm-action-dialog'
 
 type ClassShellProps = {
   schoolClass: { id: string; name: string; description: string | null }
@@ -39,8 +39,11 @@ export const ClassShell = ({ schoolClass, children }: ClassShellProps) => (
         >
           Editar
         </Link>
-        <ArchiveClassDialog
-          schoolClassName={schoolClass.name}
+        <ConfirmActionDialog
+          triggerLabel="Arquivar"
+          title="Arquivar turma?"
+          description={`${schoolClass.name} sairá do seu painel. Os dados da turma serão mantidos.`}
+          confirmLabel="Arquivar"
           action={archiveClass.bind(null, schoolClass.id)}
         />
       </div>

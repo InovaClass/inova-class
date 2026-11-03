@@ -1,21 +1,9 @@
-import { expect, type Page, test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import { orchestrator } from '@/tests/orchestrator'
 
+import { createClass } from './classes'
 import { signUpTeacher } from './sign-up'
-
-const createClass = async (page: Page) => {
-  const schoolClass = orchestrator.newClass()
-
-  await page.goto('/professor/turmas/nova')
-  await page.getByLabel('Nome').fill(schoolClass.name)
-  await page.getByLabel('Descrição (opcional)').fill(schoolClass.description)
-  await page.getByRole('button', { name: 'Criar turma' }).click()
-  await expect(
-    page.getByRole('heading', { name: schoolClass.name })
-  ).toBeVisible()
-  return schoolClass
-}
 
 test('a teacher creates, edits and archives a class', async ({ page }) => {
   // Goes through many routes, each compiled by `pnpm dev` on its first request
@@ -79,6 +67,7 @@ test('the archive dialog stays open while archiving and forgets a failure once c
   })
   await page.getByRole('button', { name: 'Arquivar' }).click()
   await dialog.getByRole('button', { name: 'Arquivar' }).click()
+  await expect(dialog.getByRole('button', { name: 'Cancelar' })).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(dialog).toBeVisible()
   await expect(failure).toBeVisible()

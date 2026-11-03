@@ -53,6 +53,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - Every `classModel` function takes the `teacherId` and filters by owner and `archivedAt`, so the role check of the page or action isn't what keeps a class private. A class of another teacher, an archived class and a malformed id get the same answer: `findOwned` returns `undefined`, which a page turns into `notFound()`, and `update`/`archive` throw `NotFoundError`.
 - Archiving sets `archivedAt` and keeps the data; there's no way to restore a class yet.
 - An action that changes a class calls `revalidatePath('/professor', 'layout')`, so the Back button doesn't bring a stale page from the client cache.
+- Every class has a join code (`joinCode`, `joinCodeEnabled`), with the format in `src/constants/class.ts`. A teacher regenerates it (after a confirmation) or turns it off on the class page. `enrollmentModel.join` (`src/models/enrollment/`, table `enrollments`) enrolls a student immediately: an unknown code, a disabled one and that of an archived class get the same field error, and joining twice keeps one enrollment. A student gets only the name of the class back. Game stats (#18) go on the enrollment, not on the account.
 - The routes of the teacher area have no `loading.tsx` of their own: `(pages)/loading.tsx` covers the first load, and a link inside the area keeps the current page until the next one is ready.
 
 ### Database & local services

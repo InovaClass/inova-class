@@ -19,55 +19,81 @@ import {
 } from '@/app/components/ui/shadcn/alert-dialog'
 import type { FormState } from '@/entry/form-action'
 
-type ArchiveClassDialogProps = {
-  schoolClassName: string
+type ConfirmActionDialogProps = {
+  triggerLabel: string
+  title: string
+  description: string
+  confirmLabel: string
   action: (state: FormState, formData: FormData) => Promise<FormState>
+  onSuccess?: (result: FormState) => void
 }
 
 const IDLE_STATE: FormState = { status: 'idle' }
 
-export const ArchiveClassDialog = ({
-  schoolClassName,
-  action
-}: ArchiveClassDialogProps) => {
-  const [state, dispatch, pending] = useActionState(action, IDLE_STATE)
+export const ConfirmActionDialog = ({
+  triggerLabel,
+  title,
+  description,
+  confirmLabel,
+  action,
+  onSuccess
+}: ConfirmActionDialogProps) => {
   const [open, setOpen] = useState(false)
+  const [state, dispatch, pending] = useActionState(
+    async (previous: FormState, formData: FormData) => {
+      const result = await action(previous, formData)
+      if (result.status === 'success') {
+        setOpen(false)
+        onSuccess?.(result)
+      }
+      return result
+    },
+    IDLE_STATE
+  )
   const [dismissedStateId, setDismissedStateId] = useState<string>()
 
   const handleOpenChange = (nextOpen: boolean) => {
-    // The action can't be cancelled, so closing now would look like a cancel while the class still
-    // gets archived, and an error would have nowhere to show
+    // The action can't be cancelled, so closing now would look like a cancel while it still goes
+    // through, and an error would have nowhere to show
     if (pending) return
     setOpen(nextOpen)
     if (!nextOpen && state.status !== 'idle') setDismissedStateId(state.id)
   }
 
   // The popup unmounts on close but this state doesn't, and FormMessage takes the focus when it
-  // mounts with a message, so reopening would bring back the old error
+  // mounts with a message, so reopening would bring back the old error. A success closes the dialog,
+  // so only an error ever shows here
   const visibleState =
-    state.status !== 'idle' && state.id === dismissedStateId
-      ? IDLE_STATE
-      : state
+    state.status === 'error' && state.id !== dismissedStateId
+      ? state
+      : IDLE_STATE
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger render={<Button variant="outline" />}>
-        Arquivar
+        {triggerLabel}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="text-sm leading-relaxed">
-            Arquivar turma?
+            {title}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-xs leading-relaxed wrap-anywhere">
-            {schoolClassName} sairá do seu painel. Os dados da turma serão
-            mantidos.
+            {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <form action={dispatch} className="flex flex-col gap-6">
           <FormMessage state={visibleState} />
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Cancelar</AlertDialogCancel>
+            {/* Not `disabled`: a mouse confirm leaves the focus here (SubmitButton keeps it from
+            moving), and a natively disabled button would drop it to the body. handleOpenChange
+            already ignores the click while pending */}
+            <AlertDialogCancel
+              aria-disabled={pending}
+              className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
+            >
+              Cancelar
+            </AlertDialogCancel>
             <SubmitButton
               pending={pending}
               variant="destructive"
@@ -75,7 +101,7 @@ export const ArchiveClassDialog = ({
               // 1.4.3, so the frame carries the warning
               className="text-foreground [--pixel-border:var(--destructive)] hover:text-foreground"
             >
-              Arquivar
+              {confirmLabel}
             </SubmitButton>
           </AlertDialogFooter>
         </form>

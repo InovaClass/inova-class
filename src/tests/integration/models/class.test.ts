@@ -1,12 +1,19 @@
 import { eq } from 'drizzle-orm'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
 
 import { database } from '@/infra/database/client'
 import { classes, users } from '@/infra/database/schema'
 import { NotFoundError } from '@/infra/errors'
+import { generateJoinCode } from '@/models/class/join-code'
 import { classModel } from '@/models/class/model'
 import { orchestrator } from '@/tests/orchestrator'
+
+vi.mock('@/models/class/join-code', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('@/models/class/join-code')>()
+  return { generateJoinCode: vi.fn(original.generateJoinCode) }
+})
 
 const newTeacherId = async () => {
   const { name, email } = orchestrator.newUser()
@@ -58,6 +65,74 @@ describe('classModel', () => {
       await expect(
         classModel.create(teacherId, { name: '  ', description: '' })
       ).rejects.toBeInstanceOf(z.ZodError)
+    })
+  })
+
+  describe('join code', () => {
+    test('a new class starts with an enabled code of its own', async () => {
+      const teacherId = await newTeacherId()
+
+      const first = await classModel.create(teacherId, orchestrator.newClass())
+      const second = await classModel.create(teacherId, orchestrator.newClass())
+
+      expect(first.joinCodeEnabled).toBe(true)
+      expect(first.joinCode).not.toBe(second.joinCode)
+    })
+
+    test('tries another code when the generated one is taken', async () => {
+      const teacherId = await newTeacherId()
+      const taken = await classModel.create(teacherId, orchestrator.newClass())
+      vi.mocked(generateJoinCode).mockReturnValueOnce(taken.joinCode)
+
+      const { joinCode } = await classModel.create(
+        teacherId,
+        orchestrator.newClass()
+      )
+
+      expect(joinCode).not.toBe(taken.joinCode)
+    })
+
+    test('regenerating replaces the code and keeps it disabled', async () => {
+      const teacherId = await newTeacherId()
+      const { id, joinCode } = await classModel.create(
+        teacherId,
+        orchestrator.newClass()
+      )
+      await classModel.setJoinCodeEnabled(teacherId, id, false)
+
+      await classModel.regenerateJoinCode(teacherId, id)
+
+      const stored = await findStoredClass(id)
+      expect(stored?.joinCode).not.toBe(joinCode)
+      expect(stored?.joinCodeEnabled).toBe(false)
+    })
+
+    test('rejects another teacher and an archived class', async () => {
+      const teacherId = await newTeacherId()
+      const otherTeacherId = await newTeacherId()
+      const { id, joinCode } = await classModel.create(
+        teacherId,
+        orchestrator.newClass()
+      )
+      const archived = await classModel.create(
+        teacherId,
+        orchestrator.newClass()
+      )
+      await classModel.archive(teacherId, archived.id)
+
+      await expect(
+        classModel.regenerateJoinCode(otherTeacherId, id)
+      ).rejects.toBeInstanceOf(NotFoundError)
+      await expect(
+        classModel.setJoinCodeEnabled(otherTeacherId, id, false)
+      ).rejects.toBeInstanceOf(NotFoundError)
+      await expect(
+        classModel.regenerateJoinCode(teacherId, archived.id)
+      ).rejects.toBeInstanceOf(NotFoundError)
+      expect(await findStoredClass(id)).toMatchObject({
+        joinCode,
+        joinCodeEnabled: true
+      })
     })
   })
 
