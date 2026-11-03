@@ -9,11 +9,14 @@ import { authenticationModel } from '@/models/authentication/model'
 
 export type GoogleSignInState = FormState<never>
 
-const continueWithGoogle = async (
-  formData: FormData,
-  { signUpRole, returnPath }: { signUpRole?: UserRole; returnPath: string }
-): Promise<GoogleSignInState> =>
-  formAction(formData, async () => {
+const continueWithGoogle = async ({
+  signUpRole,
+  returnPath
+}: {
+  signUpRole?: UserRole
+  returnPath: string
+}): Promise<GoogleSignInState> =>
+  formAction(undefined, async () => {
     const url = await authenticationModel.signInWithGoogle({
       headers: await headers(),
       signUpRole,
@@ -23,25 +26,17 @@ const continueWithGoogle = async (
     redirect(url)
   })
 
-export const signInWithGoogle = async (
-  _state: GoogleSignInState,
-  formData: FormData
-) => continueWithGoogle(formData, { returnPath: '/entrar' })
+export const signInWithGoogle = async () =>
+  continueWithGoogle({ returnPath: '/entrar' })
 
-export const signUpTeacherWithGoogle = async (
-  _state: GoogleSignInState,
-  formData: FormData
-) =>
-  continueWithGoogle(formData, {
+export const signUpTeacherWithGoogle = async () =>
+  continueWithGoogle({
     signUpRole: 'teacher',
     returnPath: '/cadastro/professor'
   })
 
-export const signUpStudentWithGoogle = async (
-  _state: GoogleSignInState,
-  formData: FormData
-) =>
-  continueWithGoogle(formData, {
+export const signUpStudentWithGoogle = async () =>
+  continueWithGoogle({
     signUpRole: 'student',
     returnPath: '/cadastro/aluno'
   })

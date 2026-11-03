@@ -1,184 +1,130 @@
 'use client'
 
-import { useForm, useSelector } from '@tanstack/react-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { type SubmitEvent, useState, useTransition } from 'react'
 import {
-  type ChangeEvent,
-  type FocusEvent,
-  type ReactNode,
-  startTransition,
-  type SubmitEvent,
-  useActionState,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+  type DefaultValues,
+  type FieldError,
+  type FieldValues,
+  get,
+  type Path,
+  type Resolver,
+  useForm
+} from 'react-hook-form'
 import type { z } from 'zod'
 
-import {
-  ActionField,
-  type ActionFieldProps,
-  ActionForm,
-  type ActionFormFields,
-  type TextFieldApi
-} from '@/app/components/ui/custom/action-form'
 import type { FormState } from '@/entry/form-action'
 
-type FormActionOptions<TSchema extends z.ZodObject> = {
-  schema: TSchema
-  defaultValues: z.input<TSchema>
-  action: (
-    state: FormState<z.input<TSchema>>,
-    formData: FormData
-  ) => Promise<FormState<z.input<TSchema>>>
-  initialState?: FormState<z.input<TSchema>>
+type FormActionOptions<TValues extends FieldValues> = {
+  schema: z.ZodType<unknown, TValues>
+  defaultValues: DefaultValues<TValues>
+  action: (input: TValues) => Promise<FormState<TValues>>
+  initialState?: FormState<TValues>
 }
 
-type Errors = Record<string, string | undefined>
+type FieldOptions<TValues extends FieldValues> = {
+  // RHF validates one field at a time, and its own `deps` would reveal an error on a field that
+  // wasn't visited yet
+  revalidates?: Path<TValues>
+}
 
-const NO_ERRORS: Errors = {}
+type Announcement = { id: string; text: string }
 
-// TanStack stores whatever the validator returned: a string, a Standard Schema issue or a list
-const messageOf = (error: unknown): string | undefined => {
-  if (typeof error === 'string') return error
-  if (Array.isArray(error))
-    return error.map((item) => messageOf(item)).find(Boolean)
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message)
+const firstMessageOf = (errors: object): string | undefined => {
+  // A leaf also carries `ref`, a DOM element the search must not walk into. A string `type` tells a
+  // leaf from a field that happens to be named `type`
+  if ('type' in errors && typeof errors.type === 'string') {
+    return 'message' in errors && typeof errors.message === 'string'
+      ? errors.message
+      : undefined
+  }
+  for (const value of Object.values(errors) as unknown[]) {
+    const message =
+      value && typeof value === 'object' ? firstMessageOf(value) : undefined
+    if (message) return message
   }
 }
 
-export const useFormAction = <TSchema extends z.ZodObject>({
+export const useFormAction = <TValues extends FieldValues>({
   schema,
   defaultValues,
   action,
   initialState = { status: 'idle' }
-}: FormActionOptions<TSchema>) => {
-  const [state, dispatch, pending] = useActionState(action, initialState)
-  const [invalidSubmit, setInvalidSubmit] = useState<{
-    id: string
-    errors: Errors
-  }>()
-  // A server error describes the submitted value, so it hides once its field is edited
-  const [editedAfter, setEditedAfter] = useState<Record<string, string>>({})
-  const formElement = useRef<HTMLFormElement>(null)
-  const serverErrors: Errors =
-    state.status === 'error' ? state.errors : NO_ERRORS
+}: FormActionOptions<TValues>) => {
+  const [pending, startTransition] = useTransition()
+  const [state, setState] = useState(initialState)
+  const [announcement, setAnnouncement] = useState<Announcement>()
 
-  const form = useForm({
-    defaultValues: {
-      ...defaultValues,
-      ...(state.status === 'error' && state.values)
-    },
-    // Every change revalidates the whole form, so errors never go stale; they're only shown once
-    // the field was left or the form submitted
-    // TanStack can't prove that a generic schema validates synchronously
-    validators: { onChange: schema as never },
-    onSubmit: ({ value }) => {
-      setInvalidSubmit(undefined)
-      const formData = new FormData()
-      for (const [name, fieldValue] of Object.entries(value)) {
-        formData.set(name, String(fieldValue))
-      }
-      startTransition(() => dispatch(formData))
-    },
-    onSubmitInvalid: ({ formApi }) => {
-      const fields = formApi.getAllErrors().fields as Record<
-        string,
-        { errors: unknown[] }
-      >
-      setInvalidSubmit({
-        id: crypto.randomUUID(),
-        errors: Object.fromEntries(
-          Object.entries(fields).map(([name, { errors }]) => [
-            name,
-            messageOf(errors)
-          ])
-        )
-      })
-    }
+  const form = useForm<TValues>({
+    // `raw` hands the action the input as typed: the model parses it again
+    resolver: zodResolver(schema, undefined, {
+      raw: true
+    }) as unknown as Resolver<TValues>,
+    defaultValues,
+    mode: 'onTouched'
   })
-  const submitted = useSelector(
-    form.store,
-    (formState) => formState.submissionAttempts > 0
-  )
+  const { errors } = form.formState
 
-  // The latest submit wins: a client-side rejection, or else the Server Action's answer
-  const errors = invalidSubmit?.errors ?? serverErrors
-  const submitId =
-    invalidSubmit?.id ?? (state.status === 'idle' ? undefined : state.id)
-  // The schema's key order is the fields' order on screen
-  const firstMessage = Object.keys(schema.shape)
-    .map((name) => errors[name])
-    .find(Boolean)
-
-  // Runs after the commit, so the field already carries aria-invalid and its error description
-  // when the focus reaches it
-  useEffect(() => {
-    if (!submitId) return
-    const element = [...(formElement.current?.elements ?? [])].find(
-      (element) => element instanceof HTMLInputElement && errors[element.name]
-    )
-    if (element instanceof HTMLElement) element.focus()
-  }, [submitId, errors])
-
-  const fieldProps = (field: TextFieldApi) => {
-    const clientError =
-      submitted || field.state.meta.isBlurred
-        ? messageOf(field.state.meta.errors)
-        : undefined
-    const serverError =
-      state.status !== 'idle' && editedAfter[field.name] === state.id
-        ? undefined
-        : serverErrors[field.name]
-
-    return {
-      name: field.name,
-      value: field.state.value as string,
-      error: clientError ?? serverError,
-      onChange: (event: ChangeEvent<HTMLInputElement>) => {
-        if (state.status !== 'idle') {
-          setEditedAfter((edited) => ({ ...edited, [field.name]: state.id }))
-        }
-        field.handleChange(event.target.value)
-      },
-      onBlur: (event: FocusEvent<HTMLInputElement>) => {
-        // Revealing errors on the way to the submit button would move it under the pointer, and
-        // the submit reveals them anyway
-        const next = event.relatedTarget
-        if (next instanceof HTMLButtonElement && next.type === 'submit') return
-        field.handleBlur()
-      }
+  const showServerErrors = (id: string, fieldErrors: object) => {
+    const entries = Object.entries(fieldErrors) as [Path<TValues>, string][]
+    for (const [index, [name, message]] of entries.entries()) {
+      form.setError(
+        name,
+        { type: 'server', message },
+        { shouldFocus: index === 0 }
+      )
     }
+    const first = entries[0]
+    if (first) setAnnouncement({ id, text: first[1] })
   }
 
-  const fields: ActionFormFields = {
-    Field: form.Field as unknown as ActionFormFields['Field'],
-    fieldProps
+  const field = (
+    name: Path<TValues>,
+    { revalidates }: FieldOptions<TValues> = {}
+  ) => ({
+    ...form.register(name, {
+      onChange: () => {
+        if (!revalidates) return
+        const { isTouched, invalid } = form.getFieldState(revalidates)
+        if (isTouched || invalid) void form.trigger(revalidates)
+      }
+    }),
+    error: (get(errors, name) as FieldError | undefined)?.message
+  })
+
+  const onSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+    // RHF only marks the form as submitted when handleSubmit resolves. Before that, focusing a field
+    // the server rejected would revalidate the one it leaves on blur, erasing that field's server
+    // error
+    const values = (await form.handleSubmit(
+      (validValues) => validValues,
+      (fieldErrors) => {
+        setState({ status: 'idle' })
+        const text = firstMessageOf(fieldErrors)
+        if (text) setAnnouncement({ id: crypto.randomUUID(), text })
+      }
+    )(event)) as TValues | undefined
+    if (!values) return
+
+    setAnnouncement(undefined)
+    // redirect() rejects the action's promise, and only a transition takes it to the RedirectBoundary
+    startTransition(async () => {
+      const result = await action(values)
+      setState(result)
+      if (result.status === 'error') showServerErrors(result.id, result.errors)
+    })
   }
 
   return {
-    Form: ActionForm,
-    // The same component, with `name` narrowed to the schema's fields
-    Field: ActionField as (
-      props: ActionFieldProps<keyof z.input<TSchema> & string>
-    ) => ReactNode,
+    field,
     state,
     pending,
-    announcement:
-      submitId && firstMessage
-        ? { id: submitId, text: firstMessage }
-        : undefined,
+    announcement,
     formProps: {
-      fields,
-      ref: formElement,
-      // Without JavaScript the browser posts straight to the Server Action, which validates the
-      // same schema; with it, the submit is intercepted to validate on the client first
-      action: dispatch,
+      // A click before hydration posts natively: the default GET would put the password in the URL
+      method: 'post',
       noValidate: true,
-      onSubmit: (event: SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        void form.handleSubmit()
-      }
+      onSubmit
     }
   }
 }

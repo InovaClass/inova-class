@@ -64,3 +64,50 @@ test('validates the sign-up form before submitting', async ({ page }) => {
     'As senhas não coincidem.'
   )
 })
+
+test('revalidates the confirmation when the password changes', async ({
+  page
+}) => {
+  const password = page.getByLabel('Senha', { exact: true })
+  const confirmation = page.getByLabel('Confirmar senha')
+
+  await page.goto('/cadastro/professor')
+  await password.fill('senha-escolhida')
+  await password.blur()
+  await expect(password).toHaveAccessibleDescription('Mínimo de 8 caracteres.')
+  await expect(confirmation).toHaveAccessibleDescription('')
+
+  await confirmation.fill('senha-escolhida')
+  await confirmation.blur()
+  await expect(confirmation).toHaveAccessibleDescription('')
+
+  await password.fill('senha-trocada')
+  await expect(confirmation).toHaveAccessibleDescription(
+    'As senhas não coincidem.'
+  )
+
+  await password.fill('senha-escolhida')
+  await expect(confirmation).toHaveAccessibleDescription('')
+})
+
+test('follows a link pressed while leaving a field reveals its error', async ({
+  page
+}) => {
+  const identifier = page.getByLabel('E-mail ou usuário')
+  const password = page.getByLabel('Senha')
+
+  await page.goto('/entrar')
+  // A blur before hydration reveals nothing, and the error below proves the form is hydrated
+  await expect(async () => {
+    await password.focus()
+    await password.blur()
+    await expect(password).toHaveAccessibleDescription('Informe sua senha.', {
+      timeout: 1000
+    })
+  }).toPass()
+
+  await identifier.focus()
+  await page.getByRole('link', { name: 'Esqueci minha senha' }).click()
+
+  await expect(page).toHaveURL('/esqueci-a-senha')
+})

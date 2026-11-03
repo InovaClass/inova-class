@@ -8,12 +8,9 @@ import type { SignUpInput } from '@/models/authentication/schema'
 
 type SignUpState = FormState<SignUpInput>
 
-export const signUp = async (
-  _state: SignUpState,
-  formData: FormData
-): Promise<SignUpState> =>
-  formAction(formData, async (input) => {
-    const { email } = await authenticationModel.signUp(input, {
+export const signUp = async (input: SignUpInput): Promise<SignUpState> =>
+  formAction(input, async (values) => {
+    const { email } = await authenticationModel.signUp(values, {
       headers: await headers(),
       callbackURL: '/entrar'
     })
