@@ -27,11 +27,11 @@ test('teacher signs up, verifies the email and signs in', async ({ page }) => {
 
   const link = await orchestrator.waitForLinkSentTo(email)
   await page.goto(link.toString())
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/professor')
 
   await page.context().clearCookies()
   await signIn(page, email, password)
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/professor')
 })
 
 test('rejects unknown credentials', async ({ page }) => {
