@@ -4,6 +4,7 @@ import {
   snakeCase,
   text,
   timestamp,
+  unique,
   uuid
 } from 'drizzle-orm/pg-core'
 
@@ -90,8 +91,28 @@ export const classes = snakeCase.table(
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     description: text(),
+    joinCode: text().notNull().unique(),
+    joinCodeEnabled: boolean().notNull().default(true),
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },
   (table) => [index().on(table.teacherId)]
+)
+
+export const enrollments = snakeCase.table(
+  'enrollments',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    classId: uuid()
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    ...timestamps
+  },
+  (table) => [
+    unique().on(table.studentId, table.classId),
+    index().on(table.classId)
+  ]
 )

@@ -3,7 +3,10 @@ import { and, desc, eq, isNull } from 'drizzle-orm'
 import { database } from '@/infra/database/client'
 import { classes } from '@/infra/database/schema'
 
-type ClassFields = { name: string; description: string | null }
+type ClassDetails = { name: string; description: string | null }
+type ClassChanges = Partial<
+  ClassDetails & { joinCode: string; joinCodeEnabled: boolean }
+>
 
 const activeClassOf = (teacherId: string, classId: string) =>
   and(
@@ -28,7 +31,33 @@ export const classRepo = {
     return schoolClass
   },
 
-  insert: async (teacherId: string, fields: ClassFields) => {
+  findJoinable: async (joinCode: string) => {
+    const [schoolClass] = await database
+      .select({ id: classes.id, name: classes.name })
+      .from(classes)
+      .where(
+        and(
+          eq(classes.joinCode, joinCode),
+          eq(classes.joinCodeEnabled, true),
+          isNull(classes.archivedAt)
+        )
+      )
+    return schoolClass
+  },
+
+  // Archived classes count too, since the unique constraint on the column covers them
+  isJoinCodeTaken: async (joinCode: string) => {
+    const [schoolClass] = await database
+      .select({ id: classes.id })
+      .from(classes)
+      .where(eq(classes.joinCode, joinCode))
+    return schoolClass !== undefined
+  },
+
+  insert: async (
+    teacherId: string,
+    fields: ClassDetails & { joinCode: string }
+  ) => {
     const [schoolClass] = await database
       .insert(classes)
       .values({ teacherId, ...fields })
@@ -39,7 +68,7 @@ export const classRepo = {
   updateActive: async (
     teacherId: string,
     classId: string,
-    fields: ClassFields
+    fields: ClassChanges
   ) => {
     const [schoolClass] = await database
       .update(classes)
