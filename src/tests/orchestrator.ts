@@ -24,6 +24,11 @@ const newUser = () => ({
 
 const newStudent = () => ({ ...newUser(), username: newUsername() })
 
+const newClass = () => ({
+  name: faker.lorem.words(3),
+  description: faker.lorem.sentence()
+})
+
 const listEmailsTo = async (email: string) => {
   const query = encodeURIComponent(`to:"${email}"`)
   const response = await fetch(`${MAILPIT_URL}/search?query=${query}`)
@@ -71,6 +76,7 @@ export const orchestrator = {
   newUsername,
   newUser,
   newStudent,
+  newClass,
   newPassword,
   listEmailsTo,
   waitForLinkSentTo,

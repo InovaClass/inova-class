@@ -29,6 +29,17 @@ export class ValidationError extends AppError {
   }
 }
 
+export class NotFoundError extends AppError {
+  readonly name = 'NotFoundError'
+
+  constructor(options: AppErrorOptions = {}) {
+    super(options, {
+      message: 'Não encontramos o que você procurou.',
+      action: 'Confira o endereço e tente novamente.'
+    })
+  }
+}
+
 export class UnauthorizedError extends AppError {
   readonly name = 'UnauthorizedError'
 
