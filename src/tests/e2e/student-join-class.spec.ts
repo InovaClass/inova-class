@@ -14,10 +14,22 @@ const joinCodeOn = (page: Page) =>
 const readJoinCode = async (page: Page) =>
   (await joinCodeOn(page).textContent()) ?? ''
 
+// A click before hydration posts natively and reloads the page, losing the typed code. Only the
+// hydrated form rejects an empty code on the client, so that error proves it's ready
+const waitForJoinFormHydration = async (page: Page) => {
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Entrar na turma' }).click()
+    await expect(
+      page.getByLabel('Código da turma')
+    ).toHaveAccessibleDescription(/Informe o código/, { timeout: 1000 })
+  }).toPass()
+}
+
 const newStudentPage = async (browser: Browser) => {
   const context = await browser.newContext()
   const page = await context.newPage()
   await signUpStudent(page)
+  await waitForJoinFormHydration(page)
   return page
 }
 
@@ -39,14 +51,14 @@ test('a student joins with a valid code and fails with a disabled one', async ({
 
   await teacherPage.getByRole('button', { name: 'Desativar' }).click()
   await expect(
-    teacherPage.getByRole('button', { name: 'Ativar' })
+    teacherPage.getByRole('button', { name: 'Ativar', exact: true })
   ).toBeVisible()
   await submitCode(studentPage, code)
   await expect(
     studentPage.getByLabel('Código da turma')
   ).toHaveAccessibleDescription(new RegExp(INVALID_CODE_MESSAGE))
 
-  await teacherPage.getByRole('button', { name: 'Ativar' }).click()
+  await teacherPage.getByRole('button', { name: 'Ativar', exact: true }).click()
   await expect(
     teacherPage.getByRole('button', { name: 'Desativar' })
   ).toBeVisible()
