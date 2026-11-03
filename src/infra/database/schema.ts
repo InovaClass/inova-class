@@ -9,7 +9,7 @@ import {
 
 import { USER_ROLES } from '@/constants/user'
 
-// Better Auth tables, kept in sync with `pnpm dlx auth@latest generate` (#3)
+// The tables up to `verifications` are Better Auth's, kept in sync with `pnpm dlx auth@latest generate` (#3)
 
 const timestamps = {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -79,4 +79,19 @@ export const verifications = snakeCase.table(
     ...timestamps
   },
   (table) => [index().on(table.identifier)]
+)
+
+export const classes = snakeCase.table(
+  'classes',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    teacherId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    description: text(),
+    archivedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [index().on(table.teacherId)]
 )

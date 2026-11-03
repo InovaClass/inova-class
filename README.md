@@ -92,7 +92,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
   - `src/models/<domain>/`: business rules (`model.ts`) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
   - `src/infra/`: auth, database, email and the error classes.
   - `src/constants/`: values shared across layers, such as user roles and password bounds.
-  - `src/repositories/` and `src/dtos/` are added with their first use.
+  - `src/repositories/<domain>-repo.ts`: the queries on our own tables, called only by models. `src/dtos/` is added with its first use.
 - `action.ts` (`'use server'`) is only for mutations; a Server Component's data reads go in `data.ts`.
 
 ### Forms
