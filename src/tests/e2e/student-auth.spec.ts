@@ -20,6 +20,7 @@ const signUpStudent = async (page: Page) => {
   await page.getByLabel('E-mail').fill(student.email)
   await page.getByLabel('Senha', { exact: true }).fill(student.password)
   await page.getByLabel('Confirmar senha').fill(student.password)
+  await page.getByRole('checkbox', { name: /^Li e aceito/ }).click()
   await page.getByRole('button', { name: 'Criar conta' }).click()
   await expect(
     page.getByText(`Enviamos um link de confirmação para ${student.email}`)
@@ -61,6 +62,7 @@ test('shows a taken username error on its field', async ({ page }) => {
   await page.getByLabel('E-mail').fill(student.email)
   await page.getByLabel('Senha', { exact: true }).fill(student.password)
   await page.getByLabel('Confirmar senha').fill(student.password)
+  await page.getByRole('checkbox', { name: /^Li e aceito/ }).click()
   await page.getByRole('button', { name: 'Criar conta' }).click()
 
   await expect(page.getByLabel('Nome de usuário')).toBeFocused()
@@ -72,6 +74,9 @@ test('shows a taken username error on its field', async ({ page }) => {
 test('a temporary password must be changed after signing in', async ({
   page
 }) => {
+  // Goes through many routes, so it passes the default timeout while `pnpm dev` compiles them
+  test.slow()
+
   await page.goto('/alterar-senha')
   await expect(page).toHaveURL('/entrar')
 

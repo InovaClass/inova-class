@@ -4,6 +4,7 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { betterAuth } from 'better-auth'
 import {
   addOAuthServerContext,
+  APIError,
   createAuthMiddleware,
   getOAuthState
 } from 'better-auth/api'
@@ -81,9 +82,15 @@ export const auth = betterAuth({
       role: {
         type: [...USER_ROLES],
         required: true,
-        // Roles are fixed per account (#3): a request without a server-set role creates a
-        // teacher, students only come from `withSignUpRole` (#5)
+        // Roles are fixed per account (#3) and come from `withSignUpRole` (#5): the hook overrides
+        // this default, and `/sign-up/email` rejects a request without a role (#7)
         defaultValue: 'teacher',
+        input: false
+      },
+      // Set with the role, since every flow that sets one collected the acceptance first (#7)
+      termsAcceptedAt: {
+        type: 'date',
+        required: false,
         input: false
       },
       // Set for accounts created with a temporary password (#10)
@@ -103,6 +110,10 @@ export const auth = betterAuth({
       if (role && context.path === '/sign-in/social') {
         await addOAuthServerContext({ role })
       }
+      // A request straight to the API would create an account without the terms acceptance (#7)
+      if (!role && context.path === '/sign-up/email') {
+        throw new APIError('FORBIDDEN')
+      }
     })
   },
   databaseHooks: {
@@ -114,7 +125,9 @@ export const auth = betterAuth({
           const role =
             signUpRole.getStore() ??
             (isUserRole(oAuthRole) ? oAuthRole : undefined)
-          if (role) return { data: { ...user, role } }
+          if (role) {
+            return { data: { ...user, role, termsAcceptedAt: new Date() } }
+          }
         }
       }
     }

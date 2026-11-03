@@ -66,8 +66,21 @@ const passwordsMatch = z.refine<{
     issues.every((issue) => issue.path?.[0] !== 'passwordConfirmation')
 })
 
+const acceptedTerms = z
+  .boolean()
+  .refine(
+    (accepted) => accepted,
+    'Aceite os Termos de Uso e a Política de Privacidade para continuar.'
+  )
+
 export const signUpSchema = z
-  .object({ name, email, password: newPassword, passwordConfirmation })
+  .object({
+    name,
+    email,
+    password: newPassword,
+    passwordConfirmation,
+    acceptedTerms
+  })
   .check(passwordsMatch)
 export type SignUpInput = z.input<typeof signUpSchema>
 
@@ -77,7 +90,8 @@ export const studentSignUpSchema = z
     username,
     email,
     password: newPassword,
-    passwordConfirmation
+    passwordConfirmation,
+    acceptedTerms
   })
   .check(passwordsMatch)
 export type StudentSignUpInput = z.input<typeof studentSignUpSchema>

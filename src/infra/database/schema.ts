@@ -30,6 +30,7 @@ export const users = snakeCase.table('users', {
   displayUsername: text(),
   role: text({ enum: USER_ROLES }).notNull(),
   mustChangePassword: boolean().notNull().default(false),
+  termsAcceptedAt: timestamp({ withTimezone: true }),
   ...timestamps
 })
 

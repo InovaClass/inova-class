@@ -17,6 +17,16 @@ test('teacher signs up, verifies the email and signs in', async ({ page }) => {
   await page.getByLabel('E-mail').fill(email)
   await page.getByLabel('Senha', { exact: true }).fill(password)
   await page.getByLabel('Confirmar senha').fill(password)
+
+  const terms = page.getByRole('checkbox', { name: /^Li e aceito/ })
+  await page.getByRole('button', { name: 'Criar conta' }).click()
+  await expect(terms).toBeFocused()
+  await expect(terms).toHaveAccessibleDescription(
+    'Aceite os Termos de Uso e a Política de Privacidade para continuar.'
+  )
+
+  await terms.click()
+  await expect(terms).toHaveAccessibleDescription('')
   await page.getByRole('button', { name: 'Criar conta' }).click()
   await expect(
     page.getByText(`Enviamos um link de confirmação para ${email}`)
@@ -88,6 +98,29 @@ test('revalidates the confirmation when the password changes', async ({
 
   await password.fill('senha-escolhida')
   await expect(confirmation).toHaveAccessibleDescription('')
+})
+
+test('ticks the terms pressed while leaving a field reveals its error', async ({
+  page
+}) => {
+  const name = page.getByLabel('Nome')
+  const email = page.getByLabel('E-mail')
+  const confirmation = page.getByLabel('Confirmar senha')
+  const terms = page.getByRole('checkbox', { name: /^Li e aceito/ })
+
+  await page.goto('/cadastro/professor')
+  // A blur before hydration reveals nothing, and the error below proves the form is hydrated
+  await expect(async () => {
+    await name.focus()
+    await email.focus()
+    await expect(name).toHaveAccessibleDescription('Informe seu nome.', {
+      timeout: 1000
+    })
+  }).toPass()
+
+  await confirmation.focus()
+  await terms.click()
+  await expect(terms).toBeChecked()
 })
 
 test('follows a link pressed while leaving a field reveals its error', async ({

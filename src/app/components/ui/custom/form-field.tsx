@@ -10,7 +10,8 @@ type ControlProps = {
 }
 
 type FieldFrameProps = {
-  label: string
+  // A control that wraps its own label, such as a checkbox, leaves it out
+  label?: string
   labelAction?: ReactNode
   hint?: string
   error?: string
@@ -35,12 +36,14 @@ export const FieldFrame = ({
 
   return (
     <div className="grid gap-1.5">
-      <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center">
-        <Label htmlFor={controlId} className="text-xs">
-          {label}
-        </Label>
-        {labelAction}
-      </div>
+      {label && (
+        <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center">
+          <Label htmlFor={controlId} className="text-xs">
+            {label}
+          </Label>
+          {labelAction}
+        </div>
+      )}
       {children({
         id: controlId,
         'aria-invalid': error ? true : undefined,
@@ -61,7 +64,7 @@ export const FieldFrame = ({
 }
 
 type FormFieldProps = Omit<ComponentProps<typeof Input>, 'id'> &
-  Omit<FieldFrameProps, 'children'>
+  Omit<FieldFrameProps, 'children' | 'label'> & { label: string }
 
 export const FormField = ({
   label,

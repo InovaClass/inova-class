@@ -35,10 +35,12 @@ const signUp = async (
 ) => {
   const { name, email, password } = signUpSchema.parse(input)
   await translateErrors(
-    auth.api.signUpEmail({
-      body: { name, email, password, callbackURL },
-      headers
-    })
+    withSignUpRole('teacher', () =>
+      auth.api.signUpEmail({
+        body: { name, email, password, callbackURL },
+        headers
+      })
+    )
   )
   return { name, email }
 }

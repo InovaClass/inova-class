@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 
+import { FormCheckbox } from '@/app/components/ui/custom/form-checkbox'
 import { FormField } from '@/app/components/ui/custom/form-field'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
@@ -16,18 +17,26 @@ import { studentSignUpSchema } from '@/models/authentication/schema'
 import { signUpStudent } from './action'
 
 // Like the teacher's form, it hides Google after sign-up: Google can't link to an unverified account
-export const StudentSignUpForm = ({ children }: { children?: ReactNode }) => {
-  const { field, state, pending, announcement, formProps } = useFormAction({
-    schema: studentSignUpSchema,
-    defaultValues: {
-      name: '',
-      username: '',
-      email: '',
-      password: '',
-      passwordConfirmation: ''
-    },
-    action: signUpStudent
-  })
+export const StudentSignUpForm = ({
+  termsLabel,
+  children
+}: {
+  termsLabel: ReactNode
+  children?: ReactNode
+}) => {
+  const { field, control, state, pending, announcement, formProps } =
+    useFormAction({
+      schema: studentSignUpSchema,
+      defaultValues: {
+        name: '',
+        username: '',
+        email: '',
+        password: '',
+        passwordConfirmation: '',
+        acceptedTerms: false
+      },
+      action: signUpStudent
+    })
 
   if (state.status === 'success') return <FormMessage state={state} />
 
@@ -61,6 +70,11 @@ export const StudentSignUpForm = ({ children }: { children?: ReactNode }) => {
           type="password"
           autoComplete="new-password"
           {...field('passwordConfirmation')}
+        />
+        <FormCheckbox
+          control={control}
+          name="acceptedTerms"
+          label={termsLabel}
         />
         <FormMessage state={state} announcement={announcement} />
         <SubmitButton pending={pending}>Criar conta</SubmitButton>

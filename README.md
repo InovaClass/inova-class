@@ -40,7 +40,7 @@ The project is deployed on [Vercel](https://vercel.com) (project `inova-class`),
 
 ### Google sign-in
 
-The "Continuar com Google" button only shows up when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set, so the app runs without them. To set them up (#44):
+The "Continuar com o Google" button only shows up when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set, so the app runs without them. To set them up (#44):
 
 1. Create a project in the [Google Cloud console](https://console.cloud.google.com).
 2. In Google Auth Platform, configure the consent screen: user type **External**, app name, support email, the authorized domain `diasjoaovitor.com.br` and only the `openid`, `email` and `profile` scopes. Then **Publish app**: in _Testing_ mode only the listed test users can sign in.
@@ -114,6 +114,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Every account has a fixed `role` (`teacher` or `student`) that the client can never set: the server flow behind each sign-up page sets it (`withSignUpRole` in `src/infra/auth.ts`), and any other sign-up creates a teacher.
 - Every account has a verified email. Students also pick a username (Better Auth `username` plugin) and can sign in with either; `/entrar` takes an email or a username in the same field.
 - Teachers land on `/professor` and students on `/aluno`, and `/` redirects to the sign-in page or to the user's dashboard. Each page of those areas, and its layout, calls `requireRole(role)` (`src/entry/session.ts`), which redirects a signed-out user, a user with a temporary password and a user of another role.
+- Signing up requires accepting the terms (`/termos`) and the privacy policy (`/privacidade`), and `users.terms_accepted_at` records when. Their controller name, contact email and update date live in `src/app/(pages)/(legal)/legal-info.ts`.
 - An account flagged with `mustChangePassword` (a temporary password) is sent to `/alterar-senha` after signing in.
 - Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up pages do (keeping the name and email, not the picture), and Google links to an existing account only when both sides verified the same email.
 - The auth pages (`/cadastro` with the role choice, `/cadastro/professor`, `/cadastro/aluno`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`, `/alterar-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.
