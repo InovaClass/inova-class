@@ -141,11 +141,16 @@ const changePassword = async (input: unknown, { headers }: RequestContext) => {
   })
 }
 
+const signOut = async ({ headers }: RequestContext) => {
+  await translateErrors(auth.api.signOut({ headers }))
+}
+
 export const authenticationModel = {
   signUp,
   signUpStudent,
   signIn,
   signInWithGoogle,
+  signOut,
   requestPasswordReset,
   resetPassword,
   changePassword

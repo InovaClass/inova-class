@@ -1,0 +1,20 @@
+import type { Metadata } from 'next'
+
+import { requireRole } from '@/entry/session'
+
+export const metadata: Metadata = { title: 'Painel do aluno' }
+
+const StudentDashboardPage = async () => {
+  await requireRole('student')
+
+  return (
+    <>
+      <h1 className="text-sm leading-relaxed">Painel do aluno</h1>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        Suas turmas aparecerão aqui.
+      </p>
+    </>
+  )
+}
+
+export default StudentDashboardPage

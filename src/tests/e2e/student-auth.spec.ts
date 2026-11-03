@@ -44,11 +44,11 @@ test('student signs up, verifies the email and signs in by username', async ({
 
   const link = await orchestrator.waitForLinkSentTo(email)
   await page.goto(link.toString())
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/aluno')
 
   await page.context().clearCookies()
   await signIn(page, username, password)
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/aluno')
 })
 
 test('shows a taken username error on its field', async ({ page }) => {
@@ -88,12 +88,12 @@ test('a temporary password must be changed after signing in', async ({
   await page.getByLabel('Nova senha', { exact: true }).fill(newPassword)
   await page.getByLabel('Confirmar nova senha').fill(newPassword)
   await page.getByRole('button', { name: 'Salvar senha' }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/aluno')
 
   await page.goto('/alterar-senha')
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/aluno')
 
   await page.context().clearCookies()
   await signIn(page, username, newPassword)
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/aluno')
 })
