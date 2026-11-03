@@ -89,3 +89,25 @@ test('revalidates the confirmation when the password changes', async ({
   await password.fill('senha-escolhida')
   await expect(confirmation).toHaveAccessibleDescription('')
 })
+
+test('follows a link pressed while leaving a field reveals its error', async ({
+  page
+}) => {
+  const identifier = page.getByLabel('E-mail ou usuário')
+  const password = page.getByLabel('Senha')
+
+  await page.goto('/entrar')
+  // A blur before hydration reveals nothing, and the error below proves the form is hydrated
+  await expect(async () => {
+    await password.focus()
+    await password.blur()
+    await expect(password).toHaveAccessibleDescription('Informe sua senha.', {
+      timeout: 1000
+    })
+  }).toPass()
+
+  await identifier.focus()
+  await page.getByRole('link', { name: 'Esqueci minha senha' }).click()
+
+  await expect(page).toHaveURL('/esqueci-a-senha')
+})
