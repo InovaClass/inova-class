@@ -64,3 +64,28 @@ test('validates the sign-up form before submitting', async ({ page }) => {
     'As senhas não coincidem.'
   )
 })
+
+test('revalidates the confirmation when the password changes', async ({
+  page
+}) => {
+  const password = page.getByLabel('Senha', { exact: true })
+  const confirmation = page.getByLabel('Confirmar senha')
+
+  await page.goto('/cadastro/professor')
+  await password.fill('senha-escolhida')
+  await password.blur()
+  await expect(password).toHaveAccessibleDescription('Mínimo de 8 caracteres.')
+  await expect(confirmation).toHaveAccessibleDescription('')
+
+  await confirmation.fill('senha-escolhida')
+  await confirmation.blur()
+  await expect(confirmation).toHaveAccessibleDescription('')
+
+  await password.fill('senha-trocada')
+  await expect(confirmation).toHaveAccessibleDescription(
+    'As senhas não coincidem.'
+  )
+
+  await password.fill('senha-escolhida')
+  await expect(confirmation).toHaveAccessibleDescription('')
+})

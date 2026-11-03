@@ -6,25 +6,9 @@ import { ValidationError } from '@/infra/errors'
 
 import { formAction, formSuccess } from './form-action'
 
-const formData = (entries: Record<string, string>) => {
-  const data = new FormData()
-  for (const [key, value] of Object.entries(entries)) data.set(key, value)
-  return data
-}
-
-const submitted = formData({
-  email: 'ana@',
-  password: 'curta',
-  $ACTION_ID_abc: ''
-})
+const submitted = { email: 'ana@', password: 'curta' }
 
 describe('formAction', () => {
-  test('passes the submitted fields to the handler, without React entries', async () => {
-    const handler = vi.fn(async () => formSuccess('Pronto.'))
-    await formAction(submitted, handler)
-    expect(handler).toHaveBeenCalledWith({ email: 'ana@', password: 'curta' })
-  })
-
   test('turns a Zod error into the first message of each field', async () => {
     const schema = z.object({
       email: z.email('Informe um e-mail válido.'),
@@ -40,14 +24,18 @@ describe('formAction', () => {
     })
   })
 
-  test('echoes the submitted values except passwords', async () => {
-    const state = await formAction(submitted, async () => {
-      throw new ValidationError()
+  test("keeps a nested field's dotted path", async () => {
+    const linkSchema = z.object({ url: z.url('Informe um link válido.') })
+    const schema = z.object({ links: z.array(linkSchema) })
+    const input = { links: [{ url: 'https://inova.class' }, { url: 'ana' }] }
+    const state = await formAction(input, async (value) => {
+      schema.parse(value)
+      return formSuccess('Pronto.')
     })
-    expect(state).toMatchObject({ values: { email: 'ana@' } })
-    expect(state.status === 'error' && state.values).not.toHaveProperty(
-      'password'
-    )
+    expect(state).toMatchObject({
+      status: 'error',
+      errors: { 'links.1.url': 'Informe um link válido.' }
+    })
   })
 
   test("turns an app error into the form's message and action", async () => {

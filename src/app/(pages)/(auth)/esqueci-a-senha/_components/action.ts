@@ -9,11 +9,10 @@ import type { ForgotPasswordInput } from '@/models/authentication/schema'
 type ForgotPasswordState = FormState<ForgotPasswordInput>
 
 export const requestPasswordReset = async (
-  _state: ForgotPasswordState,
-  formData: FormData
+  input: ForgotPasswordInput
 ): Promise<ForgotPasswordState> =>
-  formAction(formData, async (input) => {
-    const { email } = await authenticationModel.requestPasswordReset(input, {
+  formAction(input, async (values) => {
+    const { email } = await authenticationModel.requestPasswordReset(values, {
       headers: await headers(),
       redirectTo: '/redefinir-senha'
     })

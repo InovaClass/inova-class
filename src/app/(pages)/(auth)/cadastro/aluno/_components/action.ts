@@ -9,11 +9,10 @@ import type { StudentSignUpInput } from '@/models/authentication/schema'
 type StudentSignUpState = FormState<StudentSignUpInput>
 
 export const signUpStudent = async (
-  _state: StudentSignUpState,
-  formData: FormData
+  input: StudentSignUpInput
 ): Promise<StudentSignUpState> =>
-  formAction(formData, async (input) => {
-    const { email } = await authenticationModel.signUpStudent(input, {
+  formAction(input, async (values) => {
+    const { email } = await authenticationModel.signUpStudent(values, {
       headers: await headers(),
       callbackURL: '/entrar'
     })

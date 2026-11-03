@@ -10,11 +10,10 @@ import type { ChangePasswordInput } from '@/models/authentication/schema'
 type ChangePasswordState = FormState<ChangePasswordInput>
 
 export const changePassword = async (
-  _state: ChangePasswordState,
-  formData: FormData
+  input: ChangePasswordInput
 ): Promise<ChangePasswordState> =>
-  formAction(formData, async (input) => {
-    await authenticationModel.changePassword(input, {
+  formAction(input, async (values) => {
+    await authenticationModel.changePassword(values, {
       headers: await headers()
     })
     redirect('/')

@@ -97,9 +97,9 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 
 ### Forms
 
-- **TanStack Form** with the model's **Zod** schema, submitted to **Server Actions**. Each form has an `action.ts` and a `<name>-form.tsx` in its route's `_components/`.
+- **React Hook Form** with the model's **Zod** schema, submitted to **Server Actions** with the typed values. Each form has an `action.ts` and a `<name>-form.tsx` in its route's `_components/`.
 - The action wraps the model call in `formAction` (`src/entry/form-action.ts`), which turns validation errors into field errors, `AppError`s into a form message with what to do next, and anything unexpected into a generic message.
-- The client form renders the `Form` and `Field` returned by `useFormAction` (`src/app/hooks/use-form-action.ts`), plus `FormMessage` and `SubmitButton`; the page wraps it in `FormCard`. All of them live in `src/app/components/ui/custom/`. Forms still work without JavaScript, validate on the client when it's available and show server errors on the field they belong to.
+- The client form spreads the `field` and `formProps` returned by `useFormAction` (`src/app/hooks/use-form-action.ts`) on `FormField` and `<form>`, plus `FormMessage` and `SubmitButton`; the page wraps it in `FormCard`. All of them live in `src/app/components/ui/custom/`, along with `FieldFrame`, for controls other than a text input. Forms need JavaScript, validate on the client and show server errors on the field they belong to.
 
 ### Database
 

@@ -11,11 +11,10 @@ type ResetPasswordState = FormState<ResetPasswordInput>
 
 export const resetPassword = async (
   token: string,
-  _state: ResetPasswordState,
-  formData: FormData
+  input: ResetPasswordInput
 ): Promise<ResetPasswordState> =>
-  formAction(formData, async (input) => {
-    await authenticationModel.resetPassword(input, {
+  formAction(input, async (values) => {
+    await authenticationModel.resetPassword(values, {
       headers: await headers(),
       token
     })
