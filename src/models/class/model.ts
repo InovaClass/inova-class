@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { NotFoundError } from '@/infra/errors'
 import { classRepo } from '@/repositories/class-repo'
 
+import { classNotFound } from './errors'
 import { generateJoinCode } from './join-code'
 import { type ClassInput, classSchema } from './schema'
 
@@ -10,13 +10,6 @@ const JOIN_CODE_MAX_ATTEMPTS = 5
 
 // The id comes from the URL, and Postgres rejects a value that isn't a UUID instead of finding nothing
 const isClassId = (classId: string) => z.uuid().safeParse(classId).success
-
-// Same answer for a class of another teacher and an archived one, so the id reveals nothing
-const classNotFound = () =>
-  new NotFoundError({
-    message: 'Não encontramos essa turma.',
-    action: 'Volte ao painel e escolha uma das suas turmas.'
-  })
 
 const generateUnusedJoinCode = async () => {
   for (let attempt = 0; attempt < JOIN_CODE_MAX_ATTEMPTS; attempt++) {

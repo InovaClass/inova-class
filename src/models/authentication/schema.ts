@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import {
+  NAME_MAX_LENGTH,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
@@ -20,7 +21,10 @@ const name = z
   .string()
   .trim()
   .min(1, 'Informe seu nome.')
-  .max(100, 'O nome pode ter no máximo 100 caracteres.')
+  .max(
+    NAME_MAX_LENGTH,
+    `O nome pode ter no máximo ${NAME_MAX_LENGTH} caracteres.`
+  )
 
 // Better Auth stores usernames in lowercase, so the form checks the value it will store
 const username = z
@@ -109,6 +113,11 @@ export const resetPasswordSchema = z
   .object({ password: newPassword, passwordConfirmation })
   .check(passwordsMatch)
 export type ResetPasswordInput = z.input<typeof resetPasswordSchema>
+
+export const acceptInviteSchema = z
+  .object({ password: newPassword, passwordConfirmation, acceptedTerms })
+  .check(passwordsMatch)
+export type AcceptInviteInput = z.input<typeof acceptInviteSchema>
 
 export const changePasswordSchema = resetPasswordSchema
 export type ChangePasswordInput = z.input<typeof changePasswordSchema>

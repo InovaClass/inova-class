@@ -36,7 +36,7 @@ export const FormCard = ({
       <CardTitle>
         <h1 className="text-lg leading-relaxed">{title}</h1>
       </CardTitle>
-      <CardDescription className="text-xs leading-relaxed">
+      <CardDescription className="text-xs leading-relaxed wrap-anywhere">
         {description}
       </CardDescription>
     </CardHeader>

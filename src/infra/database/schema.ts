@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   boolean,
   index,
   snakeCase,
@@ -31,6 +32,11 @@ export const users = snakeCase.table('users', {
   role: text({ enum: USER_ROLES }).notNull(),
   mustChangePassword: boolean().notNull().default(false),
   termsAcceptedAt: timestamp({ withTimezone: true }),
+  // Kept out of Better Auth's fields, since only `studentRepo` writes it and nothing reads it through
+  // the session (#10)
+  createdById: uuid().references((): AnyPgColumn => users.id, {
+    onDelete: 'set null'
+  }),
   ...timestamps
 })
 

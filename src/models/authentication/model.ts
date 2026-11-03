@@ -3,6 +3,7 @@ import { isAPIError } from 'better-auth/api'
 import type { UserRole } from '@/constants/user'
 import { auth, withSignUpRole } from '@/infra/auth'
 import { UnauthorizedError } from '@/infra/errors'
+import { studentModel } from '@/models/student/model'
 
 import { toAppError, toFieldError } from './errors'
 import {
@@ -109,6 +110,8 @@ const requestPasswordReset = async (
   { headers, redirectTo }: RequestContext & { redirectTo: string }
 ) => {
   const data = forgotPasswordSchema.parse(input)
+  // A password set here would skip the terms acceptance of the invite page (#10)
+  if (await studentModel.resendInvite(data.email, { headers })) return data
   await translateErrors(
     auth.api.requestPasswordReset({
       body: { email: data.email, redirectTo },
