@@ -48,6 +48,10 @@ test('a student joins with a valid code and fails with a disabled one', async ({
   const { name } = await createClass(teacherPage)
   const code = await readJoinCode(teacherPage)
   const studentPage = await newStudentPage(browser)
+  const emptyState = studentPage.getByRole('heading', {
+    name: 'Nenhuma turma ainda'
+  })
+  await expect(emptyState).toBeVisible()
 
   await teacherPage.getByRole('button', { name: 'Desativar' }).click()
   await expect(
@@ -66,6 +70,8 @@ test('a student joins with a valid code and fails with a disabled one', async ({
   await expect(
     studentPage.getByText(`Você entrou na turma ${name}.`)
   ).toBeVisible()
+  await expect(studentPage.getByRole('heading', { name })).toBeVisible()
+  await expect(emptyState).toBeHidden()
 
   await submitCode(studentPage, code)
   await expect(
