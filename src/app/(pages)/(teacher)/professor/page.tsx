@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { ClassSlots } from '@/app/components/blocks/class/class-slots'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import {
   Empty,
@@ -11,8 +12,6 @@ import {
 } from '@/app/components/ui/8bit/empty'
 import { requireRole } from '@/entry/session'
 import { classModel } from '@/models/class/model'
-
-import { ClassSlots } from './_components/class-slots'
 
 export const metadata: Metadata = { title: 'Painel do professor' }
 
@@ -36,7 +35,10 @@ const TeacherDashboardPage = async () => {
         )}
       </header>
       {classes.length > 0 ? (
-        <ClassSlots classes={classes} />
+        <ClassSlots
+          classes={classes}
+          hrefOf={({ id }) => `/professor/turmas/${id}`}
+        />
       ) : (
         <Empty>
           <EmptyHeader>

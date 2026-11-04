@@ -34,6 +34,12 @@ export const enrollmentModel = {
     return { className: schoolClass.name, alreadyEnrolled: !enrollment }
   },
 
+  listClasses: async (studentId: string) => {
+    const classes = await enrollmentRepo.listActiveClassesOf(studentId)
+    // In the model because the collation of the database doesn't have to follow pt-BR
+    return classes.toSorted((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+  },
+
   listRoster: async (teacherId: string, classId: string) => {
     await requireOwnedClass(teacherId, classId)
     const students = await enrollmentRepo.listEnrolledStudents(classId)

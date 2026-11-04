@@ -1,7 +1,7 @@
 import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 
 import { database } from '@/infra/database/client'
-import { accounts, enrollments, users } from '@/infra/database/schema'
+import { accounts, classes, enrollments, users } from '@/infra/database/schema'
 
 // A student who comes back keeps the same enrollment, and the game stats on it (#18). An enrollment
 // still active isn't touched, so `returning` only brings the ones that actually entered the class
@@ -20,6 +20,23 @@ export const enrollmentRepo = {
       .returning()
     return enrollment
   },
+
+  listActiveClassesOf: async (studentId: string) =>
+    database
+      .select({
+        id: classes.id,
+        name: classes.name,
+        description: classes.description
+      })
+      .from(enrollments)
+      .innerJoin(classes, eq(classes.id, enrollments.classId))
+      .where(
+        and(
+          eq(enrollments.studentId, studentId),
+          isNull(enrollments.endedAt),
+          isNull(classes.archivedAt)
+        )
+      ),
 
   // `pending` is the same in every row of a user, so DISTINCT keeps one row per user
   listEnrolledStudents: async (classId: string) =>

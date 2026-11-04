@@ -139,6 +139,63 @@ describe('enrollmentModel', () => {
     })
   })
 
+  describe('listClasses', () => {
+    test('returns only the classes of the student, with their name and description', async () => {
+      const { schoolClass } = await newClass()
+      await newClass()
+      const studentId = await enrollByCode(schoolClass.joinCode)
+
+      expect(await enrollmentModel.listClasses(studentId)).toEqual([
+        {
+          id: schoolClass.id,
+          name: schoolClass.name,
+          description: schoolClass.description
+        }
+      ])
+    })
+
+    test('leaves out an archived class and an ended enrollment', async () => {
+      const archived = await newClass()
+      const ended = await newClass()
+      const kept = await newClass()
+      const studentId = await enrollByCode(archived.schoolClass.joinCode)
+      await enrollmentModel.join(studentId, {
+        code: ended.schoolClass.joinCode
+      })
+      await enrollmentModel.join(studentId, { code: kept.schoolClass.joinCode })
+
+      await classModel.archive(archived.teacherId, archived.schoolClass.id)
+      await enrollmentModel.remove(
+        ended.teacherId,
+        ended.schoolClass.id,
+        studentId
+      )
+
+      const classes = await enrollmentModel.listClasses(studentId)
+      expect(classes.map(({ id }) => id)).toEqual([kept.schoolClass.id])
+    })
+
+    test('sorts by name following pt-BR', async () => {
+      const teacherId = await newUserId('teacher')
+      const studentId = await newUserId('student')
+      for (const name of ['Biologia', 'Zoologia', 'Álgebra']) {
+        const { joinCode } = await classModel.create(teacherId, {
+          ...orchestrator.newClass(),
+          name
+        })
+        await enrollmentModel.join(studentId, { code: joinCode })
+      }
+
+      const classes = await enrollmentModel.listClasses(studentId)
+
+      expect(classes.map(({ name }) => name)).toEqual([
+        'Álgebra',
+        'Biologia',
+        'Zoologia'
+      ])
+    })
+  })
+
   describe('listRoster', () => {
     test('shows the email of pending students only, once per student', async () => {
       const { teacherId, schoolClass } = await newClass()
