@@ -89,7 +89,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.
 - Server code is layered and imports only flow down, `app` → `entry` → `dtos`/`models` → `repositories` → `infra`, which ESLint enforces:
   - `src/entry/`: adapts Server Components and Server Actions to the models, with the wrapper every form's Server Action goes through (`form-action.ts`) and the per-request session (`session.ts`).
-  - `src/models/<domain>/`: business rules (`model.ts`) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
+  - `src/models/<domain>/`: business rules (`model.ts`, with the `<domain>Model` export at the end of the file) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
   - `src/infra/`: auth, database, email and the error classes.
   - `src/constants/`: values shared across layers, such as user roles and password bounds.
   - `src/repositories/<domain>-repo.ts`: the queries on our own tables, called only by models. `src/dtos/` is added with its first use.

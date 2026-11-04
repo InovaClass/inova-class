@@ -33,39 +33,47 @@ const updateOwned = async (
   return schoolClass
 }
 
+const list = async (teacherId: string) => classRepo.listActive(teacherId)
+
+const findOwned = async (teacherId: string, classId: string) =>
+  isClassId(classId) ? classRepo.findActive(teacherId, classId) : undefined
+
+const create = async (teacherId: string, input: ClassInput) => {
+  const fields = classSchema.parse(input)
+  const joinCode = await generateUnusedJoinCode()
+  return classRepo.insert(teacherId, { ...fields, joinCode })
+}
+
+const update = async (teacherId: string, classId: string, input: ClassInput) =>
+  updateOwned(teacherId, classId, classSchema.parse(input))
+
+const regenerateJoinCode = async (teacherId: string, classId: string) =>
+  updateOwned(teacherId, classId, {
+    joinCode: await generateUnusedJoinCode()
+  })
+
+const setJoinCodeEnabled = async (
+  teacherId: string,
+  classId: string,
+  enabled: boolean
+) =>
+  updateOwned(teacherId, classId, {
+    joinCodeEnabled: z.boolean().parse(enabled)
+  })
+
+const archive = async (teacherId: string, classId: string) => {
+  const schoolClass = isClassId(classId)
+    ? await classRepo.archiveActive(teacherId, classId)
+    : undefined
+  if (!schoolClass) throw classNotFound()
+}
+
 export const classModel = {
-  list: async (teacherId: string) => classRepo.listActive(teacherId),
-
-  findOwned: async (teacherId: string, classId: string) =>
-    isClassId(classId) ? classRepo.findActive(teacherId, classId) : undefined,
-
-  create: async (teacherId: string, input: ClassInput) => {
-    const fields = classSchema.parse(input)
-    const joinCode = await generateUnusedJoinCode()
-    return classRepo.insert(teacherId, { ...fields, joinCode })
-  },
-
-  update: async (teacherId: string, classId: string, input: ClassInput) =>
-    updateOwned(teacherId, classId, classSchema.parse(input)),
-
-  regenerateJoinCode: async (teacherId: string, classId: string) =>
-    updateOwned(teacherId, classId, {
-      joinCode: await generateUnusedJoinCode()
-    }),
-
-  setJoinCodeEnabled: async (
-    teacherId: string,
-    classId: string,
-    enabled: boolean
-  ) =>
-    updateOwned(teacherId, classId, {
-      joinCodeEnabled: z.boolean().parse(enabled)
-    }),
-
-  archive: async (teacherId: string, classId: string) => {
-    const schoolClass = isClassId(classId)
-      ? await classRepo.archiveActive(teacherId, classId)
-      : undefined
-    if (!schoolClass) throw classNotFound()
-  }
+  list,
+  findOwned,
+  create,
+  update,
+  regenerateJoinCode,
+  setJoinCodeEnabled,
+  archive
 }
