@@ -1,3 +1,4 @@
+import { after } from 'next/server'
 import { createTransport } from 'nodemailer'
 
 type Email = {
@@ -26,4 +27,18 @@ const createTransporter = () =>
 
 export const sendEmail = async (email: Email) => {
   await createTransporter().sendMail(email)
+}
+
+// After the response, so its timing doesn't reveal which emails have an account. A failed address
+// doesn't stop the others (#10)
+export const scheduleEmails = (emails: Email[]) => {
+  after(async () => {
+    for (const email of emails) {
+      try {
+        await sendEmail(email)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  })
 }

@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
-import { betterAuth } from 'better-auth'
+import { betterAuth, resolveDynamicBaseURL } from 'better-auth'
 import {
   addOAuthServerContext,
   APIError,
@@ -57,23 +57,30 @@ export const withSignUpRole = <T>(role: UserRole, signUp: () => Promise<T>) =>
 const isUserRole = (value: unknown): value is UserRole =>
   USER_ROLES.includes(value as UserRole)
 
+// Each Preview deployment has its own URL (#2); only this project's hosts are accepted, not any
+// *.vercel.app
+const baseURL = {
+  allowedHosts: [
+    'localhost:3000',
+    'inovaclass.diasjoaovitor.com.br',
+    'inova-class.vercel.app',
+    'inova-class-*-diasjoaovitors-projects.vercel.app'
+  ],
+  protocol: process.env.VERCEL ? ('https' as const) : ('http' as const)
+}
+
+// Links sent by email go through the allowlist, since a forged Host header would otherwise point
+// them at another site (#10)
+export const appBaseURL = (headers: Headers) =>
+  resolveDynamicBaseURL(baseURL, headers, '')
+
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
     provider: 'pg',
     schema,
     usePlural: true
   }),
-  // Each Preview deployment has its own URL (#2); only this project's hosts are accepted, not any
-  // *.vercel.app
-  baseURL: {
-    allowedHosts: [
-      'localhost:3000',
-      'inovaclass.diasjoaovitor.com.br',
-      'inova-class.vercel.app',
-      'inova-class-*-diasjoaovitors-projects.vercel.app'
-    ],
-    protocol: process.env.VERCEL ? 'https' : 'http'
-  },
+  baseURL,
   advanced: {
     database: { generateId: 'uuid' }
   },
@@ -93,7 +100,7 @@ export const auth = betterAuth({
         required: false,
         input: false
       },
-      // Set for accounts created with a temporary password (#10)
+      // Set for accounts with a temporary password (#5), until #62 removes it
       mustChangePassword: {
         type: 'boolean',
         required: true,

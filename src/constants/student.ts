@@ -1,0 +1,3 @@
+export const STUDENT_INVITE_LIST_MAX = 50
+
+export const STUDENT_INVITE_EXPIRATION_DAYS = 7

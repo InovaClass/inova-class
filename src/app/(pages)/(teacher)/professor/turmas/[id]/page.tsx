@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { requireRole } from '@/entry/session'
 import { classModel } from '@/models/class/model'
 
@@ -31,6 +33,15 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
       <p className="text-xs leading-relaxed text-muted-foreground">
         Os alunos desta turma aparecerão aqui.
       </p>
+      {/* The frame is drawn outside the link, so it needs room for it */}
+      <div className="p-1.5">
+        <Link
+          href={`/professor/turmas/${classId}/alunos/novo`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Convidar alunos
+        </Link>
+      </div>
     </ClassShell>
   )
 }

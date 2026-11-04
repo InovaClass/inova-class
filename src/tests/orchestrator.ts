@@ -58,8 +58,8 @@ const waitForLinkSentTo = async (
   throw new Error(`No email with a link reached ${email}`)
 }
 
-// Stands in for a teacher issuing a temporary password until #10 adds that flow. The database is
-// imported lazily so the e2e tests, which run outside Next, only load the local settings when they
+// Nothing issues a temporary password anymore; this keeps the flow tested until #62 removes it. The
+// database is imported lazily so the e2e tests, which run outside Next, only load the local settings when they
 // need it
 const requirePasswordChange = async (email: string) => {
   if (!process.env.DATABASE_URL) process.loadEnvFile('.env.development')
