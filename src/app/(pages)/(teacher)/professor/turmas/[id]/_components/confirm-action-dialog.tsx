@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { type ReactNode, useActionState, useState } from 'react'
 
 import {
   AlertDialogCancel,
@@ -20,7 +20,7 @@ import {
 import type { FormState } from '@/entry/form-action'
 
 type ConfirmActionDialogProps = {
-  triggerLabel: string
+  triggerLabel: ReactNode
   title: string
   description: string
   confirmLabel: string

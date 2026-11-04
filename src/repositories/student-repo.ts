@@ -8,6 +8,8 @@ import {
   verifications
 } from '@/infra/database/schema'
 
+import { reactivateEndedEnrollment } from './enrollment-repo'
+
 const INVITE_PREFIX = 'student-invite:'
 
 type NewStudent = {
@@ -107,7 +109,7 @@ export const studentRepo = {
           ? await transaction
               .insert(enrollments)
               .values(newEnrollments)
-              .onConflictDoNothing()
+              .onConflictDoUpdate(reactivateEndedEnrollment)
               .returning({ studentId: enrollments.studentId })
           : []
       })

@@ -3,7 +3,8 @@ import { describe, expect, test } from 'vitest'
 
 import type { UserRole } from '@/constants/user'
 import { database } from '@/infra/database/client'
-import { enrollments, users } from '@/infra/database/schema'
+import { accounts, enrollments, users } from '@/infra/database/schema'
+import { NotFoundError } from '@/infra/errors'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
 import { orchestrator } from '@/tests/orchestrator'
@@ -32,6 +33,25 @@ const classIdsOf = async (studentId: string) => {
     .from(enrollments)
     .where(eq(enrollments.studentId, studentId))
   return rows.map(({ classId }) => classId)
+}
+
+const addAccount = async (userId: string, providerId: string) =>
+  database
+    .insert(accounts)
+    .values({ userId, accountId: crypto.randomUUID(), providerId })
+
+const nameOf = async (userId: string) => {
+  const [user] = await database
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, userId))
+  return user?.name
+}
+
+const enrollByCode = async (joinCode: string) => {
+  const studentId = await newUserId('student')
+  await enrollmentModel.join(studentId, { code: joinCode })
+  return studentId
 }
 
 const invalidCode = {
@@ -116,6 +136,141 @@ describe('enrollmentModel', () => {
         ).rejects.toMatchObject(invalidCode)
       }
       expect(await classIdsOf(studentId)).toEqual([])
+    })
+  })
+
+  describe('listRoster', () => {
+    test('shows the email of pending students only, once per student', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const pendingId = await enrollByCode(schoolClass.joinCode)
+      const activeId = await enrollByCode(schoolClass.joinCode)
+      await addAccount(activeId, 'credential')
+      await addAccount(activeId, 'google')
+
+      const roster = await enrollmentModel.listRoster(teacherId, schoolClass.id)
+
+      expect(roster).toHaveLength(2)
+      expect(roster.find(({ id }) => id === activeId)).toEqual({
+        id: activeId,
+        name: await nameOf(activeId),
+        username: null,
+        pending: false,
+        email: undefined
+      })
+      expect(roster.find(({ id }) => id === pendingId)).toMatchObject({
+        pending: true,
+        email: expect.stringContaining('@example.com')
+      })
+    })
+
+    test('sorts by name following pt-BR', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      for (const name of ['Bruno', 'Zeca', 'Ágata']) {
+        const studentId = await enrollByCode(schoolClass.joinCode)
+        await database
+          .update(users)
+          .set({ name })
+          .where(eq(users.id, studentId))
+      }
+
+      const roster = await enrollmentModel.listRoster(teacherId, schoolClass.id)
+
+      expect(roster.map(({ name }) => name)).toEqual(['Ágata', 'Bruno', 'Zeca'])
+    })
+
+    test('rejects a class of another teacher', async () => {
+      const { schoolClass } = await newClass()
+      const other = await newClass()
+
+      await expect(
+        enrollmentModel.listRoster(other.teacherId, schoolClass.id)
+      ).rejects.toBeInstanceOf(NotFoundError)
+    })
+  })
+
+  describe('remove', () => {
+    test('takes the student out of the roster and keeps the account', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const studentId = await enrollByCode(schoolClass.joinCode)
+
+      await enrollmentModel.remove(teacherId, schoolClass.id, studentId)
+
+      expect(
+        await enrollmentModel.listRoster(teacherId, schoolClass.id)
+      ).toEqual([])
+      expect(await nameOf(studentId)).toBeDefined()
+    })
+
+    test('leaves the other classes of the student alone', async () => {
+      const first = await newClass()
+      const second = await newClass()
+      const studentId = await enrollByCode(first.schoolClass.joinCode)
+      await enrollmentModel.join(studentId, {
+        code: second.schoolClass.joinCode
+      })
+
+      await enrollmentModel.remove(
+        first.teacherId,
+        first.schoolClass.id,
+        studentId
+      )
+
+      const roster = await enrollmentModel.listRoster(
+        second.teacherId,
+        second.schoolClass.id
+      )
+      expect(roster.map(({ id }) => id)).toEqual([studentId])
+    })
+
+    test('rejects a class of another teacher and keeps the enrollment', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const other = await newClass()
+      const studentId = await enrollByCode(schoolClass.joinCode)
+
+      await expect(
+        enrollmentModel.remove(other.teacherId, schoolClass.id, studentId)
+      ).rejects.toBeInstanceOf(NotFoundError)
+
+      expect(
+        await enrollmentModel.listRoster(teacherId, schoolClass.id)
+      ).toHaveLength(1)
+    })
+
+    test('rejects a student out of the class, one already removed and a malformed id', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const removedId = await enrollByCode(schoolClass.joinCode)
+      await enrollmentModel.remove(teacherId, schoolClass.id, removedId)
+      const outsiderId = await newUserId('student')
+
+      for (const studentId of [removedId, outsiderId, 'not-a-uuid']) {
+        await expect(
+          enrollmentModel.remove(teacherId, schoolClass.id, studentId)
+        ).rejects.toBeInstanceOf(NotFoundError)
+      }
+    })
+
+    test('a removed student comes back by code in the same enrollment', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const studentId = await enrollByCode(schoolClass.joinCode)
+      const [before] = await database
+        .select({ id: enrollments.id })
+        .from(enrollments)
+        .where(eq(enrollments.studentId, studentId))
+      await enrollmentModel.remove(teacherId, schoolClass.id, studentId)
+
+      const result = await enrollmentModel.join(studentId, {
+        code: schoolClass.joinCode
+      })
+
+      expect(result.alreadyEnrolled).toBe(false)
+      const rows = await database
+        .select({ id: enrollments.id })
+        .from(enrollments)
+        .where(eq(enrollments.studentId, studentId))
+      expect(rows).toEqual([before])
+      expect(
+        await enrollmentModel.listRoster(teacherId, schoolClass.id)
+      ).toHaveLength(1)
     })
   })
 })
