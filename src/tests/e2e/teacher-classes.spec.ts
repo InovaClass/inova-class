@@ -39,6 +39,31 @@ test('a teacher creates, edits and archives a class', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '404' })).toBeVisible()
 })
 
+test('a teacher restores an archived class to the dashboard', async ({
+  page
+}) => {
+  // Goes through many routes, each compiled by `pnpm dev` on its first request
+  test.slow()
+  await signUpTeacher(page)
+  const { name } = await createClass(page)
+
+  await page.getByRole('button', { name: 'Arquivar' }).click()
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: 'Arquivar' })
+    .click()
+  await expect(page.getByText('Nenhuma turma ainda')).toBeVisible()
+
+  await page.getByRole('link', { name: 'Turmas arquivadas' }).click()
+  await page.getByRole('button', { name: `Restaurar ${name}` }).click()
+  await expect(page).toHaveURL('/professor')
+  await page.getByRole('link', { name }).click()
+  await expect(page.getByRole('heading', { name })).toBeVisible()
+
+  await page.goto('/professor/turmas/arquivadas')
+  await expect(page.getByText('Nenhuma turma arquivada')).toBeVisible()
+})
+
 test('the archive dialog stays open while archiving and forgets a failure once closed', async ({
   page,
   context

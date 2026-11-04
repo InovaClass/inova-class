@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { JOIN_CODE_LENGTH } from '@/constants/class'
+import { JOIN_CODE_LENGTH } from '@/models/class/constants'
 
 // Imported by the client forms too, so it must not import anything server-only
 

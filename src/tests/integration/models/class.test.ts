@@ -242,4 +242,67 @@ describe('classModel', () => {
       expect(await findStoredClass(id)).toMatchObject({ archivedAt: null })
     })
   })
+
+  describe('listArchived', () => {
+    test('returns only the archived classes of the teacher, last archived first', async () => {
+      const teacherId = await newTeacherId()
+      const otherTeacherId = await newTeacherId()
+      const first = await classModel.create(teacherId, orchestrator.newClass())
+      const second = await classModel.create(teacherId, orchestrator.newClass())
+      await classModel.create(teacherId, orchestrator.newClass())
+      const other = await classModel.create(
+        otherTeacherId,
+        orchestrator.newClass()
+      )
+      await classModel.archive(teacherId, second.id)
+      await classModel.archive(teacherId, first.id)
+      await classModel.archive(otherTeacherId, other.id)
+
+      const listed = await classModel.listArchived(teacherId)
+
+      expect(listed.map(({ id }) => id)).toEqual([first.id, second.id])
+    })
+  })
+
+  describe('restore', () => {
+    test('brings the class back with its join code', async () => {
+      const teacherId = await newTeacherId()
+      const { id, joinCode } = await classModel.create(
+        teacherId,
+        orchestrator.newClass()
+      )
+      await classModel.archive(teacherId, id)
+
+      await classModel.restore(teacherId, id)
+
+      expect(await classModel.findOwned(teacherId, id)).toMatchObject({
+        joinCode,
+        archivedAt: null
+      })
+      expect(await classModel.listArchived(teacherId)).toEqual([])
+    })
+
+    test('rejects another teacher, an active class and a malformed id', async () => {
+      const teacherId = await newTeacherId()
+      const otherTeacherId = await newTeacherId()
+      const active = await classModel.create(teacherId, orchestrator.newClass())
+      const archived = await classModel.create(
+        teacherId,
+        orchestrator.newClass()
+      )
+      await classModel.archive(teacherId, archived.id)
+
+      await expect(
+        classModel.restore(otherTeacherId, archived.id)
+      ).rejects.toBeInstanceOf(NotFoundError)
+      await expect(
+        classModel.restore(teacherId, active.id)
+      ).rejects.toBeInstanceOf(NotFoundError)
+      await expect(
+        classModel.restore(teacherId, 'not-a-uuid')
+      ).rejects.toBeInstanceOf(NotFoundError)
+      const stored = await findStoredClass(archived.id)
+      expect(stored?.archivedAt).toBeInstanceOf(Date)
+    })
+  })
 })

@@ -91,7 +91,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
   - `src/entry/`: adapts Server Components and Server Actions to the models, with the wrapper every form's Server Action goes through (`form-action.ts`) and the per-request session (`session.ts`).
   - `src/models/<domain>/`: business rules (`model.ts`, with the `<domain>Model` export at the end of the file) and Zod schemas (`schema.ts`, also imported by client forms). A model validates its input and throws the errors from `src/infra/errors.ts`.
   - `src/infra/`: auth, database, email and the error classes.
-  - `src/constants/`: values shared across layers, such as user roles and password bounds.
+  - `src/constants/`: values used by more than one domain or by a layer below the models, such as user roles and password bounds. A value of one domain lives in `src/models/<domain>/constants.ts`.
   - `src/repositories/<domain>-repo.ts`: the queries on our own tables, called only by models, with the `<domain>Repo` export at the end of the file. `src/dtos/` is added with its first use.
 - `action.ts` (`'use server'`) is only for mutations; a Server Component's data reads go in `data.ts`.
 
@@ -115,6 +115,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Every account has a valid email, verified before its first sign-in. Students also pick a username (Better Auth `username` plugin) and can sign in with either; `/entrar` takes an email or a username in the same field.
 - Teachers land on `/professor` and students on `/aluno`, and `/` redirects to the sign-in page or to the user's dashboard. Each page of those areas, and its layout, calls `requireRole(role)` (`src/entry/session.ts`), which redirects a signed-out user and a user of another role.
 - Signing up requires accepting the terms (`/termos`) and the privacy policy (`/privacidade`), and `users.terms_accepted_at` records when. Their controller name, contact email and update date live in `src/app/(pages)/(legal)/legal-info.ts`.
+- A teacher restores an archived class at `/professor/turmas/arquivadas`, with its students and join code.
 - A teacher invites students to a class by email at `/professor/turmas/[id]/alunos/novo`; the invite link (`/convite`, 7 days) sets the password, records the terms acceptance and verifies the email.
 - Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up pages do (keeping the name and email, not the picture), and Google links to an existing account only when both sides verified the same email.
 - The auth pages (`/cadastro` with the role choice, `/cadastro/professor`, `/cadastro/aluno`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.

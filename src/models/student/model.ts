@@ -1,4 +1,3 @@
-import { STUDENT_INVITE_EXPIRATION_DAYS } from '@/constants/student'
 import { appBaseURL, auth } from '@/infra/auth'
 import { scheduleEmails } from '@/infra/email/mailer'
 import {
@@ -10,6 +9,7 @@ import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { studentRepo } from '@/repositories/student-repo'
 
+import { STUDENT_INVITE_EXPIRATION_DAYS } from './constants'
 import { invalidInvite } from './errors'
 import { inviteStudentsSchema } from './schema'
 import { generateUsername, usernameBase } from './username'

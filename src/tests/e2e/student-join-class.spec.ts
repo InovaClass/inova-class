@@ -1,6 +1,6 @@
 import { type Browser, expect, type Page, test } from '@playwright/test'
 
-import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from '@/constants/class'
+import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from '@/models/class/constants'
 
 import { createClass } from './classes'
 import { signUpStudent, signUpTeacher } from './sign-up'

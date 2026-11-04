@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
-import { STUDENT_INVITE_LIST_MAX } from '@/constants/student'
 import { NAME_MAX_LENGTH } from '@/constants/user'
+
+import { STUDENT_INVITE_LIST_MAX } from './constants'
 
 // Imported by the client forms too, so it must not import anything server-only
 
