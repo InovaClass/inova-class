@@ -25,14 +25,23 @@ const TeacherDashboardPage = async () => {
     <>
       <header className="flex flex-wrap items-center justify-between gap-6">
         <h1 className="text-sm leading-relaxed">Painel do professor</h1>
-        {classes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-6 p-1.5">
+          {/* Outside the empty state too: a teacher who archived every class still needs the way back */}
           <Link
-            href={NEW_CLASS_PATH}
+            href="/professor/turmas/arquivadas"
             className={linkButtonVariants({ variant: 'outline' })}
           >
-            Nova turma
+            Turmas arquivadas
           </Link>
-        )}
+          {classes.length > 0 && (
+            <Link
+              href={NEW_CLASS_PATH}
+              className={linkButtonVariants({ variant: 'outline' })}
+            >
+              Nova turma
+            </Link>
+          )}
+        </div>
       </header>
       {classes.length > 0 ? (
         <ClassSlots

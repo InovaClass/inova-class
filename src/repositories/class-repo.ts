@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm'
+import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 
 import { database } from '@/infra/database/client'
 import { classes } from '@/infra/database/schema'
@@ -21,6 +21,17 @@ const listActive = async (teacherId: string) =>
     .from(classes)
     .where(and(eq(classes.teacherId, teacherId), isNull(classes.archivedAt)))
     .orderBy(desc(classes.createdAt))
+
+const listArchived = async (teacherId: string) =>
+  database
+    .select({
+      id: classes.id,
+      name: classes.name,
+      description: classes.description
+    })
+    .from(classes)
+    .where(and(eq(classes.teacherId, teacherId), isNotNull(classes.archivedAt)))
+    .orderBy(desc(classes.archivedAt))
 
 const findActive = async (teacherId: string, classId: string) => {
   const [schoolClass] = await database
@@ -86,12 +97,29 @@ const archiveActive = async (teacherId: string, classId: string) => {
   return schoolClass
 }
 
+const restoreArchived = async (teacherId: string, classId: string) => {
+  const [schoolClass] = await database
+    .update(classes)
+    .set({ archivedAt: null })
+    .where(
+      and(
+        eq(classes.id, classId),
+        eq(classes.teacherId, teacherId),
+        isNotNull(classes.archivedAt)
+      )
+    )
+    .returning()
+  return schoolClass
+}
+
 export const classRepo = {
   listActive,
+  listArchived,
   findActive,
   findJoinable,
   isJoinCodeTaken,
   insert,
   updateActive,
-  archiveActive
+  archiveActive,
+  restoreArchived
 }

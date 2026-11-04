@@ -35,6 +35,9 @@ const updateOwned = async (
 
 const list = async (teacherId: string) => classRepo.listActive(teacherId)
 
+const listArchived = async (teacherId: string) =>
+  classRepo.listArchived(teacherId)
+
 const findOwned = async (teacherId: string, classId: string) =>
   isClassId(classId) ? classRepo.findActive(teacherId, classId) : undefined
 
@@ -68,12 +71,21 @@ const archive = async (teacherId: string, classId: string) => {
   if (!schoolClass) throw classNotFound()
 }
 
+const restore = async (teacherId: string, classId: string) => {
+  const schoolClass = isClassId(classId)
+    ? await classRepo.restoreArchived(teacherId, classId)
+    : undefined
+  if (!schoolClass) throw classNotFound()
+}
+
 export const classModel = {
   list,
+  listArchived,
   findOwned,
   create,
   update,
   regenerateJoinCode,
   setJoinCodeEnabled,
-  archive
+  archive,
+  restore
 }
