@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from '@/constants/class'
+import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from '@/models/class/constants'
 import { orchestrator } from '@/tests/orchestrator'
 
 import { createClass } from './classes'

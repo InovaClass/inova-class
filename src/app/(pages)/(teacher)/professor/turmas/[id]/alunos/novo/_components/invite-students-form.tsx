@@ -5,7 +5,7 @@ import { FieldFrame } from '@/app/components/ui/custom/form-field'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
-import { STUDENT_INVITE_LIST_MAX } from '@/constants/student'
+import { STUDENT_INVITE_LIST_MAX } from '@/models/student/constants'
 import { inviteStudentsSchema } from '@/models/student/schema'
 
 import { inviteStudents } from './action'

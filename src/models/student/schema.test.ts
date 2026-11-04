@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { STUDENT_INVITE_LIST_MAX } from '@/constants/student'
-
+import { STUDENT_INVITE_LIST_MAX } from './constants'
 import { inviteStudentsSchema } from './schema'
 
 const parse = (students: string) => inviteStudentsSchema.safeParse({ students })

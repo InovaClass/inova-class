@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from '@/constants/class'
-
+import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from './constants'
 import { generateJoinCode } from './join-code'
 
 describe('generateJoinCode', () => {
