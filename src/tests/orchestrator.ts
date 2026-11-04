@@ -1,7 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
 
 import { fakerPT_BR as faker } from '@faker-js/faker'
-import { eq } from 'drizzle-orm'
 
 const MAILPIT_URL = 'http://localhost:8025/api/v1'
 
@@ -58,19 +57,6 @@ const waitForLinkSentTo = async (
   throw new Error(`No email with a link reached ${email}`)
 }
 
-// Nothing issues a temporary password anymore; this keeps the flow tested until #62 removes it. The
-// database is imported lazily so the e2e tests, which run outside Next, only load the local settings when they
-// need it
-const requirePasswordChange = async (email: string) => {
-  if (!process.env.DATABASE_URL) process.loadEnvFile('.env.development')
-  const { database } = await import('@/infra/database/client')
-  const { users } = await import('@/infra/database/schema')
-  await database
-    .update(users)
-    .set({ mustChangePassword: true })
-    .where(eq(users.email, email))
-}
-
 export const orchestrator = {
   newEmail,
   newUsername,
@@ -79,6 +65,5 @@ export const orchestrator = {
   newClass,
   newPassword,
   listEmailsTo,
-  waitForLinkSentTo,
-  requirePasswordChange
+  waitForLinkSentTo
 }

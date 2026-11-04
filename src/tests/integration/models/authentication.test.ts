@@ -45,16 +45,6 @@ const findUser = async (email: string) => {
   return user
 }
 
-const sessionHeadersOf = async (email: string, password: string) => {
-  const response = await auth.api.signInEmail({
-    body: { email, password },
-    headers,
-    returnHeaders: true
-  })
-  const cookie = response.headers.get('set-cookie')!.split(';', 1)[0]!
-  return new Headers({ host: 'localhost:3000', cookie })
-}
-
 describe('authenticationModel', () => {
   describe('signUp', () => {
     test('creates an unverified teacher and emails a verification link', async () => {
@@ -190,7 +180,7 @@ describe('authenticationModel', () => {
 
       await expect(
         authenticationModel.signIn({ identifier: email, password }, { headers })
-      ).resolves.toEqual({ mustChangePassword: false })
+      ).resolves.toBeUndefined()
     })
 
     test('signs a verified student in by username', async () => {
@@ -202,7 +192,7 @@ describe('authenticationModel', () => {
           { identifier: username, password },
           { headers }
         )
-      ).resolves.toEqual({ mustChangePassword: false })
+      ).resolves.toBeUndefined()
     })
 
     test('rejects an unverified student signing in by username', async () => {
@@ -226,58 +216,6 @@ describe('authenticationModel', () => {
           )
         ).rejects.toThrow('E-mail, usuário ou senha incorretos.')
       }
-    })
-
-    test('reports a temporary password', async () => {
-      const { email, username, password } = await signUpStudent()
-      await verify(email)
-      await orchestrator.requirePasswordChange(email)
-
-      await expect(
-        authenticationModel.signIn(
-          { identifier: username, password },
-          { headers }
-        )
-      ).resolves.toEqual({ mustChangePassword: true })
-    })
-  })
-
-  describe('changePassword', () => {
-    test('replaces the password and clears the temporary flag', async () => {
-      const { email, username, password } = await signUpStudent()
-      await verify(email)
-      await orchestrator.requirePasswordChange(email)
-      const newPassword = orchestrator.newPassword()
-
-      await authenticationModel.changePassword(
-        { password: newPassword, passwordConfirmation: newPassword },
-        { headers: await sessionHeadersOf(email, password) }
-      )
-
-      expect(await findUser(email)).toMatchObject({ mustChangePassword: false })
-      await expect(
-        authenticationModel.signIn(
-          { identifier: username, password: newPassword },
-          { headers }
-        )
-      ).resolves.toEqual({ mustChangePassword: false })
-      await expect(
-        authenticationModel.signIn(
-          { identifier: username, password },
-          { headers }
-        )
-      ).rejects.toThrow(UnauthorizedError)
-    })
-
-    test('requires a session', async () => {
-      const password = orchestrator.newPassword()
-
-      await expect(
-        authenticationModel.changePassword(
-          { password, passwordConfirmation: password },
-          { headers }
-        )
-      ).rejects.toThrow(UnauthorizedError)
     })
   })
 
