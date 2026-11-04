@@ -116,6 +116,7 @@ export const enrollments = snakeCase.table(
     classId: uuid()
       .notNull()
       .references(() => classes.id, { onDelete: 'cascade' }),
+    endedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },
   (table) => [

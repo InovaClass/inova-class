@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 
+import { DASHBOARD_PATHS } from '@/constants/user'
 import { orchestrator } from '@/tests/orchestrator'
 
 export const signUpTeacher = async (page: Page) => {
@@ -16,9 +17,11 @@ export const signUpTeacher = async (page: Page) => {
     page.getByText(`Enviamos um link de confirmação para ${teacher.email}`)
   ).toBeVisible()
 
-  // The verification link also signs the user in
+  // The verification link also signs the user in. It lands on `/`, whose redirect arrives in the
+  // stream after the `load` event (`loading.tsx`) and would overtake the next `goto`
   const link = await orchestrator.waitForLinkSentTo(teacher.email)
   await page.goto(link.toString())
+  await expect(page).toHaveURL(DASHBOARD_PATHS.teacher)
   return teacher
 }
 
@@ -39,5 +42,6 @@ export const signUpStudent = async (page: Page) => {
 
   const link = await orchestrator.waitForLinkSentTo(student.email)
   await page.goto(link.toString())
+  await expect(page).toHaveURL(DASHBOARD_PATHS.student)
   return student
 }

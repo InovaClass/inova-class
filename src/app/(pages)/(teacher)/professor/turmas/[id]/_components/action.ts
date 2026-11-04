@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { formAction, type FormState, formSuccess } from '@/entry/form-action'
 import { requireRole } from '@/entry/session'
 import { classModel } from '@/models/class/model'
+import { enrollmentModel } from '@/models/enrollment/model'
 
 export const archiveClass = async (classId: string): Promise<FormState> =>
   formAction({}, async () => {
@@ -32,4 +33,15 @@ export const setJoinCodeEnabled = async (
     await classModel.setJoinCodeEnabled(user.id, classId, enabled)
     revalidatePath('/professor', 'layout')
     return formSuccess(enabled ? 'Código ativado.' : 'Código desativado.')
+  })
+
+export const removeStudent = async (
+  classId: string,
+  studentId: string
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('teacher')
+    await enrollmentModel.remove(user.id, classId, studentId)
+    revalidatePath('/professor', 'layout')
+    return formSuccess('Aluno removido da turma.')
   })

@@ -168,6 +168,28 @@ describe('studentModel', () => {
       expect((await findUser(student.email))!.createdById).toBeNull()
     })
 
+    test('a new invite brings a removed student back and notifies them again', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const student = await signUpActiveStudent()
+      const classId = schoolClass.id
+      const countNotices = async () => {
+        const messages = await orchestrator.listEmailsTo(student.email)
+        return messages.filter(({ Subject }) =>
+          Subject.includes('entrou em uma turma')
+        ).length
+      }
+      await invite({ teacherId, classId }, student)
+      await expect.poll(countNotices).toBe(1)
+      const { id: studentId } = (await findUser(student.email))!
+      await enrollmentModel.remove(teacherId, classId, studentId)
+
+      await invite({ teacherId, classId }, student)
+
+      const roster = await enrollmentModel.listRoster(teacherId, classId)
+      expect(roster.map(({ id }) => id)).toEqual([studentId])
+      await expect.poll(countNotices).toBe(2)
+    })
+
     test('gives the same answer for a teacher, without enrolling or emailing', async () => {
       const { teacherId, schoolClass } = await newClass()
       const other = await newTeacher()
