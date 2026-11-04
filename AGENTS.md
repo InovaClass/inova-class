@@ -35,7 +35,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
   - `src/infra/` holds the technical pieces: `auth.ts` (the Better Auth config), `database/`, `email/`, and `errors.ts` (`AppError` and its subclasses, with a user-facing `message` and `action`).
   - Mark a module that must never reach the client with `import 'server-only'` (aliased to an empty module in `vitest.config.mts`), as in `src/entry/session.ts`. `src/infra/auth.ts` stays without it: the Better Auth CLI loads that file outside Next.js and can't resolve the import.
   - `src/constants/<topic>.ts` holds values shared across layers (e.g. `USER_ROLES`, the password length bounds that both the Zod schemas and Better Auth use).
-  - `src/repositories/<domain>-repo.ts` exports `<domain>Repo`, the queries on our own Drizzle tables, once a model needs more than one or two. It holds no business rules and only models call it.
+  - `src/repositories/<domain>-repo.ts` exports `<domain>Repo`, the queries on our own Drizzle tables, once a model needs more than one or two, in the same shape as a model: each query is its own `const` and the object that lists them comes at the end of the file. It holds no business rules and only models call it.
   - Not created yet, add each with its first use: `src/dtos/<domain>-dto.ts` for what a page or API may expose of an entity, decided per viewer (#6). `src/types/` only for types shared across layers.
 - `actions.ts`/`action.ts` with `'use server'` is only for mutations called from the client. A function a Server Component calls to read data is not a Server Action: name its file `data.ts`.
 - Routes are grouped under `src/app/(pages)` (a route group, so it doesn't affect the URL).
