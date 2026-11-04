@@ -15,8 +15,6 @@ export const getSession = cache(async () =>
 export const requireSession = async () => {
   const session = await getSession()
   if (!session) redirect('/entrar')
-  // Otherwise typing a dashboard URL would skip the mandatory change of a temporary password
-  if (session.user.mustChangePassword) redirect('/alterar-senha')
   return session
 }
 

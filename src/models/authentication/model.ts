@@ -2,12 +2,10 @@ import { isAPIError } from 'better-auth/api'
 
 import type { UserRole } from '@/constants/user'
 import { auth, withSignUpRole } from '@/infra/auth'
-import { UnauthorizedError } from '@/infra/errors'
 import { studentModel } from '@/models/student/model'
 
 import { toAppError, toFieldError } from './errors'
 import {
-  changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   signInSchema,
@@ -62,13 +60,10 @@ const signUpStudent = async (
   return { name, username, email }
 }
 
-type SignedInUser = Partial<typeof auth.$Infer.Session.user>
-
 // A username can't contain `@` (USERNAME_PATTERN), so it tells the two apart
 const signIn = async (input: unknown, { headers }: RequestContext) => {
   const { identifier, password } = signInSchema.parse(input)
-  // The plugin types its user without the additional fields, but returns them like signInEmail
-  const { user } = await translateErrors<{ user: SignedInUser }>(
+  await translateErrors<unknown>(
     identifier.includes('@')
       ? auth.api.signInEmail({ body: { email: identifier, password }, headers })
       : auth.api.signInUsername({
@@ -76,7 +71,6 @@ const signIn = async (input: unknown, { headers }: RequestContext) => {
           headers
         })
   )
-  return { mustChangePassword: Boolean(user.mustChangePassword) }
 }
 
 const signInWithGoogle = async ({
@@ -131,21 +125,6 @@ const resetPassword = async (
   )
 }
 
-// The user just proved the temporary password by signing in, so it isn't asked again (#5)
-const changePassword = async (input: unknown, { headers }: RequestContext) => {
-  const { password } = changePasswordSchema.parse(input)
-  const session = await auth.api.getSession({ headers })
-  if (!session) throw new UnauthorizedError()
-  const context = await auth.$context
-  await context.internalAdapter.updatePassword(
-    session.user.id,
-    await context.password.hash(password)
-  )
-  await context.internalAdapter.updateUser(session.user.id, {
-    mustChangePassword: false
-  })
-}
-
 const signOut = async ({ headers }: RequestContext) => {
   await translateErrors(auth.api.signOut({ headers }))
 }
@@ -157,6 +136,5 @@ export const authenticationModel = {
   signInWithGoogle,
   signOut,
   requestPasswordReset,
-  resetPassword,
-  changePassword
+  resetPassword
 }

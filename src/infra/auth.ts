@@ -99,13 +99,6 @@ export const auth = betterAuth({
         type: 'date',
         required: false,
         input: false
-      },
-      // Set for accounts with a temporary password (#5), until #62 removes it
-      mustChangePassword: {
-        type: 'boolean',
-        required: true,
-        defaultValue: false,
-        input: false
       }
     }
   },

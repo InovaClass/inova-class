@@ -70,35 +70,3 @@ test('shows a taken username error on its field', async ({ page }) => {
     /Este nome de usuário já está em uso\./
   )
 })
-
-test('a temporary password must be changed after signing in', async ({
-  page
-}) => {
-  // Goes through many routes, so it passes the default timeout while `pnpm dev` compiles them
-  test.slow()
-
-  await page.goto('/alterar-senha')
-  await expect(page).toHaveURL('/entrar')
-
-  const { email, username, password } = await signUpStudent(page)
-  const link = await orchestrator.waitForLinkSentTo(email)
-  await page.goto(link.toString())
-  await page.context().clearCookies()
-  await orchestrator.requirePasswordChange(email)
-
-  await signIn(page, username, password)
-  await expect(page).toHaveURL('/alterar-senha')
-
-  const newPassword = orchestrator.newPassword()
-  await page.getByLabel('Nova senha', { exact: true }).fill(newPassword)
-  await page.getByLabel('Confirmar nova senha').fill(newPassword)
-  await page.getByRole('button', { name: 'Salvar senha' }).click()
-  await expect(page).toHaveURL('/aluno')
-
-  await page.goto('/alterar-senha')
-  await expect(page).toHaveURL('/aluno')
-
-  await page.context().clearCookies()
-  await signIn(page, username, newPassword)
-  await expect(page).toHaveURL('/aluno')
-})

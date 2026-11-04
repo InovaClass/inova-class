@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test'
 
-import { orchestrator } from '@/tests/orchestrator'
-
 import { signUpStudent, signUpTeacher } from './sign-up'
 
 test('a signed-out visitor is sent to the sign-in page', async ({ page }) => {
@@ -31,17 +29,6 @@ test('a student is kept out of the teacher area', async ({ page }) => {
 
   await page.goto('/professor')
   await expect(page).toHaveURL('/aluno')
-})
-
-test('a temporary password keeps the user out of the dashboards', async ({
-  page
-}) => {
-  const { email } = await signUpStudent(page)
-  await expect(page).toHaveURL('/aluno')
-  await orchestrator.requirePasswordChange(email)
-
-  await page.goto('/aluno')
-  await expect(page).toHaveURL('/alterar-senha')
 })
 
 test('signing out ends the session in both areas', async ({ page }) => {

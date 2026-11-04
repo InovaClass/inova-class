@@ -118,6 +118,3 @@ export const acceptInviteSchema = z
   .object({ password: newPassword, passwordConfirmation, acceptedTerms })
   .check(passwordsMatch)
 export type AcceptInviteInput = z.input<typeof acceptInviteSchema>
-
-export const changePasswordSchema = resetPasswordSchema
-export type ChangePasswordInput = z.input<typeof changePasswordSchema>

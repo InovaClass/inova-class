@@ -283,7 +283,7 @@ describe('studentModel', () => {
       for (const identifier of [student.email, stored!.username!]) {
         await expect(
           authenticationModel.signIn({ identifier, password }, { headers })
-        ).resolves.toEqual({ mustChangePassword: false })
+        ).resolves.toBeUndefined()
       }
       await expect(
         enrollmentModel.join(stored!.id, { code: schoolClass.joinCode })

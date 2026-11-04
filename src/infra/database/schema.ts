@@ -30,7 +30,6 @@ export const users = snakeCase.table('users', {
   username: text().unique(),
   displayUsername: text(),
   role: text({ enum: USER_ROLES }).notNull(),
-  mustChangePassword: boolean().notNull().default(false),
   termsAcceptedAt: timestamp({ withTimezone: true }),
   // Kept out of Better Auth's fields, since only `studentRepo` writes it and nothing reads it through
   // the session (#10)
