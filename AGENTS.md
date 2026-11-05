@@ -182,6 +182,8 @@ Before closing an issue, tick every completed checklist item (`- [x]`) in its bo
 
 `AGENTS.md` and `README.md` record only project conventions: what to do, where things live and how to handle a given case. Answers to the user's one-off questions (e.g. "why don't we use X?") stay in the conversation and are not written into them. Keep a "why" only when it prevents a likely mistaken "fix". If a change touches a convention, update both files in the same branch.
 
+[`docs/local-testing.md`](./docs/local-testing.md) is the step-by-step guide to trying every feature by hand. A change to what a user sees or does (a new flow, a renamed label, a removed page) updates it in the same branch.
+
 ## Task Rules
 
 Never start working on a task on your own, even when asked to move on to the next one or in auto/agentic mode. First present a summary of the plan (the issue, branch name, steps, files touched and any open decisions) and wait for explicit approval before creating the branch, installing dependencies or editing code. Read-only investigation (issues, docs, code) needs no approval.
