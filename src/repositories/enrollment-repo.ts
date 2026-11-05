@@ -1,7 +1,13 @@
 import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 
 import { database } from '@/infra/database/client'
-import { accounts, classes, enrollments, users } from '@/infra/database/schema'
+import {
+  accounts,
+  classes,
+  enrollments,
+  joinAttempts,
+  users
+} from '@/infra/database/schema'
 
 // A student who comes back keeps the same enrollment, and the game stats on it (#18). An enrollment
 // still active isn't touched, so `returning` only brings the ones that actually entered the class
@@ -67,9 +73,37 @@ const end = async (classId: string, studentId: string) => {
   return enrollment
 }
 
+// A single statement, so parallel requests can't all read the same count and pass the limit together
+const recordJoinAttempt = async (
+  studentId: string,
+  { now, expiredSince }: { now: Date; expiredSince: Date }
+) => {
+  const isExpired = sql`${joinAttempts.windowStartedAt} <= ${expiredSince.toISOString()}::timestamptz`
+  const [attempt] = await database
+    .insert(joinAttempts)
+    .values({ studentId, windowStartedAt: now, attempts: 1 })
+    .onConflictDoUpdate({
+      target: joinAttempts.studentId,
+      set: {
+        attempts: sql`case when ${isExpired} then 1 else ${joinAttempts.attempts} + 1 end`,
+        windowStartedAt: sql`case when ${isExpired} then ${now.toISOString()}::timestamptz else ${joinAttempts.windowStartedAt} end`
+      }
+    })
+    .returning()
+  return attempt!
+}
+
+const forgiveJoinAttempt = async (studentId: string) =>
+  database
+    .update(joinAttempts)
+    .set({ attempts: sql`greatest(${joinAttempts.attempts} - 1, 0)` })
+    .where(eq(joinAttempts.studentId, studentId))
+
 export const enrollmentRepo = {
   insert,
   listActiveClassesOf,
   listEnrolledStudents,
-  end
+  end,
+  recordJoinAttempt,
+  forgiveJoinAttempt
 }

@@ -1,0 +1,3 @@
+export const JOIN_ATTEMPTS_MAX = 10
+
+export const JOIN_ATTEMPTS_WINDOW_MINUTES = 15

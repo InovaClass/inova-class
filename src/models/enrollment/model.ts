@@ -5,7 +5,8 @@ import { classModel } from '@/models/class/model'
 import { classRepo } from '@/repositories/class-repo'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 
-import { studentNotInClass } from './errors'
+import { JOIN_ATTEMPTS_MAX, JOIN_ATTEMPTS_WINDOW_MINUTES } from './constants'
+import { studentNotInClass, tooManyJoinAttempts } from './errors'
 import { type JoinClassInput, joinClassSchema } from './schema'
 
 const requireOwnedClass = async (teacherId: string, classId: string) => {
@@ -13,8 +14,26 @@ const requireOwnedClass = async (teacherId: string, classId: string) => {
   if (!schoolClass) throw classNotFound()
 }
 
+const MINUTE_IN_MS = 60_000
+
+// Counted before the lookup, so parallel requests can't try more codes than the limit. Past the limit
+// even a valid code is rejected, otherwise an answer would still tell which codes exist
+const requireJoinAttempt = async (studentId: string) => {
+  const now = new Date()
+  const windowInMs = JOIN_ATTEMPTS_WINDOW_MINUTES * MINUTE_IN_MS
+  const { attempts, windowStartedAt } = await enrollmentRepo.recordJoinAttempt(
+    studentId,
+    { now, expiredSince: new Date(now.getTime() - windowInMs) }
+  )
+  if (attempts > JOIN_ATTEMPTS_MAX) {
+    const remainingInMs = windowStartedAt.getTime() + windowInMs - now.getTime()
+    throw tooManyJoinAttempts(Math.ceil(remainingInMs / MINUTE_IN_MS))
+  }
+}
+
 const join = async (studentId: string, input: JoinClassInput) => {
   const { code } = joinClassSchema.parse(input)
+  await requireJoinAttempt(studentId)
   const schoolClass = await classRepo.findJoinable(code)
   if (!schoolClass) {
     // Same answer for an unknown, a disabled and an archived code, so trying one reveals nothing
@@ -28,6 +47,7 @@ const join = async (studentId: string, input: JoinClassInput) => {
     ])
   }
 
+  await enrollmentRepo.forgiveJoinAttempt(studentId)
   const enrollment = await enrollmentRepo.insert(studentId, schoolClass.id)
   return { className: schoolClass.name, alreadyEnrolled: !enrollment }
 }

@@ -115,6 +115,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Every account has a valid email, verified before its first sign-in. Students also pick a username (Better Auth `username` plugin) and can sign in with either; `/entrar` takes an email or a username in the same field.
 - Teachers land on `/professor` and students on `/aluno`, and `/` redirects to the sign-in page or to the user's dashboard. Each page of those areas, and its layout, calls `requireRole(role)` (`src/entry/session.ts`), which redirects a signed-out user and a user of another role.
 - Signing up requires accepting the terms (`/termos`) and the privacy policy (`/privacidade`), and `users.terms_accepted_at` records when. Their controller name, contact email and update date live in `src/app/(pages)/(legal)/legal-info.ts`.
+- A student has 10 attempts with a wrong join code every 15 minutes.
 - A teacher restores an archived class at `/professor/turmas/arquivadas`, with its students and join code.
 - A teacher invites students to a class by email at `/professor/turmas/[id]/alunos/novo`; the invite link (`/convite`, 7 days) sets the password, records the terms acceptance and verifies the email.
 - Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up pages do (keeping the name and email, not the picture), and Google links to an existing account only when both sides verified the same email.

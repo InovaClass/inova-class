@@ -3,9 +3,18 @@ import { describe, expect, test } from 'vitest'
 
 import type { UserRole } from '@/constants/user'
 import { database } from '@/infra/database/client'
-import { accounts, enrollments, users } from '@/infra/database/schema'
+import {
+  accounts,
+  enrollments,
+  joinAttempts,
+  users
+} from '@/infra/database/schema'
 import { NotFoundError } from '@/infra/errors'
 import { classModel } from '@/models/class/model'
+import {
+  JOIN_ATTEMPTS_MAX,
+  JOIN_ATTEMPTS_WINDOW_MINUTES
+} from '@/models/enrollment/constants'
 import { enrollmentModel } from '@/models/enrollment/model'
 import { orchestrator } from '@/tests/orchestrator'
 
@@ -59,7 +68,109 @@ const invalidCode = {
   issues: [expect.objectContaining({ path: ['code'] })]
 }
 
+// 0 isn't in JOIN_CODE_ALPHABET, so no class ever has this code
+const UNKNOWN_CODE = '000000'
+
+const failJoinAttempts = async (studentId: string, times: number) => {
+  for (let attempt = 0; attempt < times; attempt++) {
+    await expect(
+      enrollmentModel.join(studentId, { code: UNKNOWN_CODE })
+    ).rejects.toMatchObject(invalidCode)
+  }
+}
+
+const moveJoinWindowBack = async (studentId: string, minutes: number) =>
+  database
+    .update(joinAttempts)
+    .set({ windowStartedAt: new Date(Date.now() - minutes * 60_000) })
+    .where(eq(joinAttempts.studentId, studentId))
+
 describe('enrollmentModel', () => {
+  describe('join attempts', () => {
+    test('rejects even a valid code past the limit and says when to try again', async () => {
+      const { schoolClass } = await newClass()
+      const studentId = await newUserId('student')
+      await failJoinAttempts(studentId, JOIN_ATTEMPTS_MAX)
+
+      await expect(
+        enrollmentModel.join(studentId, { code: schoolClass.joinCode })
+      ).rejects.toMatchObject({
+        name: 'TooManyRequestsError',
+        action: `Tente de novo em ${JOIN_ATTEMPTS_WINDOW_MINUTES} minutos.`
+      })
+      expect(await classIdsOf(studentId)).toEqual([])
+    })
+
+    test('uses the singular for the last minute', async () => {
+      const studentId = await newUserId('student')
+      await failJoinAttempts(studentId, JOIN_ATTEMPTS_MAX)
+      await moveJoinWindowBack(studentId, JOIN_ATTEMPTS_WINDOW_MINUTES - 0.5)
+
+      await expect(
+        enrollmentModel.join(studentId, { code: UNKNOWN_CODE })
+      ).rejects.toMatchObject({ action: 'Tente de novo em 1 minuto.' })
+    })
+
+    test('accepts attempts again once the window ends', async () => {
+      const { schoolClass } = await newClass()
+      const studentId = await newUserId('student')
+      await failJoinAttempts(studentId, JOIN_ATTEMPTS_MAX)
+      await moveJoinWindowBack(studentId, JOIN_ATTEMPTS_WINDOW_MINUTES)
+
+      await enrollmentModel.join(studentId, { code: schoolClass.joinCode })
+
+      expect(await classIdsOf(studentId)).toEqual([schoolClass.id])
+    })
+
+    test("doesn't count a valid code", async () => {
+      const { schoolClass } = await newClass()
+      const studentId = await newUserId('student')
+      await failJoinAttempts(studentId, JOIN_ATTEMPTS_MAX - 1)
+
+      await enrollmentModel.join(studentId, { code: schoolClass.joinCode })
+
+      await failJoinAttempts(studentId, 1)
+    })
+
+    test("doesn't count a code of the wrong length", async () => {
+      const studentId = await newUserId('student')
+      await failJoinAttempts(studentId, JOIN_ATTEMPTS_MAX - 1)
+
+      await expect(
+        enrollmentModel.join(studentId, { code: 'A' })
+      ).rejects.toMatchObject(invalidCode)
+
+      await failJoinAttempts(studentId, 1)
+    })
+
+    test("doesn't let many parallel attempts pass the limit", async () => {
+      const studentId = await newUserId('student')
+
+      const results = await Promise.allSettled(
+        Array.from({ length: JOIN_ATTEMPTS_MAX * 2 }, () =>
+          enrollmentModel.join(studentId, { code: UNKNOWN_CODE })
+        )
+      )
+
+      const blocked = results.filter(
+        (result) =>
+          result.status === 'rejected' &&
+          result.reason.name === 'TooManyRequestsError'
+      )
+      expect(blocked).toHaveLength(JOIN_ATTEMPTS_MAX)
+    })
+
+    test("doesn't affect another student", async () => {
+      const { schoolClass } = await newClass()
+      await failJoinAttempts(await newUserId('student'), JOIN_ATTEMPTS_MAX)
+      const studentId = await newUserId('student')
+
+      await enrollmentModel.join(studentId, { code: schoolClass.joinCode })
+
+      expect(await classIdsOf(studentId)).toEqual([schoolClass.id])
+    })
+  })
+
   describe('join', () => {
     test('enrolls the student and returns the name of the class', async () => {
       const { schoolClass } = await newClass()
