@@ -2,6 +2,7 @@ import {
   type AnyPgColumn,
   boolean,
   index,
+  integer,
   snakeCase,
   text,
   timestamp,
@@ -123,3 +124,12 @@ export const enrollments = snakeCase.table(
     index().on(table.classId)
   ]
 )
+
+// One row per student instead of one per attempt, so the table doesn't grow with each attempt (#58)
+export const joinAttempts = snakeCase.table('join_attempts', {
+  studentId: uuid()
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  windowStartedAt: timestamp({ withTimezone: true }).notNull(),
+  attempts: integer().notNull()
+})

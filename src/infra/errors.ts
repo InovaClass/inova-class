@@ -40,6 +40,17 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class TooManyRequestsError extends AppError {
+  readonly name = 'TooManyRequestsError'
+
+  constructor(options: AppErrorOptions = {}) {
+    super(options, {
+      message: 'Muitas tentativas em pouco tempo.',
+      action: 'Aguarde um pouco e tente novamente.'
+    })
+  }
+}
+
 export class UnauthorizedError extends AppError {
   readonly name = 'UnauthorizedError'
 

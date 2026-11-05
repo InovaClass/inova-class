@@ -13,7 +13,7 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` starts the local services (`src/infra/compose.yml`: Postgres and [Mailpit](https://mailpit.axllent.org)), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Every email the app sends locally (account verification, password reset) is caught by Mailpit, at [http://localhost:8025](http://localhost:8025).
+`pnpm dev` starts the local services (`src/infra/compose.yml`: Postgres and [Mailpit](https://mailpit.axllent.org)), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Every email the app sends locally (account verification, password reset) is caught by Mailpit, at [http://localhost:8025](http://localhost:8025). To try every feature by hand, as a teacher and a student, follow [`docs/local-testing.md`](./docs/local-testing.md), which each feature keeps up to date.
 
 The local settings live in the committed `.env.development`, all of them local-only values: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`), the `DATABASE_URL` that points at it, a `BETTER_AUTH_SECRET` used only by local runs and the Mailpit `SMTP_URL`. There is no `.env`. The git-ignored `.env.local` created by `vercel link` holds the `VERCEL_OIDC_TOKEN` and, optionally, the Google credentials (see [Google sign-in](#google-sign-in)); never pull the Neon variables into it, since it would take precedence over `.env.development`.
 
@@ -115,6 +115,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Every account has a valid email, verified before its first sign-in. Students also pick a username (Better Auth `username` plugin) and can sign in with either; `/entrar` takes an email or a username in the same field.
 - Teachers land on `/professor` and students on `/aluno`, and `/` redirects to the sign-in page or to the user's dashboard. Each page of those areas, and its layout, calls `requireRole(role)` (`src/entry/session.ts`), which redirects a signed-out user and a user of another role.
 - Signing up requires accepting the terms (`/termos`) and the privacy policy (`/privacidade`), and `users.terms_accepted_at` records when. Their controller name, contact email and update date live in `src/app/(pages)/(legal)/legal-info.ts`.
+- A student has 10 attempts with a wrong join code every 15 minutes.
 - A teacher restores an archived class at `/professor/turmas/arquivadas`, with its students and join code.
 - A teacher invites students to a class by email at `/professor/turmas/[id]/alunos/novo`; the invite link (`/convite`, 7 days) sets the password, records the terms acceptance and verifies the email.
 - Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up pages do (keeping the name and email, not the picture), and Google links to an existing account only when both sides verified the same email.
