@@ -33,6 +33,9 @@ jobs:
       - name: Prettier
         run: pnpm prettier:check
 
+      - name: Spell check
+        run: pnpm spell:check
+
       - name: Unit tests
         run: pnpm test
 

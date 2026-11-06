@@ -111,7 +111,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - Vercel project `inova-class` (scope `diasjoaovitors-projects`), linked to the GitHub repository: `main` deploys to Production, pull requests to Preview. Production is served at `inovaclass.diasjoaovitor.com.br` (a `CNAME` at Registro.br; the apex hosts another site, so never point it at Vercel), and `inova-class.vercel.app` redirects to it. Changing the production domain means updating `PRODUCTION_URL` and `allowedHosts` in `src/infra/auth.ts` and the Google OAuth client. Postgres is Neon, provisioned through the Vercel Marketplace (`vercel integration add neon`), in `gru1`.
 - `vercel.json` holds the Vercel settings: the build command `pnpm migrations:up && pnpm build` (migrations run before every deployment, not in the `build` script, so a local `pnpm build` never migrates) and `regions: ["gru1"]`, which keeps the functions next to the database.
 - Each Preview deployment gets its own Neon branch, so a pull request's migrations never reach the production database.
-- The Marketplace integrations also installed agent skills (`neon` and `neon-postgres` from Neon; `resend`, `resend-cli`, `react-email`, `email-best-practices` and `agent-email-inbox` from Resend): they live in `.agents/skills/`, are symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're third-party files, committed as they come and ignored by ESLint (`globalIgnores`) and Prettier (`.prettierignore`); don't edit or reformat them.
+- The Marketplace integrations also installed agent skills (`neon` and `neon-postgres` from Neon; `resend`, `resend-cli`, `react-email`, `email-best-practices` and `agent-email-inbox` from Resend): they live in `.agents/skills/`, are symlinked into `.claude/skills/` and pinned in `skills-lock.json`. They're third-party files, committed as they come and ignored by ESLint (`globalIgnores`), Prettier (`.prettierignore`) and cspell (`cspell.json`, which lists `.agents` and each symlink); don't edit or reformat them.
 - Hosted environment variables (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `ENABLE_EXPERIMENTAL_COREPACK`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OAUTH_PROXY_SECRET`) are listed in the Deployment section of `README.md`; keep that table in sync when adding one.
 
 ### Linting & formatting
@@ -120,6 +120,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - `eslint-plugin-unicorn@74` declares a peer of `eslint >=10.4`, but the project stays on ESLint 9 (`9.39.5`). The peer is unmet (`pnpm peers check` reports it, and depending on the pnpm version install warns `Issues with peer dependencies found`), but `pnpm eslint:check` passes. Don't bump one without validating the other.
 - `next lint` no longer exists (removed in Next.js 16). Use `pnpm eslint:check` / `pnpm eslint:fix` and `pnpm prettier:check` / `pnpm prettier:fix`.
 - `pnpm type-check` runs `next typegen` first: globals such as `LayoutProps` are generated into `.next/types`, so a clean checkout (CI, fresh clone) fails `tsc --noEmit` without it.
+- **cspell** (`cspell.json`, `pnpm spell:check`) checks the spelling of every file in the repository against the `en` and `pt_BR` dictionaries, both applied to every file, since the code is in English and the UI copy in pt-BR. Generated and vendored files are ignored. Fix typos; add legitimate terms to `.cspell/project-words.txt` (one per line), not to `cspell.json`. It splits words at digits, so `8bitcn` is listed as `bitcn`. The dictionaries accept `nao` and `voce`, so `flagWords` in `cspell.json` rejects them; add any other unaccented form they accept there. `ignoreRegExpList` allows the sender address (`nao-responda@`) and those unaccented forms when the docs quote them in inline code.
 - The `review-copy` skill (`.claude/skills/review-copy/`) reviews the text in the code (naming, comments, test descriptions, UI copy, docs); use it on a diff before opening a pull request.
 - Prettier style: single quotes, no semicolons, no trailing commas (`.prettierrc`).
 - Base indentation/whitespace rules (2 spaces, LF, trim trailing whitespace, final newline) are enforced editor-side via `.editorconfig`.
@@ -132,7 +133,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 
 ### Git hooks (husky)
 
-- `pre-commit`: runs `lint-staged` (`lint-staged.config.js`) — prettier + eslint + `vitest related --project unit --passWithNoTests` scoped per staged file type, invoked directly via `pnpm exec` rather than through `package.json` scripts.
+- `pre-commit`: runs `lint-staged` (`lint-staged.config.js`) — prettier + eslint + `vitest related --project unit --passWithNoTests` scoped per staged file type, plus cspell on every staged file, invoked directly via `pnpm exec` rather than through `package.json` scripts.
 - `commit-msg`: auto-prepends the emoji prefix from the Commit Rules below based on the leading word (e.g. `feat: ...` → `✨ feat: ...`), then runs `commitlint` (`commitlint-config-emoji-convention`). You can type the plain word and let the hook add the emoji.
 - `pre-push`: runs `pnpm type-check`, `pnpm test:integration` and `pnpm test:e2e` (full Playwright suite).
 
@@ -144,7 +145,7 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - Only test logic we wrote (filtering, lookups, mappings, transforms, a model's rules and error mapping). Don't test library or framework behavior (e.g. a component that only passes props or HTML through, a Zod schema's `trim`/`min`/`max` and the messages we hand it, `Link` routing), and drop a test whose main cost is a mock needed only to render. Prefer a unit test; add an e2e test only for what a unit test can't cover.
 - Older issues may ask for tests that break the rule above. Skip them without asking, and list them as dropped in the closing comment.
 - Scripts: `pnpm test` (unit, run once) / `pnpm test:watch` (unit, watch mode) / `pnpm test:integration` (services + migrations + integration) / `pnpm test:e2e` (e2e) / `pnpm test:e2e:ui` (e2e, Playwright UI mode). `lint-staged` runs `vitest related --project unit`, so commits never need the services.
-- CI (`.github/workflows/ci.yml`, triggered on `pull_request`) runs, in order: `commitlint` over the PR's commit range, `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check`, `pnpm test`, `pnpm test:integration`, then installs Chromium (`pnpm exec playwright install --with-deps chromium`) and runs `pnpm test:e2e`.
+- CI (`.github/workflows/ci.yml`, triggered on `pull_request`) runs, in order: `commitlint` over the PR's commit range, `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check`, `pnpm spell:check`, `pnpm test`, `pnpm test:integration`, then installs Chromium (`pnpm exec playwright install --with-deps chromium`) and runs `pnpm test:e2e`.
 
 ### Styling & UI
 

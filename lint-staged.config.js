@@ -12,8 +12,12 @@ const eslint = (filenames) =>
 const test = (filenames) =>
   `pnpm exec vitest related --project unit --passWithNoTests ${relativeFiles(filenames)}`
 
+const spell = (filenames) =>
+  `pnpm exec cspell --no-progress --no-summary --no-must-find-files --dot ${relativeFiles(filenames)}`
+
 export default {
   '*.{js,jsx,ts,tsx,mjs,cjs}': [eslint, prettier, test],
   '*.{json,md}': [eslint, prettier],
-  '*.{yml,yaml}': [prettier]
+  '*.{yml,yaml}': [prettier],
+  '*': [spell]
 }

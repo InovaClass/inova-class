@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "import": ["@cspell/dict-pt-br/cspell-ext.json"],
+  "language": "en,pt_BR",
+  "useGitignore": true,
+  "ignorePaths": [
+    ".git",
+    ".agents",
+    ".claude/skills/agent-email-inbox",
+    ".claude/skills/email-best-practices",
+    ".claude/skills/neon",
+    ".claude/skills/neon-postgres",
+    ".claude/skills/react-email",
+    ".claude/skills/resend",
+    ".claude/skills/resend-cli",
+    ".cspell/project-words.txt",
+    "cspell.json",
+    "pnpm-lock.yaml",
+    "skills-lock.json",
+    "src/infra/database/migrations"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "./.cspell/project-words.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": ["project-words"],
+  "flagWords": ["nao", "voce"],
+  "ignoreRegExpList": ["/nao-responda@/g", "/`(?:nao|voce)`/g"]
+}

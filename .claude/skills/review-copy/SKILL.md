@@ -13,7 +13,7 @@ The code, comments and docs are in English; the UI copy, metadata and email temp
 
 ## Check
 
-1. **Spelling**: typos in identifiers, comments, strings and docs, in both languages, including pt-BR diacritics (`não`, never `nao`).
+1. **Spelling**: run `pnpm spell:check` first and report what it finds, then read for what a dictionary can't catch (a real word in the wrong place). Typos in identifiers, comments, strings and docs, in both languages, including pt-BR diacritics (`não`, never `nao`). A legitimate term goes in `.cspell/project-words.txt`.
 2. **Naming**:
    - Correct English, including each word of a compound identifier and its grammatical number.
    - The name says what the thing is or does, at the level of the caller: no vague names (`data`, `handle`, `info`, `temp`) where a specific one fits, and no names that lie about the type or the behavior.
@@ -34,4 +34,4 @@ Group findings by severity, most severe first:
 
 For each finding: `path:line`, the current text, the proposed text and a one-line reason. Mark renames of exported symbols or files, since they touch other files; list where they're used. Skip categories with no findings.
 
-Then ask which findings to apply. Apply renames across every usage (code, tests, docs), then run `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check` and `pnpm test`.
+Then ask which findings to apply. Apply renames across every usage (code, tests, docs), then run `pnpm type-check`, `pnpm eslint:check`, `pnpm prettier:check`, `pnpm spell:check` and `pnpm test`.
