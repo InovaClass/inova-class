@@ -15,11 +15,15 @@ import type { z } from 'zod'
 
 import type { FormState } from '@/entry/form-action'
 
-type FormActionOptions<TValues extends FieldValues> = {
+// TState lets an action return more than the form renders, e.g. the email to resend a link to
+type FormActionOptions<
+  TValues extends FieldValues,
+  TState extends FormState<TValues>
+> = {
   schema: z.ZodType<unknown, TValues>
   defaultValues: DefaultValues<TValues>
-  action: (input: TValues) => Promise<FormState<TValues>>
-  initialState?: FormState<TValues>
+  action: (input: TValues) => Promise<TState>
+  initialState?: TState
 }
 
 type FieldOptions<TValues extends FieldValues> = {
@@ -45,14 +49,19 @@ const firstMessageOf = (errors: object): string | undefined => {
   }
 }
 
-export const useFormAction = <TValues extends FieldValues>({
+export const useFormAction = <
+  TValues extends FieldValues,
+  TState extends FormState<TValues> = FormState<TValues>
+>({
   schema,
   defaultValues,
   action,
-  initialState = { status: 'idle' }
-}: FormActionOptions<TValues>) => {
+  initialState
+}: FormActionOptions<TValues, TState>) => {
   const [pending, startTransition] = useTransition()
-  const [state, setState] = useState(initialState)
+  const [state, setState] = useState<TState | FormState<TValues>>(
+    initialState ?? { status: 'idle' }
+  )
   const [announcement, setAnnouncement] = useState<Announcement>()
 
   const form = useForm<TValues>({

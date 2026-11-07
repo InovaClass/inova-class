@@ -34,6 +34,9 @@ test('teacher signs up, verifies the email and signs in', async ({ page }) => {
 
   await signIn(page, email, password)
   await expect(page.getByText(/^Confirme seu e-mail/)).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Reenviar e-mail' })
+  ).toBeDisabled()
 
   const link = await orchestrator.waitForLinkSentTo(email)
   await page.goto(link.toString())
@@ -42,6 +45,45 @@ test('teacher signs up, verifies the email and signs in', async ({ page }) => {
   await page.context().clearCookies()
   await signIn(page, email, password)
   await expect(page).toHaveURL('/professor')
+})
+
+test('resends the verification email once the cooldown ends', async ({
+  page
+}) => {
+  // Lets the test move the countdown forward instead of waiting for it
+  await page.clock.install()
+  const { name, email, password } = orchestrator.newUser()
+
+  await page.goto('/cadastro/professor')
+  await page.getByLabel('Nome').fill(name)
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Senha', { exact: true }).fill(password)
+  await page.getByLabel('Confirmar senha').fill(password)
+  await page.getByRole('checkbox', { name: /^Li e aceito/ }).click()
+  await page.getByRole('button', { name: 'Criar conta' }).click()
+
+  const resend = page.getByRole('button', { name: 'Reenviar e-mail' })
+  await expect(resend).toBeDisabled()
+  await expect(resend).toContainText(/\(\d+s\)/)
+
+  await orchestrator.waitForLinkSentTo(email)
+  await orchestrator.endVerificationResendCooldown(email)
+  await page.clock.fastForward('01:00')
+  await expect(resend).toBeEnabled()
+  await expect(resend).not.toContainText(/\(\d+s\)/)
+
+  // Pressed from the keyboard: as with SubmitButton, a mouse click doesn't move the focus to the button
+  await resend.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText(/^Enviamos um novo link/)).toBeVisible()
+  await expect(resend).toBeDisabled()
+  await expect(resend).toBeFocused()
+  await expect
+    .poll(async () => {
+      const emails = await orchestrator.listEmailsTo(email)
+      return emails.length
+    })
+    .toBe(2)
 })
 
 test('rejects unknown credentials', async ({ page }) => {

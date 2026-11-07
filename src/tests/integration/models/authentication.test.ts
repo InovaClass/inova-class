@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { auth } from '@/infra/auth'
 import { database } from '@/infra/database/client'
 import { users } from '@/infra/database/schema'
-import { UnauthorizedError } from '@/infra/errors'
+import { TooManyRequestsError, UnauthorizedError } from '@/infra/errors'
 import { authenticationModel } from '@/models/authentication/model'
 import { orchestrator } from '@/tests/orchestrator'
 
@@ -43,6 +43,17 @@ const findUser = async (email: string) => {
     .from(users)
     .where(eq(users.email, email))
   return user
+}
+
+const resend = (identifier: string) =>
+  authenticationModel.resendVerificationEmail(
+    { identifier },
+    { headers, callbackURL: '/entrar' }
+  )
+
+const emailCountOf = async (email: string) => {
+  const emails = await orchestrator.listEmailsTo(email)
+  return emails.length
 }
 
 describe('authenticationModel', () => {
@@ -216,6 +227,70 @@ describe('authenticationModel', () => {
           )
         ).rejects.toThrow('E-mail, usuário ou senha incorretos.')
       }
+    })
+  })
+
+  describe('resendVerificationEmail', () => {
+    test('rejects a resend before the cooldown of the sign-up ends', async () => {
+      const { email } = await signUp()
+
+      await expect(resend(email)).rejects.toThrow(TooManyRequestsError)
+      await expect(resend(email)).rejects.toThrow(/^Aguarde/)
+    })
+
+    test('sends a new link once the cooldown ends, and starts a new one', async () => {
+      const { email } = await signUp()
+      await orchestrator.waitForLinkSentTo(email)
+      await orchestrator.endVerificationResendCooldown(email)
+
+      await expect(resend(email)).resolves.toBeUndefined()
+      await expect.poll(() => emailCountOf(email)).toBe(2)
+      await expect(resend(email)).rejects.toThrow(TooManyRequestsError)
+    })
+
+    test('resends to the email of a username', async () => {
+      const { email, username } = await signUpStudent()
+      await orchestrator.waitForLinkSentTo(email)
+      await orchestrator.endVerificationResendCooldown(username)
+
+      await resend(username.toUpperCase())
+      await expect.poll(() => emailCountOf(email)).toBe(2)
+    })
+
+    test('starts the cooldown when signing in with an unverified email', async () => {
+      const { email, password } = await signUp()
+      await orchestrator.endVerificationResendCooldown(email)
+      await expect(
+        authenticationModel.signIn({ identifier: email, password }, { headers })
+      ).rejects.toThrow(UnauthorizedError)
+
+      await expect(resend(email)).rejects.toThrow(TooManyRequestsError)
+    })
+
+    test('answers the same for an unknown or verified email, and sends nothing', async () => {
+      const unknown = orchestrator.newEmail()
+      const { email: verified } = await signUp()
+      await verify(verified)
+      await orchestrator.endVerificationResendCooldown(verified)
+
+      await expect(resend(unknown)).resolves.toBeUndefined()
+      await expect(resend(verified)).resolves.toBeUndefined()
+      await expect(resend(unknown)).rejects.toThrow(TooManyRequestsError)
+      expect(await emailCountOf(unknown)).toBe(0)
+      expect(await emailCountOf(verified)).toBe(1)
+    })
+
+    test('sends a pending student a new invite instead of a link', async () => {
+      const { name, email, username } = orchestrator.newStudent()
+      await database
+        .insert(users)
+        .values({ name, email, username, role: 'student' })
+
+      await resend(email)
+      const link = await orchestrator.waitForLinkSentTo(email, {
+        subject: 'Crie sua senha'
+      })
+      expect(link.pathname).toBe('/convite')
     })
   })
 
