@@ -108,6 +108,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Everything infrastructure-related lives in `src/infra`: `compose.yml` for the local services, `scripts/` for the startup helpers and `database/` for the client (`client.ts`), the schema (`schema.ts`) and the generated migrations (`migrations/`).
 - Tables are declared with `snakeCase.table(...)`, so camelCase keys map to snake_case columns.
 - Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
+- XP, HP and coins only change through `ledgerModel.record` (`src/models/ledger/`): it adds an entry to `ledger_entries`, which is never updated or deleted, and updates the balances cached on `enrollments` in the same transaction.
 
 ### Auth and email
 

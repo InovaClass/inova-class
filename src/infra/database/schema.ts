@@ -1,6 +1,8 @@
+import { sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   boolean,
+  check,
   index,
   integer,
   snakeCase,
@@ -10,6 +12,7 @@ import {
   uuid
 } from 'drizzle-orm/pg-core'
 
+import { HP_MAX, LEDGER_ENTRY_TYPES } from '@/constants/game'
 import { USER_ROLES } from '@/constants/user'
 
 // The tables up to `verifications` are Better Auth's, kept in sync with `pnpm dlx auth@latest generate` (#3)
@@ -117,11 +120,48 @@ export const enrollments = snakeCase.table(
       .notNull()
       .references(() => classes.id, { onDelete: 'cascade' }),
     endedAt: timestamp({ withTimezone: true }),
+    // Cached from `ledger_entries`, written only in the transaction that inserts an entry (#13)
+    xp: integer().notNull().default(0),
+    hp: integer().notNull().default(HP_MAX),
+    coins: integer().notNull().default(0),
     ...timestamps
   },
   (table) => [
     unique().on(table.studentId, table.classId),
-    index().on(table.classId)
+    index().on(table.classId),
+    check('enrollments_xp_check', sql`${table.xp} >= 0`),
+    check(
+      'enrollments_hp_check',
+      sql`${table.hp} between 0 and ${sql.raw(String(HP_MAX))}`
+    ),
+    check('enrollments_coins_check', sql`${table.coins} >= 0`)
+  ]
+)
+
+// Never updated or deleted: a correction is a new entry (#16). The deltas are the ones applied after
+// clamping, so reversing an entry restores the balances exactly
+export const ledgerEntries = snakeCase.table(
+  'ledger_entries',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    enrollmentId: uuid()
+      .notNull()
+      .references(() => enrollments.id, { onDelete: 'cascade' }),
+    type: text({ enum: LEDGER_ENTRY_TYPES }).notNull(),
+    xpDelta: integer().notNull(),
+    hpDelta: integer().notNull(),
+    coinDelta: integer().notNull(),
+    // No foreign key, since it points to a behavior, reward or power depending on `type`
+    sourceId: uuid(),
+    parentEntryId: uuid().references((): AnyPgColumn => ledgerEntries.id, {
+      onDelete: 'cascade'
+    }),
+    createdById: uuid().references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    index().on(table.enrollmentId, table.createdAt),
+    index().on(table.parentEntryId)
   ]
 )
 
