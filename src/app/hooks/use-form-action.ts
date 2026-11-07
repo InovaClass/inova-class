@@ -29,7 +29,7 @@ type FormActionOptions<
 type FieldOptions<TValues extends FieldValues> = {
   // RHF validates one field at a time, and its own `deps` would reveal an error on a field that
   // wasn't visited yet
-  revalidates?: Path<TValues>
+  revalidates?: Path<TValues> | Path<TValues>[]
 }
 
 type Announcement = { id: string; text: string }
@@ -93,9 +93,13 @@ export const useFormAction = <
   ) => ({
     ...form.register(name, {
       onChange: () => {
-        if (!revalidates) return
-        const { isTouched, invalid } = form.getFieldState(revalidates)
-        if (isTouched || invalid) void form.trigger(revalidates)
+        const names =
+          typeof revalidates === 'string' ? [revalidates] : (revalidates ?? [])
+        const visited = names.filter((other) => {
+          const { isTouched, invalid } = form.getFieldState(other)
+          return isTouched || invalid
+        })
+        if (visited.length > 0) void form.trigger(visited)
       }
     }),
     error: (get(errors, name) as FieldError | undefined)?.message

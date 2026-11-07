@@ -70,7 +70,15 @@ Use two browsers, or a browser and its private window, because each one keeps it
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 8. Invite a student by email
+## 8. Behaviors
+
+1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
+2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
+3. **A:** click "Editar" next to it, change the values and save. The list shows the new values.
+4. **A:** click "Remover" next to it and confirm. It shows "Comportamento removido." and the behavior is gone.
+5. **A:** create another class. It starts with the default behaviors, without the ones you changed in the first class.
+
+## 9. Invite a student by email
 
 Use a new private window for the invited student, since the invite signs them in.
 
@@ -80,7 +88,7 @@ Use a new private window for the invited student, since the invite signs them in
 4. **Private window:** the page shows the generated username. Set a password, accept the terms and click "Criar senha".
 5. **A:** reload the class page. Ana is now listed with the username.
 
-## 9. Sign-in and password
+## 10. Sign-in and password
 
 - **Sign-in:** sign out and go to `/entrar`. A student signs in with either the email or the username, and a teacher with the email. A wrong password shows the same message as an unknown account.
 - **Unverified email:** sign up without opening the link and try to sign in. It's rejected, Mailpit gets a new link and "Reenviar e-mail" appears below the form.
@@ -88,13 +96,13 @@ Use a new private window for the invited student, since the invite signs them in
 - **Password reset:** go to `/esqueci-a-senha`, click "Enviar link", open the link in Mailpit and set a new password.
 - **Pending student:** request a password reset for a student who hasn't accepted their invite. Mailpit gets a new invite instead of a reset link.
 
-## 10. Role areas
+## 11. Role areas
 
 - **B:** open `/professor`. You're sent back to `/aluno`.
 - **A:** open `/aluno`. You're sent back to `/professor`.
 - **A:** open the address of a class created by another teacher. It shows a 404 page.
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 
-## 11. Stop
+## 12. Stop
 
 Press `Ctrl+C` in the terminal to stop the app. The containers keep running; `pnpm services:stop` stops them and keeps the data, so the same accounts work next time.

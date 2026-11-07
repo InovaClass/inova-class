@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 
 import { archiveClass } from './action'
-import { ConfirmActionDialog } from './confirm-action-dialog'
 
 type ClassShellProps = {
   schoolClass: { id: string; name: string; description: string | null }
@@ -33,6 +33,12 @@ export const ClassShell = ({ schoolClass, children }: ClassShellProps) => (
       </div>
       {/* The frame is drawn outside the buttons, so the row needs room for it */}
       <div className="flex flex-wrap gap-6 p-1.5">
+        <Link
+          href={`/professor/turmas/${schoolClass.id}/comportamentos`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Comportamentos
+        </Link>
         <Link
           href={`/professor/turmas/${schoolClass.id}/editar`}
           className={linkButtonVariants({ variant: 'outline' })}
