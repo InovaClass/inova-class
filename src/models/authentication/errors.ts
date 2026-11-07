@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
-import { UnauthorizedError, ValidationError } from '@/infra/errors'
+import {
+  TooManyRequestsError,
+  UnauthorizedError,
+  ValidationError
+} from '@/infra/errors'
 
 type ErrorCopy = { message: string; action: string }
 
@@ -95,4 +99,23 @@ export const toAppError = (code: string | undefined, cause: unknown) => {
   const ErrorClass =
     copy.kind === 'unauthorized' ? UnauthorizedError : ValidationError
   return new ErrorClass({ message: copy.message, action: copy.action, cause })
+}
+
+// Carries the identifier typed on sign-in, so the page can offer to resend the link to it
+export class EmailNotVerifiedError extends UnauthorizedError {
+  constructor(
+    readonly identifier: string,
+    cause: unknown
+  ) {
+    super({ ...authErrorFromCode('EMAIL_NOT_VERIFIED'), cause })
+  }
+}
+
+export class VerificationResendCooldownError extends TooManyRequestsError {
+  constructor(readonly retryInSeconds: number) {
+    super({
+      message: 'Aguarde um pouco para reenviar o e-mail.',
+      action: `Tente de novo em ${retryInSeconds} ${retryInSeconds === 1 ? 'segundo' : 'segundos'}.`
+    })
+  }
 }

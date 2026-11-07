@@ -106,6 +106,16 @@ export const signInSchema = z.object({
 })
 export type SignInInput = z.input<typeof signInSchema>
 
+// Better Auth stores emails and usernames in lowercase, so a cooldown is keyed by the stored form
+export const resendVerificationSchema = z.object({
+  identifier: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, 'Informe seu e-mail ou usuário.')
+})
+export type ResendVerificationInput = z.input<typeof resendVerificationSchema>
+
 export const forgotPasswordSchema = z.object({ email })
 export type ForgotPasswordInput = z.input<typeof forgotPasswordSchema>
 

@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// The orchestrator reaches the local database, as the integration tests do
+if (!process.env.DATABASE_URL) process.loadEnvFile('.env.development')
+
 export default defineConfig({
   testDir: './src/tests/e2e',
   fullyParallel: false,

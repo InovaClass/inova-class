@@ -83,7 +83,8 @@ Use a new private window for the invited student, since the invite signs them in
 ## 9. Sign-in and password
 
 - **Sign-in:** sign out and go to `/entrar`. A student signs in with either the email or the username, and a teacher with the email. A wrong password shows the same message as an unknown account.
-- **Unverified email:** sign up without opening the link and try to sign in. It's rejected, and Mailpit gets a new link.
+- **Unverified email:** sign up without opening the link and try to sign in. It's rejected, Mailpit gets a new link and "Reenviar e-mail" appears below the form.
+- **Resend the link:** after signing up (or the rejected sign-in above), "Reenviar e-mail" counts down 60 seconds before it can be clicked. Click it once it's enabled: Mailpit gets a new link and the countdown starts again. A pending student gets a new invite instead.
 - **Password reset:** go to `/esqueci-a-senha`, click "Enviar link", open the link in Mailpit and set a new password.
 - **Pending student:** request a password reset for a student who hasn't accepted their invite. Mailpit gets a new invite instead of a reset link.
 

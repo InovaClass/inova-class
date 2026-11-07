@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 
+import { ResendVerificationButton } from '@/app/(pages)/(auth)/_components/resend-verification-button'
 import { FormCheckbox } from '@/app/components/ui/custom/form-checkbox'
 import { FormField } from '@/app/components/ui/custom/form-field'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
@@ -34,7 +35,16 @@ export const SignUpForm = ({
       action: signUp
     })
 
-  if (state.status === 'success') return <FormMessage state={state} />
+  if (state.status === 'success') {
+    return (
+      <div className="flex flex-col gap-6">
+        <FormMessage state={state} />
+        {'resendTo' in state && state.resendTo && (
+          <ResendVerificationButton identifier={state.resendTo} />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">

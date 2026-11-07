@@ -1,6 +1,11 @@
 import { setTimeout } from 'node:timers/promises'
 
 import { fakerPT_BR as faker } from '@faker-js/faker'
+import { eq } from 'drizzle-orm'
+
+import { database } from '@/infra/database/client'
+import { verificationResends } from '@/infra/database/schema'
+import { VERIFICATION_RESEND_COOLDOWN_SECONDS } from '@/models/authentication/constants'
 
 const MAILPIT_URL = 'http://localhost:8025/api/v1'
 
@@ -57,6 +62,15 @@ const waitForLinkSentTo = async (
   throw new Error(`No email with a link reached ${email}`)
 }
 
+// Moves the last send back past the cooldown, so a test doesn't wait for it
+const endVerificationResendCooldown = async (identifier: string) =>
+  database
+    .update(verificationResends)
+    .set({
+      sentAt: new Date(Date.now() - VERIFICATION_RESEND_COOLDOWN_SECONDS * 1000)
+    })
+    .where(eq(verificationResends.identifier, identifier.toLowerCase()))
+
 export const orchestrator = {
   newEmail,
   newUsername,
@@ -65,5 +79,6 @@ export const orchestrator = {
   newClass,
   newPassword,
   listEmailsTo,
-  waitForLinkSentTo
+  waitForLinkSentTo,
+  endVerificationResendCooldown
 }

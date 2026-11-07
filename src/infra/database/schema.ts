@@ -133,3 +133,10 @@ export const joinAttempts = snakeCase.table('join_attempts', {
   windowStartedAt: timestamp({ withTimezone: true }).notNull(),
   attempts: integer().notNull()
 })
+
+// Keyed by the email or username the user typed (trimmed, in lowercase), not by the account: an
+// email without an account gets the same cooldown, so the answer doesn't reveal which ones exist (#43)
+export const verificationResends = snakeCase.table('verification_resends', {
+  identifier: text().primaryKey(),
+  sentAt: timestamp({ withTimezone: true }).notNull()
+})
