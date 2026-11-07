@@ -3,13 +3,12 @@
 import { cn } from 'cn'
 import { useActionState, useState } from 'react'
 
+import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import type { FormState } from '@/entry/form-action'
-
-import { ConfirmActionDialog } from './confirm-action-dialog'
 
 type JoinCodePanelProps = {
   joinCode: string

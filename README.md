@@ -109,6 +109,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Tables are declared with `snakeCase.table(...)`, so camelCase keys map to snake_case columns.
 - Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
 - XP, HP and coins only change through `ledgerModel.record` (`src/models/ledger/`): it adds an entry to `ledger_entries`, which is never updated or deleted, and updates the balances cached on `enrollments` in the same transaction.
+- Each class has its own behaviors (`behaviors`), seeded with a default list when the class is created and managed by the teacher at `/professor/turmas/[id]/comportamentos`. Removing one keeps the row (`removed_at`), since ledger entries point to it.
 
 ### Auth and email
 

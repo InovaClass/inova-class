@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { DEFAULT_BEHAVIORS } from '@/models/behavior/constants'
 import { classRepo } from '@/repositories/class-repo'
 
 import { classNotFound } from './errors'
@@ -44,7 +45,7 @@ const findOwned = async (teacherId: string, classId: string) =>
 const create = async (teacherId: string, input: ClassInput) => {
   const fields = classSchema.parse(input)
   const joinCode = await generateUnusedJoinCode()
-  return classRepo.insert(teacherId, { ...fields, joinCode })
+  return classRepo.insert(teacherId, { ...fields, joinCode }, DEFAULT_BEHAVIORS)
 }
 
 const update = async (teacherId: string, classId: string, input: ClassInput) =>
