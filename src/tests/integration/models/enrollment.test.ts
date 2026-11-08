@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { describe, expect, test } from 'vitest'
 
+import { HP_MAX } from '@/constants/game'
 import type { UserRole } from '@/constants/user'
 import { database } from '@/infra/database/client'
 import {
@@ -323,7 +324,10 @@ describe('enrollmentModel', () => {
         name: await nameOf(activeId),
         username: null,
         pending: false,
-        email: undefined
+        email: undefined,
+        hp: HP_MAX,
+        coins: 0,
+        progress: { level: 1, current: 0, max: 100 }
       })
       expect(roster.find(({ id }) => id === pendingId)).toMatchObject({
         pending: true,
