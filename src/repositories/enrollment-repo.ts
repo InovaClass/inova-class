@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm'
 
 import { database } from '@/infra/database/client'
 import {
@@ -51,12 +51,29 @@ const listEnrolledStudents = async (classId: string) =>
       name: users.name,
       email: users.email,
       username: users.username,
+      xp: enrollments.xp,
+      hp: enrollments.hp,
+      coins: enrollments.coins,
       pending: sql<boolean>`${accounts.id} is null`
     })
     .from(enrollments)
     .innerJoin(users, eq(users.id, enrollments.studentId))
     .leftJoin(accounts, eq(accounts.userId, users.id))
     .where(and(eq(enrollments.classId, classId), isNull(enrollments.endedAt)))
+
+const listActiveIds = async (classId: string, studentIds: string[]) => {
+  const active = await database
+    .select({ id: enrollments.id })
+    .from(enrollments)
+    .where(
+      and(
+        eq(enrollments.classId, classId),
+        inArray(enrollments.studentId, studentIds),
+        isNull(enrollments.endedAt)
+      )
+    )
+  return active.map(({ id }) => id)
+}
 
 const end = async (classId: string, studentId: string) => {
   const [enrollment] = await database
@@ -103,6 +120,7 @@ export const enrollmentRepo = {
   insert,
   listActiveClassesOf,
   listEnrolledStudents,
+  listActiveIds,
   end,
   recordJoinAttempt,
   forgiveJoinAttempt

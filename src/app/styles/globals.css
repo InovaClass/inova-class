@@ -148,6 +148,8 @@
   }
   html {
     @apply retro;
+    /* Keeps a control that takes the focus from ending up behind a bar stuck to the bottom */
+    scroll-padding-bottom: 8rem;
   }
   /* The browser outline takes shadcn's outline-ring/50, about 1.5:1 on the background, below the
   3:1 of WCAG 1.4.11. Scoped to links so the shadcn base rule stays as it comes */

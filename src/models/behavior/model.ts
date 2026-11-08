@@ -2,7 +2,11 @@ import { z } from 'zod'
 
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
+import { studentNotInClass } from '@/models/enrollment/errors'
+import { batchNotFound } from '@/models/ledger/errors'
+import { ledgerModel } from '@/models/ledger/model'
 import { behaviorRepo } from '@/repositories/behavior-repo'
+import { enrollmentRepo } from '@/repositories/enrollment-repo'
 
 import { behaviorNotFound } from './errors'
 import { kindOf } from './kind'
@@ -69,10 +73,62 @@ const remove = async (
   if (!behavior) throw behaviorNotFound()
 }
 
+const award = async (
+  teacherId: string,
+  classId: string,
+  behaviorId: string,
+  studentIds: string[]
+) => {
+  const behavior = await findOwned(teacherId, classId, behaviorId)
+  if (!behavior) throw behaviorNotFound()
+
+  const uniqueStudentIds = [...new Set(studentIds)]
+  if (
+    uniqueStudentIds.length === 0 ||
+    uniqueStudentIds.some((id) => !isId(id))
+  ) {
+    throw studentNotInClass()
+  }
+  const enrollmentIds = await enrollmentRepo.listActiveIds(
+    classId,
+    uniqueStudentIds
+  )
+  if (enrollmentIds.length !== uniqueStudentIds.length) {
+    throw studentNotInClass()
+  }
+
+  const batchId = await ledgerModel.recordBatch(enrollmentIds, {
+    type: 'behavior',
+    xpDelta: behavior.xp,
+    hpDelta: behavior.hp,
+    coinDelta: behavior.coins,
+    sourceId: behavior.id,
+    createdById: teacherId
+  })
+  return {
+    batchId,
+    behaviorName: behavior.name,
+    studentCount: enrollmentIds.length
+  }
+}
+
+const undoAward = async (
+  teacherId: string,
+  classId: string,
+  batchId: string
+) => {
+  const schoolClass = await classModel.findOwned(teacherId, classId)
+  if (!schoolClass) throw classNotFound()
+  if (!isId(batchId)) throw batchNotFound()
+  await ledgerModel.reverseBatch(schoolClass.id, batchId, teacherId)
+}
+
 export const behaviorModel = {
   list,
   findOwned,
   create,
   update,
-  remove
+  remove,
+  award,
+  undoAward
 }
