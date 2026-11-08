@@ -5,6 +5,7 @@ import { database } from '@/infra/database/client'
 import {
   accounts,
   behaviors,
+  consequences,
   enrollments,
   ledgerEntries,
   users
@@ -271,6 +272,7 @@ const listHistory = async (
       studentPending: sql<boolean>`not exists (select 1 from ${accounts} where ${accounts.userId} = ${users.id})`,
       enrollmentEndedAt: enrollments.endedAt,
       behaviorName: behaviors.name,
+      consequenceName: consequences.name,
       authorName: entryAuthors.name
     })
     .from(ledgerEntries)
@@ -281,6 +283,13 @@ const listHistory = async (
       and(
         eq(behaviors.id, ledgerEntries.sourceId),
         eq(ledgerEntries.type, 'behavior')
+      )
+    )
+    .leftJoin(
+      consequences,
+      and(
+        eq(consequences.id, ledgerEntries.sourceId),
+        eq(ledgerEntries.type, 'hp_restore')
       )
     )
     .leftJoin(entryAuthors, eq(entryAuthors.id, ledgerEntries.createdById))

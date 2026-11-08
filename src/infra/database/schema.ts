@@ -163,6 +163,21 @@ export const behaviors = snakeCase.table(
   ]
 )
 
+// Removing one sets `removedAt`, since ledger entries keep pointing to it through `sourceId`
+export const consequences = snakeCase.table(
+  'consequences',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    classId: uuid()
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    removedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [index().on(table.classId)]
+)
+
 // Never updated or deleted: a correction is a new entry (#16). The deltas are the ones applied after
 // clamping, so reversing an entry restores the balances exactly
 export const ledgerEntries = snakeCase.table(

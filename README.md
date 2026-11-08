@@ -110,6 +110,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
 - XP, HP and coins only change through `ledgerModel` (`src/models/ledger/`): each change adds an entry to `ledger_entries`, which is never updated or deleted, and updates the balances cached on `enrollments` in the same transaction.
 - Each class has its own behaviors (`behaviors`), seeded with a default list when the class is created and managed by the teacher at `/professor/turmas/[id]/comportamentos`. Removing one keeps the row (`removed_at`), since ledger entries point to it.
+- Each class has its own consequences (`consequences`), seeded and removed the same way and managed at `/professor/turmas/[id]/consequencias`. A student with no HP gets one drawn at `/professor/turmas/[id]/alunos/[student-id]/sorteio`, which restores the HP.
 - The teacher awards a behavior to one or more students on the class page. The entries of an award share a `batchId`, and "Desfazer" reverses them all with `reversal` entries, level bonuses included.
 
 ### Auth and email

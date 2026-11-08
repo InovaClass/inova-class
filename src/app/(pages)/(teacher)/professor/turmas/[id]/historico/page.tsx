@@ -100,7 +100,9 @@ const HistoryPage = async ({
     const [firstReversal] = entry.reversals
     return {
       id: entry.id,
-      title: entry.behaviorName ?? ENTRY_TITLES[entry.type],
+      title: entry.consequenceName
+        ? `Consequência: ${entry.consequenceName}`
+        : (entry.behaviorName ?? ENTRY_TITLES[entry.type]),
       values: describeDeltas(entry),
       bonus:
         entry.derivedEntries.length > 0

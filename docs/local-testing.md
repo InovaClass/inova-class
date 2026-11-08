@@ -70,7 +70,7 @@ Use two browsers, or a browser and its private window, because each one keeps it
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 8. Behaviors
+## 8. Behaviors and consequences
 
 1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
 2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
@@ -83,6 +83,11 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 9. **A:** on the class page, click "Histórico". Each student of an award has a row with the behavior, the values, the date and who applied it, and an undone award shows "Revertido".
 10. **A:** apply a behavior again, let the toast go, and click "Histórico" on that student's row. Only that student is listed. Click "Reverter" and confirm: it shows "Lançamento revertido.", the row shows "Revertido" and the values on the class page go back, level bonus included.
 11. **A:** remove that student from the class and open "Histórico" on the class page: their rows are still listed, without "Reverter".
+12. **A:** on the class page, click "Consequências". The default consequences are listed. Create one, edit it and remove it.
+13. **A:** create a behavior with `-50` in "HP" and apply it to a student. The row shows "Sem HP" and a "Sortear consequência" button.
+14. **A:** click it, then "Sortear". The page shows the consequence drawn, and the class page shows that student with `HP 50/50`.
+15. **A:** on the "Histórico" of that student, the draw is listed as "Consequência: ...", with `+50 HP` and without "Reverter".
+16. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
 
 ## 9. Invite a student by email
 

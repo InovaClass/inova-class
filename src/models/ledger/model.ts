@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { LedgerEntryType } from '@/constants/game'
+import { HP_MAX, type LedgerEntryType } from '@/constants/game'
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { studentNotInClass } from '@/models/enrollment/errors'
@@ -19,7 +19,8 @@ import {
   entryAlreadyReversed,
   entryNotFound,
   entryNotReversible,
-  notEnoughCoins
+  notEnoughCoins,
+  studentNotFallen
 } from './errors'
 import { levelOf } from './level'
 import {
@@ -84,6 +85,29 @@ const recordBatch = async (
   const batchId = await ledgerRepo.recordBatch(plans)
   if (!batchId) throw studentNotInClass()
   return batchId
+}
+
+// Checked under the lock of the enrollment, so two concurrent draws can't both restore the HP
+const restoreFallen = async (
+  enrollmentId: string,
+  sourceId: string,
+  createdById: string
+) => {
+  const { enrollmentId: id, ...entry } = ledgerEntrySchema.parse({
+    enrollmentId,
+    type: 'hp_restore',
+    xpDelta: 0,
+    hpDelta: HP_MAX,
+    coinDelta: 0,
+    sourceId,
+    createdById
+  })
+  const plan = planEntry(entry)
+  const recorded = await ledgerRepo.record(id, (balances) => {
+    if (balances.hp > 0) throw studentNotFallen()
+    return plan(balances)
+  })
+  if (!recorded) throw studentNotInClass()
 }
 
 const planReversals =
@@ -190,6 +214,7 @@ const listHistory = async (
 export const ledgerModel = {
   record,
   recordBatch,
+  restoreFallen,
   reverseBatch,
   reverseEntry,
   listHistory

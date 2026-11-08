@@ -6,6 +6,12 @@ export const notEnoughCoins = () =>
     action: 'Junte mais moedas e tente novamente.'
   })
 
+export const studentNotFallen = () =>
+  new ValidationError({
+    message: 'Esse aluno ainda tem HP.',
+    action: 'Atualize a página para ver os valores da turma.'
+  })
+
 export const batchNotFound = () =>
   new NotFoundError({
     message: 'Não encontramos esses lançamentos.',

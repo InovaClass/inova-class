@@ -1,9 +1,10 @@
 import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 
 import { database } from '@/infra/database/client'
-import { behaviors, classes } from '@/infra/database/schema'
+import { behaviors, classes, consequences } from '@/infra/database/schema'
 
 import type { BehaviorFields } from './behavior-repo'
+import type { ConsequenceFields } from './consequence-repo'
 
 type ClassDetails = { name: string; description: string | null }
 type ClassChanges = Partial<
@@ -69,7 +70,10 @@ const isJoinCodeTaken = async (joinCode: string) => {
 const insert = async (
   teacherId: string,
   fields: ClassDetails & { joinCode: string },
-  defaultBehaviors: BehaviorFields[]
+  defaults: {
+    behaviors: BehaviorFields[]
+    consequences: ConsequenceFields[]
+  }
 ) =>
   database.transaction(async (transaction) => {
     const [schoolClass] = await transaction
@@ -77,8 +81,14 @@ const insert = async (
       .values({ teacherId, ...fields })
       .returning()
     await transaction.insert(behaviors).values(
-      defaultBehaviors.map((behavior) => ({
+      defaults.behaviors.map((behavior) => ({
         ...behavior,
+        classId: schoolClass!.id
+      }))
+    )
+    await transaction.insert(consequences).values(
+      defaults.consequences.map((consequence) => ({
+        ...consequence,
         classId: schoolClass!.id
       }))
     )

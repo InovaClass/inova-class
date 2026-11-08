@@ -80,6 +80,12 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - The teacher manages them at `/professor/turmas/[id]/comportamentos`. `BehaviorForm` and `ConfirmActionDialog` live in `(pages)/(teacher)/_components/`, shared by the pages of the teacher area. Signed values are shown with the hyphen-minus (`-5 HP`): Press Start 2P has no `−` (U+2212), which would fall back to Arial.
 - The teacher awards them on the class page: `behaviorModel.award` takes the selected students and either applies the behavior to all of them or to none, and `behaviorModel.undoAward` reverses the whole batch. A pending student can receive a behavior, since the enrollment already exists. The "Desfazer" toast lasts 15 seconds; there is no time limit on the server.
 
+### Consequences
+
+- A consequence (`consequences` table, `src/models/consequence/`) belongs to one class and is only a name. `consequenceModel` filters by owner, active class and `removedAt`, like `behaviorModel`, and removing one sets `removedAt`, since `ledger_entries.sourceId` points to it. A class starts with `DEFAULT_CONSEQUENCES`, inserted in the same transaction as the class; classes created before #17 have none.
+- A student is fallen when `hp` is 0. It isn't stored, so a reversal or an award that gives HP takes the student out of it. The UI says "Sem HP", which doesn't depend on the student's gender.
+- `/professor/turmas/[id]/alunos/[student-id]/sorteio` is the draw. `consequenceModel.draw` picks on the server and `ledgerModel.restoreFallen` adds an `hp_restore` entry of `+HP_MAX`, with the consequence as `sourceId`. It checks that the HP is 0 under the lock of the enrollment, so two concurrent draws never both go through. Without a consequence the draw is refused and the HP stays at 0. An `hp_restore` entry can't be reversed.
+
 ### Database & local services
 
 - Postgres with **Drizzle ORM** and the `pg` (node-postgres) driver, so the same code runs against the local container and Neon in preview/production. `drizzle-orm` and `drizzle-kit` are on the `1.0.0` release candidate (installed from the `@rc` tag, as the current Drizzle docs do): check the types in `node_modules/drizzle-orm` before reaching for a v0 API (e.g. `drizzle()` no longer takes `schema`, and the config has no `casing`).
