@@ -181,12 +181,19 @@ export const ledgerEntries = snakeCase.table(
     parentEntryId: uuid().references((): AnyPgColumn => ledgerEntries.id, {
       onDelete: 'cascade'
     }),
+    // Groups the entries of one award to several students, so they're undone together
+    batchId: uuid(),
+    // Unique so that no entry can be reversed twice, even by concurrent requests
+    reversedEntryId: uuid()
+      .unique()
+      .references((): AnyPgColumn => ledgerEntries.id, { onDelete: 'cascade' }),
     createdById: uuid().references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
   },
   (table) => [
     index().on(table.enrollmentId, table.createdAt),
-    index().on(table.parentEntryId)
+    index().on(table.parentEntryId),
+    index().on(table.batchId)
   ]
 )
 

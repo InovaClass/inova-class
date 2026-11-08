@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import { HP_MAX } from '@/constants/game'
 
-import { applyDeltas, clampHp } from './balance'
+import { applyDeltas, applyReversals, clampHp } from './balance'
 import { LEVEL_BONUS_COINS } from './constants'
 
 const noDeltas = { xpDelta: 0, hpDelta: 0, coinDelta: 0 }
@@ -77,5 +77,36 @@ describe('applyDeltas', () => {
         { ...noDeltas, xpDelta: -250 }
       ).levelBonuses
     ).toEqual([])
+  })
+})
+
+describe('applyReversals', () => {
+  test('restores the balances, level bonus included', () => {
+    const before = { xp: 90, hp: 30, coins: 5 }
+    const { applied, levelBonuses, balances } = applyDeltas(before, {
+      ...noDeltas,
+      xpDelta: 20,
+      coinDelta: 5
+    })
+
+    const reversal = applyReversals(balances, [
+      applied,
+      { ...noDeltas, coinDelta: levelBonuses[0]! }
+    ])
+
+    expect(reversal.balances).toEqual(before)
+    expect(reversal.applied).toEqual([
+      { xpDelta: -20, hpDelta: 0, coinDelta: -5 },
+      { xpDelta: 0, hpDelta: 0, coinDelta: -LEVEL_BONUS_COINS }
+    ])
+  })
+
+  test('takes only the coins the student still has', () => {
+    const { applied, balances } = applyReversals({ xp: 10, hp: 30, coins: 3 }, [
+      { ...noDeltas, coinDelta: 5 }
+    ])
+
+    expect(applied).toEqual([{ xpDelta: 0, hpDelta: 0, coinDelta: -3 }])
+    expect(balances.coins).toBe(0)
   })
 })

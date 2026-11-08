@@ -26,3 +26,18 @@ export const applyDeltas = (balances: Balances, deltas: Deltas) => {
     balances: { xp, hp, coins: coins + levelsGained * LEVEL_BONUS_COINS }
   }
 }
+
+// Goes through the limits like any entry: coins the student already spent can't be taken back
+export const applyReversals = (balances: Balances, entries: Deltas[]) => {
+  let current = balances
+  const applied = entries.map(({ xpDelta, hpDelta, coinDelta }) => {
+    const result = applyDeltas(current, {
+      xpDelta: -xpDelta,
+      hpDelta: -hpDelta,
+      coinDelta: -coinDelta
+    })
+    current = result.balances
+    return result.applied
+  })
+  return { applied, balances: current }
+}
