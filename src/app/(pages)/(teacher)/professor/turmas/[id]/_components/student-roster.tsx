@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from 'cn'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -167,7 +168,10 @@ export const StudentRoster = ({
                   }) => (
                     <li
                       key={id}
-                      className="flex flex-wrap items-center justify-between gap-4"
+                      className={cn(
+                        'flex flex-wrap items-center justify-between gap-4',
+                        hp === 0 && 'border-l-4 border-hp pl-2'
+                      )}
                     >
                       {/* `after:` stretches the label, so tapping anywhere on the stats selects */}
                       <div className="relative flex min-w-0 flex-1 basis-64 items-start gap-4 p-1.5">
@@ -186,6 +190,11 @@ export const StudentRoster = ({
                           <p className="text-xs leading-relaxed wrap-anywhere">
                             {name}
                           </p>
+                          {hp === 0 && (
+                            <p className="text-xs leading-relaxed text-destructive">
+                              Sem HP
+                            </p>
+                          )}
                           {(pending || username) && (
                             <p className="text-xs leading-relaxed wrap-anywhere text-muted-foreground">
                               {pending
@@ -222,6 +231,20 @@ export const StudentRoster = ({
                       </div>
                       {/* The frame is drawn outside the buttons, so the row needs room for it */}
                       <div className="flex flex-wrap gap-6 p-1.5">
+                        {hp === 0 && (
+                          <Link
+                            href={`/professor/turmas/${classId}/alunos/${id}/sorteio`}
+                            className={linkButtonVariants({
+                              variant: 'outline'
+                            })}
+                          >
+                            Sortear consequência
+                            <span className="sr-only">
+                              {' '}
+                              de {identifyStudent(name, email ?? username)}
+                            </span>
+                          </Link>
+                        )}
                         <Link
                           href={`/professor/turmas/${classId}/historico?aluno=${id}`}
                           className={linkButtonVariants({ variant: 'outline' })}

@@ -40,6 +40,12 @@ export const ClassShell = ({ schoolClass, children }: ClassShellProps) => (
           Comportamentos
         </Link>
         <Link
+          href={`/professor/turmas/${schoolClass.id}/consequencias`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Consequências
+        </Link>
+        <Link
           href={`/professor/turmas/${schoolClass.id}/historico`}
           className={linkButtonVariants({ variant: 'outline' })}
         >
