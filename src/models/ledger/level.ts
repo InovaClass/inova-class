@@ -12,3 +12,13 @@ export const levelOf = (xp: number) => {
   while (level > 1 && xpForLevel(level) > xp) level--
   return level
 }
+
+export const levelProgress = (xp: number) => {
+  const level = levelOf(xp)
+  const start = xpForLevel(level)
+  return {
+    level,
+    current: Math.max(xp, 0) - start,
+    max: xpForLevel(level + 1) - start
+  }
+}
