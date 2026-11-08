@@ -77,6 +77,9 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 3. **A:** click "Editar" next to it, change the values and save. The list shows the new values.
 4. **A:** click "Remover" next to it and confirm. It shows "Comportamento removido." and the behavior is gone.
 5. **A:** create another class. It starts with the default behaviors, without the ones you changed in the first class.
+6. **A:** on the page of a class with students, check "Selecionar todos" (or some of the students), click "Aplicar comportamento" and pick one. A toast confirms it, the selection clears and each student shows the new XP, HP and coins.
+7. **A:** click "Desfazer" in the toast, within 15 seconds. It shows "Aplicação desfeita." and the values go back to what they were.
+8. **A:** apply a behavior that takes a student across a level (100 XP for level 2) and undo it: the level and the coins of the level bonus go back too.
 
 ## 9. Invite a student by email
 
