@@ -80,6 +80,9 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 6. **A:** on the page of a class with students, check "Selecionar todos" (or some of the students), click "Aplicar comportamento" and pick one. A toast confirms it, the selection clears and each student shows the new XP, HP and coins.
 7. **A:** click "Desfazer" in the toast, within 15 seconds. It shows "Aplicação desfeita." and the values go back to what they were.
 8. **A:** apply a behavior that takes a student across a level (100 XP for level 2) and undo it: the level and the coins of the level bonus go back too.
+9. **A:** on the class page, click "Histórico". Each student of an award has a row with the behavior, the values, the date and who applied it, and an undone award shows "Revertido".
+10. **A:** apply a behavior again, let the toast go, and click "Histórico" on that student's row. Only that student is listed. Click "Reverter" and confirm: it shows "Lançamento revertido.", the row shows "Revertido" and the values on the class page go back, level bonus included.
+11. **A:** remove that student from the class and open "Histórico" on the class page: their rows are still listed, without "Reverter".
 
 ## 9. Invite a student by email
 

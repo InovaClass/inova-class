@@ -20,3 +20,5 @@ export const ledgerEntrySchema = z
     message: 'O XP só diminui no estorno de um lançamento.'
   })
 export type LedgerEntryInput = z.input<typeof ledgerEntrySchema>
+
+export const historyPageSchema = z.coerce.number().pipe(z.int().positive())

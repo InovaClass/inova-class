@@ -1,8 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
+import { identifyStudent } from '@/app/(pages)/(teacher)/professor/turmas/[id]/identify-student'
+import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { Checkbox } from '@/app/components/ui/8bit/checkbox'
 import {
@@ -51,9 +54,6 @@ const IDLE_STATE: FormState = { status: 'idle' }
 
 // A long time for a toast, but the teacher is usually looking at the class, not at the screen
 const UNDO_TIMEOUT_IN_MS = 15_000
-
-const identify = (name: string, detail?: string | null) =>
-  detail ? `${name} (${detail})` : name
 
 export const StudentRoster = ({
   classId,
@@ -178,7 +178,8 @@ export const StudentRoster = ({
                             onCheckedChange={(checked) => toggle(id, checked)}
                           />
                           <span className="sr-only">
-                            Selecionar {identify(name, email ?? username)}
+                            Selecionar{' '}
+                            {identifyStudent(name, email ?? username)}
                           </span>
                         </label>
                         <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -219,20 +220,30 @@ export const StudentRoster = ({
                           </div>
                         </div>
                       </div>
-                      {/* The frame is drawn outside the button, so it needs room for it */}
-                      <div className="p-1.5">
+                      {/* The frame is drawn outside the buttons, so the row needs room for it */}
+                      <div className="flex flex-wrap gap-6 p-1.5">
+                        <Link
+                          href={`/professor/turmas/${classId}/historico?aluno=${id}`}
+                          className={linkButtonVariants({ variant: 'outline' })}
+                        >
+                          Histórico
+                          <span className="sr-only">
+                            {' '}
+                            de {identifyStudent(name, email ?? username)}
+                          </span>
+                        </Link>
                         <ConfirmActionDialog
                           triggerLabel={
                             <>
                               Remover
                               <span className="sr-only">
                                 {' '}
-                                {identify(name, email ?? username)}
+                                {identifyStudent(name, email ?? username)}
                               </span>
                             </>
                           }
                           title="Remover aluno?"
-                          description={`${identify(name, email ?? username)} sairá desta turma. A conta será mantida, e é possível voltar com um novo convite ou com o código da turma.`}
+                          description={`${identifyStudent(name, email ?? username)} sairá desta turma. A conta será mantida, e é possível voltar com um novo convite ou com o código da turma.`}
                           confirmLabel="Remover"
                           action={async () => {
                             const result = await removeAction(id)

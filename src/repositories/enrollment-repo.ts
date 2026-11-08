@@ -75,6 +75,16 @@ const listActiveIds = async (classId: string, studentIds: string[]) => {
   return active.map(({ id }) => id)
 }
 
+// Without the `endedAt` filter: the history of a student who left the class stays readable
+const findStudent = async (classId: string, studentId: string) => {
+  const [student] = await database
+    .select({ id: users.id, name: users.name })
+    .from(enrollments)
+    .innerJoin(users, eq(users.id, enrollments.studentId))
+    .where(and(eq(enrollments.classId, classId), eq(users.id, studentId)))
+  return student
+}
+
 const end = async (classId: string, studentId: string) => {
   const [enrollment] = await database
     .update(enrollments)
@@ -121,6 +131,7 @@ export const enrollmentRepo = {
   listActiveClassesOf,
   listEnrolledStudents,
   listActiveIds,
+  findStudent,
   end,
   recordJoinAttempt,
   forgiveJoinAttempt
