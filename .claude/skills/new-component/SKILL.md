@@ -19,6 +19,6 @@ Same import/lint/test steps as above (2–5), skipping the `shadcn:add` step. Pl
 
 8bitcn (https://www.8bitcn.com) is built on Radix and `@/lib/utils`, so it's never installed with `pnpm shadcn:add @8bitcn/...`. Read the source from the registry (`https://8bitcn.com/r/<name>.json`, the `content` of each file) and port it by hand:
 
-1. Components go to `src/app/components/ui/8bit/<name>.tsx` as wrappers over our `ui/shadcn/` component (add it first if missing), on Base UI (`render` instead of `asChild`) and the `cn` package, with the `font` variant defaulting to `retro`.
+1. Components go to `src/app/components/ui/8bit/<name>.tsx` on Base UI (`render` instead of `asChild`) and the `cn` package, with the `font` variant defaulting to `retro` and without `'use client'` unless the component can't work without it. Only when the upstream component wraps a shadcn one, wrap our `ui/shadcn/` component (add it first if missing); an upstream that uses a primitive directly or stands alone gets no shadcn component.
 2. Blocks (https://www.8bitcn.com/docs/blocks) are the preferred starting point for pages and sections. Port them onto our `ui/8bit/` and `ui/shadcn/` components, keeping their structure, sizes and spacing; place them in `blocks/<domain>/` when pages of different route groups use them, else in the `_components/` of the route (group) that uses them.
 3. Keep a credit comment at the top of the file linking the upstream component or block, then follow steps 2–5 above.

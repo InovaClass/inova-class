@@ -1,6 +1,17 @@
 import { describe, expect, test } from 'vitest'
 
-import { levelOf, xpForLevel } from './level'
+import { levelOf, levelProgress, xpForLevel } from './level'
+
+describe('levelProgress', () => {
+  test.each([
+    [0, 1, 0, 100],
+    [99, 1, 99, 100],
+    [100, 2, 0, 200],
+    [350, 3, 50, 300]
+  ])('puts %i XP at level %i, %i of %i', (xp, level, current, max) => {
+    expect(levelProgress(xp)).toEqual({ level, current, max })
+  })
+})
 
 describe('xpForLevel', () => {
   test('grows by a larger step at each level', () => {
