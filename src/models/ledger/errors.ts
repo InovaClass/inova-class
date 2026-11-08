@@ -17,3 +17,21 @@ export const batchAlreadyReversed = () =>
     message: 'Esses lançamentos já foram desfeitos.',
     action: 'Atualize a página para ver os valores da turma.'
   })
+
+export const entryNotFound = () =>
+  new NotFoundError({
+    message: 'Não encontramos esse lançamento.',
+    action: 'Atualize a página para ver o histórico da turma.'
+  })
+
+export const entryAlreadyReversed = () =>
+  new ValidationError({
+    message: 'Esse lançamento já foi revertido.',
+    action: 'Atualize a página para ver o histórico da turma.'
+  })
+
+export const entryNotReversible = () =>
+  new ValidationError({
+    message: 'Esse lançamento não pode ser revertido.',
+    action: 'Atualize a página para ver o histórico da turma.'
+  })
