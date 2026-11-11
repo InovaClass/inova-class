@@ -114,6 +114,11 @@ Use a new private window for the invited student, since the invite signs them in
 - **A:** open the address of a class created by another teacher. It shows a 404 page.
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 
-## 12. Stop
+## 12. Credits
+
+- Open `/creditos` (also linked from the "Arte" section of `/termos`). Three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links.
+- Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
+
+## 13. Stop
 
 Press `Ctrl+C` in the terminal to stop the app. The containers keep running; `pnpm services:stop` stops them and keeps the data, so the same accounts work next time.

@@ -193,3 +193,31 @@
     border-inline-width: calc(var(--spacing) * 1.5);
   }
 }
+
+/* 125ms per frame is the 8 fps of the LPC generator's preview (sources/canvas/preview-animation.ts
+upstream); the variables come from CharacterAvatar */
+@utility avatar-layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-size: calc(var(--avatar-columns) * var(--avatar-cell)) auto;
+  background-position: 0 calc(var(--avatar-row) * var(--avatar-cell) * -1);
+  image-rendering: pixelated;
+  /* jump-none with forwards holds the last frame once a single play ends, instead of the blank
+  cell past it */
+  animation: avatar-frames calc(var(--avatar-frames) * 125ms)
+    steps(var(--avatar-frames), jump-none) var(--avatar-iterations) forwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-position: 0 0;
+  }
+}
+
+@keyframes avatar-frames {
+  to {
+    background-position-x: calc(
+      (var(--avatar-frames) - 1) * var(--avatar-cell) * -1
+    );
+  }
+}
