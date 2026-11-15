@@ -7,3 +7,4 @@ test-results
 .playwright-mcp
 .vercel
 .env*.local
+seed-credentials.md
