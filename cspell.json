@@ -18,7 +18,8 @@
     "cspell.json",
     "pnpm-lock.yaml",
     "skills-lock.json",
-    "src/infra/database/migrations"
+    "src/infra/database/migrations",
+    "src/models/avatar/manifest.ts"
   ],
   "dictionaryDefinitions": [
     {

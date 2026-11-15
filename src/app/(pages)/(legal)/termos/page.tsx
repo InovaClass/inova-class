@@ -68,6 +68,16 @@ const TermsPage = () => (
       brasileiras.
     </p>
 
+    <h2>Arte</h2>
+    <p>
+      Os personagens usam arte de outros autores, publicada sob licenças livres.
+      Essa arte mantém as licenças originais, listadas com os autores em{' '}
+      <Link href="/creditos" className="underline underline-offset-4">
+        Créditos
+      </Link>
+      .
+    </p>
+
     <h2>Dados pessoais</h2>
     <p>
       O tratamento dos seus dados está descrito na{' '}
