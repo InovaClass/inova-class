@@ -6,6 +6,9 @@ import { redirect } from 'next/navigation'
 import { formAction, type FormState, formSuccess } from '@/entry/form-action'
 import { requireRole } from '@/entry/session'
 import { behaviorModel } from '@/models/behavior/model'
+import { CHARACTER_CLASS_NAMES } from '@/models/character/constants'
+import { characterModel } from '@/models/character/model'
+import type { CharacterClassInput } from '@/models/character/schema'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
 
@@ -45,6 +48,25 @@ export const removeStudent = async (
     await enrollmentModel.remove(user.id, classId, studentId)
     revalidatePath('/professor', 'layout')
     return formSuccess('Aluno removido da turma.')
+  })
+
+export const changeCharacterClass = async (
+  classId: string,
+  studentId: string,
+  input: CharacterClassInput
+): Promise<FormState> =>
+  formAction(input, async (values) => {
+    const { user } = await requireRole('teacher')
+    await characterModel.changeCharacterClass(
+      user.id,
+      classId,
+      studentId,
+      values
+    )
+    revalidatePath('/professor', 'layout')
+    return formSuccess(
+      `Classe trocada para ${CHARACTER_CLASS_NAMES[values.characterClass]}.`
+    )
   })
 
 export const awardBehavior = async (

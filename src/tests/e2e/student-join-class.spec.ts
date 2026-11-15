@@ -67,16 +67,17 @@ test('a student joins with a valid code and fails with a disabled one', async ({
     teacherPage.getByRole('button', { name: 'Desativar' })
   ).toBeVisible()
   await submitCode(studentPage, code.toLowerCase())
-  await expect(
-    studentPage.getByText(`Você entrou na turma ${name}.`)
-  ).toBeVisible()
+  await expect(studentPage).toHaveURL(/\/aluno\/turmas\/[\da-f-]+$/)
+  const classUrl = studentPage.url()
   await expect(studentPage.getByRole('heading', { name })).toBeVisible()
+
+  await studentPage.goto('/aluno')
+  await expect(studentPage.getByRole('link', { name })).toBeVisible()
   await expect(emptyState).toBeHidden()
 
+  await waitForJoinFormHydration(studentPage)
   await submitCode(studentPage, code)
-  await expect(
-    studentPage.getByText(`Você já está na turma ${name}.`)
-  ).toBeVisible()
+  await expect(studentPage).toHaveURL(classUrl)
   await studentPage.context().close()
 })
 
@@ -112,8 +113,6 @@ test('a regenerated code asks for confirmation and replaces the old one', async 
     studentPage.getByLabel('Código da turma')
   ).toHaveAccessibleDescription(new RegExp(INVALID_CODE_MESSAGE))
   await submitCode(studentPage, newCode)
-  await expect(
-    studentPage.getByText(`Você entrou na turma ${name}.`)
-  ).toBeVisible()
+  await expect(studentPage.getByRole('heading', { name })).toBeVisible()
   await studentPage.context().close()
 })

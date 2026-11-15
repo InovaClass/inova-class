@@ -11,6 +11,7 @@ import { enrollmentModel } from '@/models/enrollment/model'
 
 import {
   awardBehavior,
+  changeCharacterClass,
   regenerateJoinCode,
   removeStudent,
   setJoinCodeEnabled,
@@ -42,6 +43,7 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
           awardAction={awardBehavior.bind(null, classId)}
           undoAction={undoAward.bind(null, classId)}
           removeAction={removeStudent.bind(null, classId)}
+          changeCharacterClassAction={changeCharacterClass.bind(null, classId)}
         />
       </ToastProvider>
       {/* The frame is drawn outside the link, so it needs room for it */}

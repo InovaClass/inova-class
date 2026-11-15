@@ -18,17 +18,21 @@ import {
 import { HealthBar } from '@/app/components/ui/8bit/health-bar'
 import { useToast } from '@/app/components/ui/8bit/toast'
 import { XpBar } from '@/app/components/ui/8bit/xp-bar'
+import { CharacterAvatar } from '@/app/components/ui/custom/character-avatar'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { LevelBadge } from '@/app/components/ui/custom/level-badge'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import { HP_MAX } from '@/constants/game'
 import type { FormState } from '@/entry/form-action'
+import type { AvatarLook, CharacterClass } from '@/models/avatar/layers'
+import { CHARACTER_CLASS_NAMES } from '@/models/character/constants'
 
 import {
   AwardBehaviorDialog,
   type BehaviorOption
 } from './award-behavior-dialog'
+import { ChangeCharacterClassDialog } from './change-character-class-dialog'
 
 type StudentRosterProps = {
   classId: string
@@ -41,6 +45,7 @@ type StudentRosterProps = {
     hp: number
     coins: number
     progress: { level: number; current: number; max: number }
+    look: AvatarLook | null
   }[]
   behaviors: BehaviorOption[]
   awardAction: (
@@ -49,6 +54,10 @@ type StudentRosterProps = {
   ) => Promise<{ state: FormState; batchId?: string }>
   undoAction: (batchId: string) => Promise<FormState>
   removeAction: (studentId: string) => Promise<FormState>
+  changeCharacterClassAction: (
+    studentId: string,
+    input: { characterClass: CharacterClass }
+  ) => Promise<FormState>
 }
 
 const IDLE_STATE: FormState = { status: 'idle' }
@@ -62,7 +71,8 @@ export const StudentRoster = ({
   behaviors,
   awardAction,
   undoAction,
-  removeAction
+  removeAction,
+  changeCharacterClassAction
 }: StudentRosterProps) => {
   // Out here because the dialog leaves with its row. This message also takes the focus, since the
   // trigger the dialog would return it to is gone
@@ -164,7 +174,8 @@ export const StudentRoster = ({
                     email,
                     hp,
                     coins,
-                    progress
+                    progress,
+                    look
                   }) => (
                     <li
                       key={id}
@@ -186,9 +197,22 @@ export const StudentRoster = ({
                             {identifyStudent(name, email ?? username)}
                           </span>
                         </label>
+                        {look ? (
+                          <CharacterAvatar look={look} scale={1} still />
+                        ) : (
+                          <div
+                            aria-hidden="true"
+                            className="size-16 shrink-0 border-2 border-dashed border-border"
+                          />
+                        )}
                         <div className="flex min-w-0 flex-1 flex-col gap-3">
                           <p className="text-xs leading-relaxed wrap-anywhere">
                             {name}
+                          </p>
+                          <p className="text-xs leading-relaxed text-muted-foreground">
+                            {look
+                              ? CHARACTER_CLASS_NAMES[look.characterClass]
+                              : 'Sem personagem'}
                           </p>
                           {hp === 0 && (
                             <p className="text-xs leading-relaxed text-destructive">
@@ -255,6 +279,28 @@ export const StudentRoster = ({
                             de {identifyStudent(name, email ?? username)}
                           </span>
                         </Link>
+                        {look && (
+                          <ChangeCharacterClassDialog
+                            studentLabel={identifyStudent(
+                              name,
+                              email ?? username
+                            )}
+                            currentCharacterClass={look.characterClass}
+                            onChange={async (characterClass) => {
+                              const result = await changeCharacterClassAction(
+                                id,
+                                {
+                                  characterClass
+                                }
+                              )
+                              // A toast, not the roster's message: the trigger stays, and the dialog
+                              // returns the focus to it
+                              if (result.status === 'success')
+                                toast.add({ title: result.message })
+                              return result
+                            }}
+                          />
+                        )}
                         <ConfirmActionDialog
                           triggerLabel={
                             <>
