@@ -86,6 +86,14 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - A student is fallen when `hp` is 0. It isn't stored, so a reversal or an award that gives HP takes the student out of it. The UI says "Sem HP", which doesn't depend on the student's gender.
 - `/professor/turmas/[id]/alunos/[student-id]/sorteio` is the draw. `consequenceModel.draw` picks on the server and `ledgerModel.restoreFallen` adds an `hp_restore` entry of `+HP_MAX`, with the consequence as `sourceId`. It checks that the HP is 0 under the lock of the enrollment, so two concurrent draws never both go through. Without a consequence the draw is refused and the HP stays at 0. An `hp_restore` entry can't be reversed.
 
+### Powers
+
+- A power (`powers` table, `src/models/power/`) belongs to one class and one character class, with a name, an optional description, a coin cost and a minimum level. `powerModel` filters by owner, active class and `removedAt`, like `behaviorModel`. `characterClass` isn't listed in the database, as on `enrollments`: the schema validates it against `CHARACTER_CLASSES`.
+- A class starts with `DEFAULT_POWERS` (`src/models/power/constants.ts`, a list per character class), inserted in the same transaction as the class; classes created before #19 have none.
+- Disabling one (`disabledAt`, "Desativar"/"Reativar", without a confirmation) hides it from the students and keeps it listed for the teacher. Removing one sets `removedAt`, since `ledger_entries.sourceId` points to it.
+- The teacher manages them at `/professor/turmas/[id]/poderes`, grouped by character class, with `PowerForm` in `(pages)/(teacher)/_components/`. The toggle keeps the focus, so its success is only announced, not shown with `FormMessage`, which would take it.
+- `/aluno/turmas/[id]` lists the enabled powers of the student's character class once the character is chosen (`powerModel.listForStudent`), each `unlocked` when `levelOf(xp)` reaches its minimum level. Requesting one comes with #20.
+
 ### Avatar
 
 - A student's character is pixel art from the [Universal LPC Spritesheet Character Generator](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator), pinned to a commit in `src/infra/scripts/import-lpc-sprites.ts`, which also lists the parts we use: the body types, skins, hair styles and colors, the outfit of each character class with its colors, and the items.

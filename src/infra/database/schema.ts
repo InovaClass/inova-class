@@ -192,6 +192,32 @@ export const consequences = snakeCase.table(
   (table) => [index().on(table.classId)]
 )
 
+// `characterClass` is validated against the sprite manifest in the power schema, as on `enrollments`.
+// Disabling one hides it from the students and keeps it listed for the teacher; removing one sets
+// `removedAt`, since ledger entries keep pointing to it through `sourceId`
+export const powers = snakeCase.table(
+  'powers',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    classId: uuid()
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    characterClass: text().notNull(),
+    name: text().notNull(),
+    description: text(),
+    cost: integer().notNull(),
+    minLevel: integer().notNull().default(1),
+    disabledAt: timestamp({ withTimezone: true }),
+    removedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    index().on(table.classId, table.characterClass),
+    check('powers_cost_check', sql`${table.cost} > 0`),
+    check('powers_min_level_check', sql`${table.minLevel} >= 1`)
+  ]
+)
+
 // Never updated or deleted: a correction is a new entry (#16). The deltas are the ones applied after
 // clamping, so reversing an entry restores the balances exactly
 export const ledgerEntries = snakeCase.table(

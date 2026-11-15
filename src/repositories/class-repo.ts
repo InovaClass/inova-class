@@ -1,10 +1,16 @@
 import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 
 import { database } from '@/infra/database/client'
-import { behaviors, classes, consequences } from '@/infra/database/schema'
+import {
+  behaviors,
+  classes,
+  consequences,
+  powers
+} from '@/infra/database/schema'
 
 import type { BehaviorFields } from './behavior-repo'
 import type { ConsequenceFields } from './consequence-repo'
+import type { PowerFields } from './power-repo'
 
 type ClassDetails = { name: string; description: string | null }
 type ClassChanges = Partial<
@@ -73,6 +79,7 @@ const insert = async (
   defaults: {
     behaviors: BehaviorFields[]
     consequences: ConsequenceFields[]
+    powers: PowerFields[]
   }
 ) =>
   database.transaction(async (transaction) => {
@@ -92,6 +99,11 @@ const insert = async (
         classId: schoolClass!.id
       }))
     )
+    await transaction
+      .insert(powers)
+      .values(
+        defaults.powers.map((power) => ({ ...power, classId: schoolClass!.id }))
+      )
     return schoolClass!
   })
 
