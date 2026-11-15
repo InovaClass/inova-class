@@ -9,9 +9,11 @@ import { AVATAR_MANIFEST } from '@/models/avatar/manifest'
 import { appearanceOf } from '@/models/character/look'
 import { characterModel } from '@/models/character/model'
 import type { CharacterInput } from '@/models/character/schema'
+import { powerModel } from '@/models/power/model'
 
 import { chooseCharacter, updateAppearance } from './_components/action'
 import { CharacterForm } from './_components/character-form'
+import { PowerList } from './_components/power-list'
 
 export const metadata: Metadata = { title: 'Turma' }
 
@@ -32,6 +34,7 @@ const StudentClassPage = async ({
   const enrollment = await characterModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
   const { className, look } = enrollment
+  const powers = look ? await powerModel.listForStudent(user.id, classId) : []
 
   return (
     <>
@@ -65,6 +68,7 @@ const StudentClassPage = async ({
           />
         </CardContent>
       </Card>
+      {look && <PowerList powers={powers} />}
     </>
   )
 }

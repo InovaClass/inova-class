@@ -2,11 +2,17 @@ import { z } from 'zod'
 
 import { DEFAULT_BEHAVIORS } from '@/models/behavior/constants'
 import { DEFAULT_CONSEQUENCES } from '@/models/consequence/constants'
+import { DEFAULT_POWERS } from '@/models/power/constants'
 import { classRepo } from '@/repositories/class-repo'
 
 import { classNotFound } from './errors'
 import { generateJoinCode } from './join-code'
 import { type ClassInput, classSchema } from './schema'
+
+const DEFAULT_POWER_FIELDS = Object.entries(DEFAULT_POWERS).flatMap(
+  ([characterClass, powers]) =>
+    powers.map((power) => ({ characterClass, ...power }))
+)
 
 const JOIN_CODE_MAX_ATTEMPTS = 5
 
@@ -49,7 +55,11 @@ const create = async (teacherId: string, input: ClassInput) => {
   return classRepo.insert(
     teacherId,
     { ...fields, joinCode },
-    { behaviors: DEFAULT_BEHAVIORS, consequences: DEFAULT_CONSEQUENCES }
+    {
+      behaviors: DEFAULT_BEHAVIORS,
+      consequences: DEFAULT_CONSEQUENCES,
+      powers: DEFAULT_POWER_FIELDS
+    }
   )
 }
 

@@ -88,7 +88,7 @@ To go through sign-up itself:
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 9. Behaviors and consequences
+## 9. Behaviors, consequences and powers
 
 1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
 2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
@@ -106,6 +106,11 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 14. **A:** click it, then "Sortear". The page shows the consequence drawn, and the class page shows that student with `HP 50/50`.
 15. **A:** on the "Histórico" of that student, the draw is listed as "Consequência: ...", with `+50 HP` and without "Reverter".
 16. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
+17. **A:** on the class page, click "Poderes". The default powers are listed under "Guerreiro", "Mago" and "Curandeiro", each with its cost and "A partir do nível ...".
+18. **A:** click "Novo poder", pick the character class of student B, fill in "Nome", "Custo em moedas" and "Nível mínimo", and submit. Edit it and save: the list shows the new values.
+19. **B:** reload the class page. "Poderes" lists the powers of the character's class only, with "Disponível" or "Disponível a partir do nível ...".
+20. **A:** click "Desativar" next to a power. It shows "Desativado" and the button turns into "Reativar". **B:** reload: the power is gone. **A:** click "Reativar", and it's back for B.
+21. **A:** click "Remover" next to a power and confirm. It shows "Poder removido." and the power is gone for both.
 
 ## 10. Invite a student by email
 
