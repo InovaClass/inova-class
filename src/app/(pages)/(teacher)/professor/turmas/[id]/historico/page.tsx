@@ -33,6 +33,17 @@ const ENTRY_TITLES: Record<LedgerEntryType, string> = {
   reversal: 'Reversão'
 }
 
+const titleOf = (entry: {
+  type: LedgerEntryType
+  behaviorName: string | null
+  consequenceName: string | null
+  powerName: string | null
+}) => {
+  if (entry.consequenceName) return `Consequência: ${entry.consequenceName}`
+  if (entry.powerName) return `Poder: ${entry.powerName}`
+  return entry.behaviorName ?? ENTRY_TITLES[entry.type]
+}
+
 // Formatted here with a fixed zone: the server runs in UTC and teachers are in Brazil
 const dateFormat = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
@@ -100,9 +111,7 @@ const HistoryPage = async ({
     const [firstReversal] = entry.reversals
     return {
       id: entry.id,
-      title: entry.consequenceName
-        ? `Consequência: ${entry.consequenceName}`
-        : (entry.behaviorName ?? ENTRY_TITLES[entry.type]),
+      title: titleOf(entry),
       values: describeDeltas(entry),
       bonus:
         entry.derivedEntries.length > 0

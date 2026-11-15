@@ -8,6 +8,7 @@ import { requireRole } from '@/entry/session'
 import { behaviorModel } from '@/models/behavior/model'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
+import { powerRequestModel } from '@/models/power-request/model'
 
 import {
   awardBehavior,
@@ -28,13 +29,14 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
   const { user } = await requireRole('teacher')
   const schoolClass = await classModel.findOwned(user.id, classId)
   if (!schoolClass) notFound()
-  const [students, behaviors] = await Promise.all([
+  const [students, behaviors, pendingRequests] = await Promise.all([
     enrollmentModel.listRoster(user.id, classId),
-    behaviorModel.list(user.id, classId)
+    behaviorModel.list(user.id, classId),
+    powerRequestModel.countPending(user.id, classId)
   ])
 
   return (
-    <ClassShell schoolClass={schoolClass}>
+    <ClassShell schoolClass={schoolClass} pendingRequests={pendingRequests}>
       <ToastProvider>
         <StudentRoster
           classId={classId}

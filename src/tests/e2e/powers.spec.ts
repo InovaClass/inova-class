@@ -3,18 +3,8 @@ import { expect, type Page, test } from '@playwright/test'
 import { JOIN_CODE_ALPHABET, JOIN_CODE_LENGTH } from '@/models/class/constants'
 
 import { createClass } from './classes'
+import { pick } from './radio'
 import { signUpStudent, signUpTeacher } from './sign-up'
-
-// A click before hydration does nothing on a Base UI radio, so a checked one proves the form is ready
-const pick = async (page: Page, group: string, option: string) => {
-  const radio = page
-    .getByRole('radiogroup', { name: group, exact: true })
-    .getByRole('radio', { name: option, exact: true })
-  await expect(async () => {
-    await radio.click()
-    await expect(radio).toBeChecked({ timeout: 1000 })
-  }).toPass()
-}
 
 const createPower = async (page: Page, name: string) => {
   await page.getByRole('link', { name: 'Novo poder' }).click()
@@ -93,7 +83,7 @@ test('a teacher manages the powers and a student sees the ones of their characte
 
   const powers = studentPage.getByRole('listitem')
   const unlockedPower = powers.filter({ hasText: 'Poder do mago' })
-  await expect(unlockedPower).toContainText('Disponível')
+  await expect(unlockedPower).toContainText('Moedas insuficientes')
   await expect(unlockedPower).not.toContainText('a partir do nível')
   await expect(powers.filter({ hasText: 'Tema da prova' })).toContainText(
     'Disponível a partir do nível 4'

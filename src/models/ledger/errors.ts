@@ -6,6 +6,12 @@ export const notEnoughCoins = () =>
     action: 'Junte mais moedas e tente novamente.'
   })
 
+export const studentLacksCoins = () =>
+  new ValidationError({
+    message: 'Esse aluno não tem mais moedas suficientes.',
+    action: 'Recuse o pedido ou espere o aluno juntar mais moedas.'
+  })
+
 export const studentNotFallen = () =>
   new ValidationError({
     message: 'Esse aluno ainda tem HP.',

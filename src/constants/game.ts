@@ -11,3 +11,12 @@ export const LEDGER_ENTRY_TYPES = [
 ] as const
 
 export type LedgerEntryType = (typeof LEDGER_ENTRY_TYPES)[number]
+
+export const POWER_REQUEST_STATUSES = [
+  'pending',
+  'approved',
+  'refused',
+  'canceled'
+] as const
+
+export type PowerRequestStatus = (typeof POWER_REQUEST_STATUSES)[number]

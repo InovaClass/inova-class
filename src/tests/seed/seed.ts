@@ -2,6 +2,7 @@ import { HP_MAX } from '@/constants/game'
 import { behaviorModel } from '@/models/behavior/model'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
+import { powerRequestModel } from '@/models/power-request/model'
 
 import { appendCredentials } from './credentials'
 import { runOnLocalDatabase } from './local-database'
@@ -33,6 +34,19 @@ const awardRepeatedly = async (
       student.id
     ])
   }
+}
+
+const requestFirstPower = async (schoolClass: SeedClass, student: SeedUser) => {
+  const listed = await powerRequestModel.listForStudent(
+    student.id,
+    schoolClass.id
+  )
+  const power = listed?.powers.find(
+    ({ unlocked, affordable }) => unlocked && affordable
+  )
+  if (!power) throw new Error(`No power ${student.username} can request`)
+  await powerRequestModel.request(student.id, schoolClass.id, power.id)
+  return power
 }
 
 await runOnLocalDatabase(async () => {
@@ -68,6 +82,7 @@ await runOnLocalDatabase(async () => {
     fallen!,
     Math.ceil(HP_MAX / 15)
   )
+  const requestedPower = await requestFirstPower(fullClass, leveledUp!)
   await enrollmentModel.remove(firstTeacher.id, fullClass.id, removed!.id)
   const pending = await invitePendingStudent(firstTeacher, fullClass)
 
@@ -143,6 +158,10 @@ await runOnLocalDatabase(async () => {
           [
             leveledUp!.username!,
             `Subiu de nível em ${fullClass.name} e também está em ${other.name}`
+          ],
+          [
+            leveledUp!.username!,
+            `Pediu o poder ${requestedPower.name} em ${fullClass.name}`
           ],
           [fallen!.username!, `Sem HP em ${fullClass.name}`],
           [withoutCharacter!.username!, `Sem personagem em ${fullClass.name}`],
