@@ -68,6 +68,11 @@ Google doesn't accept wildcard redirect URIs, so Preview deployments sign in thr
 | `pnpm services:wait:database`               | Wait until the database accepts connections               |
 | `pnpm migrations:generate --name <name>`    | Generate a migration from the Drizzle schema              |
 | `pnpm migrations:up`                        | Apply the pending migrations                              |
+| `pnpm db:seed`                              | Fill the local database with a full scenario              |
+| `pnpm db:seed:users [teachers] [students]`  | Create verified accounts (1 and 1 by default)             |
+| `pnpm db:seed:class <teacher-email> [n]`    | Create a class for a teacher with n new students (5)      |
+| `pnpm db:seed:awards <class-id> [n]`        | Award n random behaviors in a class (10)                  |
+| `pnpm db:reset`                             | Empty every table of the local database                   |
 | `pnpm shadcn:add <name>`                    | Add a shadcn/ui component                                 |
 | `pnpm sprites:import`                       | Import the LPC avatar sprites and regenerate the manifest |
 
@@ -109,6 +114,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Everything infrastructure-related lives in `src/infra`: `compose.yml` for the local services, `scripts/` for the startup helpers and `database/` for the client (`client.ts`), the schema (`schema.ts`) and the generated migrations (`migrations/`).
 - Tables are declared with `snakeCase.table(...)`, so camelCase keys map to snake_case columns.
 - Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
+- The seed scripts (`src/tests/seed/`, `pnpm db:seed*` and `pnpm db:reset`) only run against `localhost`. They insert verified accounts sharing one password and append the credentials to the git-ignored `seed-credentials.md`; classes, characters and awards go through the models.
 - XP, HP and coins only change through `ledgerModel` (`src/models/ledger/`): each change adds an entry to `ledger_entries`, which is never updated or deleted, and updates the balances cached on `enrollments` in the same transaction.
 - Each class has its own behaviors (`behaviors`), seeded with a default list when the class is created and managed by the teacher at `/professor/turmas/[id]/comportamentos`. Removing one keeps the row (`removed_at`), since ledger entries point to it.
 - Each class has its own consequences (`consequences`), seeded and removed the same way and managed at `/professor/turmas/[id]/consequencias`. A student with no HP gets one drawn at `/professor/turmas/[id]/alunos/[student-id]/sorteio`, which restores the HP.

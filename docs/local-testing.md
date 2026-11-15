@@ -22,6 +22,16 @@ Use two browsers, or a browser and its private window, because each one keeps it
 
 ## 2. Create the accounts
 
+To skip signing up by hand, the seed scripts create verified accounts and write their credentials to `seed-credentials.md` at the root of the repository (git-ignored). Every account shares the password shown in the file, and a student signs in with the username too. They only run against the local database:
+
+- `pnpm db:seed`: two teachers and their classes, with students who already have a character, a behavior history, a student who leveled up and is in two classes, one without HP, one without a character, one removed, a pending invite (its link is in the file) and an archived class.
+- `pnpm db:seed:users 1 4`: one teacher and four students, without classes (1 and 1 without arguments).
+- `pnpm db:seed:class <teacher-email> 5`: a new class for that teacher with five new students, each with a character.
+- `pnpm db:seed:awards <class-id> 10`: ten random behaviors awarded in the class (the class id is in the file and in the URL of the class page).
+- `pnpm db:reset`: empties every table and removes the file.
+
+To go through sign-up itself:
+
 **Browser A, teacher:**
 
 1. Go to `/cadastro`, choose "Sou professor", fill in the form and accept the terms. The password needs at least 8 characters.
