@@ -124,10 +124,24 @@ export const enrollments = snakeCase.table(
     xp: integer().notNull().default(0),
     hp: integer().notNull().default(HP_MAX),
     coins: integer().notNull().default(0),
+    // Empty until the student picks the character. The values are validated against the sprite
+    // manifest in `characterModel`, which an import can change, so the database doesn't list them
+    characterClass: text(),
+    bodyType: text(),
+    skin: text(),
+    hairStyle: text(),
+    hairColor: text(),
+    outfitColor: text(),
+    equippedItems: text().array().notNull().default([]),
     ...timestamps
   },
   (table) => [
     unique().on(table.studentId, table.classId),
+    // `hair_style` stays out: an empty one is a character without hair
+    check(
+      'enrollments_character_check',
+      sql`(${table.characterClass} is null and ${table.bodyType} is null and ${table.skin} is null and ${table.hairStyle} is null and ${table.hairColor} is null and ${table.outfitColor} is null) or (${table.characterClass} is not null and ${table.bodyType} is not null and ${table.skin} is not null and ${table.hairColor} is not null and ${table.outfitColor} is not null)`
+    ),
     index().on(table.classId),
     check('enrollments_xp_check', sql`${table.xp} >= 0`),
     check(

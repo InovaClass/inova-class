@@ -1,8 +1,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
-import { formAction, type FormState, formSuccess } from '@/entry/form-action'
+import { formAction, type FormState } from '@/entry/form-action'
 import { requireRole } from '@/entry/session'
 import { enrollmentModel } from '@/models/enrollment/model'
 import type { JoinClassInput } from '@/models/enrollment/schema'
@@ -12,14 +13,8 @@ export const joinClass = async (
 ): Promise<FormState<JoinClassInput>> =>
   formAction(input, async (values) => {
     const { user } = await requireRole('student')
-    const { className, alreadyEnrolled } = await enrollmentModel.join(
-      user.id,
-      values
-    )
+    const { classId } = await enrollmentModel.join(user.id, values)
     revalidatePath('/aluno', 'layout')
-    return formSuccess(
-      alreadyEnrolled
-        ? `Você já está na turma ${className}.`
-        : `Você entrou na turma ${className}.`
-    )
+    // The class page asks for the character on the first access, so the student goes straight to it
+    redirect(`/aluno/turmas/${classId}`)
   })

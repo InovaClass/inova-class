@@ -173,7 +173,7 @@ describe('enrollmentModel', () => {
   })
 
   describe('join', () => {
-    test('enrolls the student and returns the name of the class', async () => {
+    test('enrolls the student and returns the id of the class', async () => {
       const { schoolClass } = await newClass()
       const studentId = await newUserId('student')
 
@@ -181,10 +181,7 @@ describe('enrollmentModel', () => {
         code: schoolClass.joinCode
       })
 
-      expect(result).toEqual({
-        className: schoolClass.name,
-        alreadyEnrolled: false
-      })
+      expect(result).toEqual({ classId: schoolClass.id })
       expect(await classIdsOf(studentId)).toEqual([schoolClass.id])
     })
 
@@ -220,9 +217,8 @@ describe('enrollmentModel', () => {
       const input = { code: schoolClass.joinCode }
 
       await enrollmentModel.join(studentId, input)
-      const result = await enrollmentModel.join(studentId, input)
+      await enrollmentModel.join(studentId, input)
 
-      expect(result.alreadyEnrolled).toBe(true)
       expect(await classIdsOf(studentId)).toHaveLength(1)
     })
 
@@ -327,7 +323,8 @@ describe('enrollmentModel', () => {
         email: undefined,
         hp: HP_MAX,
         coins: 0,
-        progress: { level: 1, current: 0, max: 100 }
+        progress: { level: 1, current: 0, max: 100 },
+        look: null
       })
       expect(roster.find(({ id }) => id === pendingId)).toMatchObject({
         pending: true,
@@ -430,11 +427,10 @@ describe('enrollmentModel', () => {
         .where(eq(enrollments.studentId, studentId))
       await enrollmentModel.remove(teacherId, schoolClass.id, studentId)
 
-      const result = await enrollmentModel.join(studentId, {
+      await enrollmentModel.join(studentId, {
         code: schoolClass.joinCode
       })
 
-      expect(result.alreadyEnrolled).toBe(false)
       const rows = await database
         .select({ id: enrollments.id })
         .from(enrollments)

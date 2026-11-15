@@ -50,12 +50,18 @@ test('a teacher invites a student, who creates a password and lands in the class
     .getByText(new RegExp(`^[${JOIN_CODE_ALPHABET}]{${JOIN_CODE_LENGTH}}$`))
     .textContent()
   await studentPage.goto('/aluno')
+  // A click before hydration posts natively and reloads the page, losing the typed code. Only the
+  // hydrated form rejects an empty code on the client, so that error proves it's ready
   await expect(async () => {
-    await studentPage.getByLabel('Código da turma').fill(joinCode ?? '')
     await studentPage.getByRole('button', { name: 'Entrar na turma' }).click()
     await expect(
-      studentPage.getByText(`Você já está na turma ${className}.`)
-    ).toBeVisible({ timeout: 2000 })
+      studentPage.getByLabel('Código da turma')
+    ).toHaveAccessibleDescription(/Informe o código/, { timeout: 1000 })
   }).toPass()
+  await studentPage.getByLabel('Código da turma').fill(joinCode ?? '')
+  await studentPage.getByRole('button', { name: 'Entrar na turma' }).click()
+  await expect(
+    studentPage.getByRole('heading', { name: className, level: 1 })
+  ).toBeVisible()
   await context.close()
 })

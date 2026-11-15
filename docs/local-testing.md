@@ -37,29 +37,37 @@ Use two browsers, or a browser and its private window, because each one keeps it
 ## 3. Classes and join codes
 
 1. **A:** click "Nova turma", create a class and copy the code under "Código da turma".
-2. **B:** type the code under "Entrar em uma turma" and click "Entrar na turma". The class shows up on `/aluno`. Its card has no link until the student class page exists (#22).
-3. **A:** reload the class page. The student is listed under "Alunos" with their username.
+2. **B:** type the code under "Entrar em uma turma" and click "Entrar na turma". You land on the class page, at "Escolha seu personagem". Click "Voltar ao painel": the class shows up on `/aluno`, and its card opens the class page again.
+3. **A:** reload the class page. The student is listed under "Alunos" with their username, a dashed frame instead of the avatar and "Sem personagem".
 4. **A:** click "Editar", change the name and save. **B:** reload `/aluno` and check the new name.
 
-## 4. Change or turn off the code
+## 4. Character
+
+1. **B:** on the class page, pick a class, a body, a skin tone, a hair style and colors. The big preview changes with each choice, and picking another class moves "Cor da roupa" to the colors of that class.
+2. **B:** click "Confirmar personagem". It shows "Personagem escolhido.", and "Classe" is gone from the form.
+3. **B:** pick "Sem cabelo" ("Cor do cabelo" disappears), change other options and click "Salvar aparência". It shows "Aparência salva.", and a reload keeps the choices.
+4. **A:** reload the class page. The student shows the avatar standing still, with the class below the name.
+5. **A:** click "Trocar classe" and pick another class. The roster shows "Classe trocada para ..." and the new class. **B:** reload. The new class shows in the preview, with the first outfit color of that class and the rest of the appearance as it was.
+
+## 5. Change or turn off the code
 
 1. **A:** click "Gerar novo código" and confirm. **B:** the old code is now rejected, but the student stays in the class.
 2. **A:** click "Desativar". **B:** the code gets the same error as an invalid one.
 3. **A:** click "Ativar" to turn it back on.
 
-## 5. Limit of wrong codes
+## 6. Limit of wrong codes
 
 1. **B:** under "Entrar em uma turma", try a code with 6 characters that doesn't exist (e.g. `222222`) 10 times. Each one shows the invalid code error on the field. A code of another length doesn't count.
 2. **B:** try again, even with the right code. It shows "Muitas tentativas com códigos inválidos." and how many minutes are left, for up to 15 minutes.
 3. In a private window, create another student account and join with the right code. The limit of one student doesn't affect another.
 
-## 6. Remove a student
+## 7. Remove a student
 
 1. **A:** click "Remover" next to the student and confirm.
 2. **B:** reload `/aluno`. The class is gone, and the account still works.
 3. **B:** enter the current code again. The student comes back to the class.
 
-## 7. Archive and restore a class
+## 8. Archive and restore a class
 
 1. **A:** on the class page, click "Arquivar" and confirm. You land on the dashboard, without the class.
 2. **B:** reload `/aluno`. The class is gone.
@@ -70,7 +78,7 @@ Use two browsers, or a browser and its private window, because each one keeps it
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 8. Behaviors and consequences
+## 9. Behaviors and consequences
 
 1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
 2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
@@ -89,7 +97,7 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 15. **A:** on the "Histórico" of that student, the draw is listed as "Consequência: ...", with `+50 HP` and without "Reverter".
 16. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
 
-## 9. Invite a student by email
+## 10. Invite a student by email
 
 Use a new private window for the invited student, since the invite signs them in.
 
@@ -99,7 +107,7 @@ Use a new private window for the invited student, since the invite signs them in
 4. **Private window:** the page shows the generated username. Set a password, accept the terms and click "Criar senha".
 5. **A:** reload the class page. Ana is now listed with the username.
 
-## 10. Sign-in and password
+## 11. Sign-in and password
 
 - **Sign-in:** sign out and go to `/entrar`. A student signs in with either the email or the username, and a teacher with the email. A wrong password shows the same message as an unknown account.
 - **Unverified email:** sign up without opening the link and try to sign in. It's rejected, Mailpit gets a new link and "Reenviar e-mail" appears below the form.
@@ -107,18 +115,18 @@ Use a new private window for the invited student, since the invite signs them in
 - **Password reset:** go to `/esqueci-a-senha`, click "Enviar link", open the link in Mailpit and set a new password.
 - **Pending student:** request a password reset for a student who hasn't accepted their invite. Mailpit gets a new invite instead of a reset link.
 
-## 11. Role areas
+## 12. Role areas
 
 - **B:** open `/professor`. You're sent back to `/aluno`.
 - **A:** open `/aluno`. You're sent back to `/professor`.
 - **A:** open the address of a class created by another teacher. It shows a 404 page.
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 
-## 12. Credits
+## 13. Credits
 
 - Open `/creditos` (also linked from the "Arte" section of `/termos`). Three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links.
 - Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
 
-## 13. Stop
+## 14. Stop
 
 Press `Ctrl+C` in the terminal to stop the app. The containers keep running; `pnpm services:stop` stops them and keeps the data, so the same accounts work next time.

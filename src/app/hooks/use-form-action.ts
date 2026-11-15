@@ -131,6 +131,7 @@ export const useFormAction = <
   return {
     field,
     control: form.control,
+    setValue: form.setValue,
     state,
     pending,
     announcement,

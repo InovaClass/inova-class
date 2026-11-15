@@ -13,6 +13,8 @@ type CharacterAvatarProps = Omit<ComponentProps<'div'>, 'children'> & {
   animation?: AvatarAnimation
   // An attack or a hurt answers a single event, so only idle loops by default
   loop?: boolean
+  // The first frame only, for a list where many animated avatars would distract
+  still?: boolean
   // Whole multiples only: a fractional one blurs the pixel art
   scale?: 1 | 2 | 3 | 4
 }
@@ -21,6 +23,7 @@ export const CharacterAvatar = ({
   look,
   animation = 'idle',
   loop = animation === 'idle',
+  still = false,
   scale = 2,
   className,
   style,
@@ -51,7 +54,7 @@ export const CharacterAvatar = ({
         // Keyed by the animation, so switching to another one starts it from its first frame
         <div
           key={`${animation}:${src}`}
-          className="avatar-layer"
+          className={cn('avatar-layer', still && 'animate-none!')}
           style={{ backgroundImage: `url(${src})` }}
         />
       ))}

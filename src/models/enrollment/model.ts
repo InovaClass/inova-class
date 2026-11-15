@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { lookOf } from '@/models/character/look'
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { levelProgress } from '@/models/ledger/level'
@@ -49,8 +50,8 @@ const join = async (studentId: string, input: JoinClassInput) => {
   }
 
   await enrollmentRepo.forgiveJoinAttempt(studentId)
-  const enrollment = await enrollmentRepo.insert(studentId, schoolClass.id)
-  return { className: schoolClass.name, alreadyEnrolled: !enrollment }
+  await enrollmentRepo.insert(studentId, schoolClass.id)
+  return { classId: schoolClass.id }
 }
 
 const listClasses = async (studentId: string) => {
@@ -66,16 +67,29 @@ const listRoster = async (teacherId: string, classId: string) => {
     students
       // A pending student only enters through an invite, so the teacher already has that email;
       // one who joined by code never gave it to the teacher
-      .map(({ id, name, username, email, pending, xp, hp, coins }) => ({
-        id,
-        name,
-        username,
-        pending,
-        email: pending ? email : undefined,
-        hp,
-        coins,
-        progress: levelProgress(xp)
-      }))
+      .map(
+        ({
+          id,
+          name,
+          username,
+          email,
+          pending,
+          xp,
+          hp,
+          coins,
+          ...character
+        }) => ({
+          id,
+          name,
+          username,
+          pending,
+          email: pending ? email : undefined,
+          hp,
+          coins,
+          progress: levelProgress(xp),
+          look: lookOf(character)
+        })
+      )
       // In the model because the collation of the database doesn't have to follow pt-BR
       .toSorted((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
   )

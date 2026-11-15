@@ -9,22 +9,22 @@ import {
   users
 } from '@/infra/database/schema'
 
-// A student who comes back keeps the same enrollment, and the game stats on it (#18). An enrollment
-// still active isn't touched, so `returning` only brings the ones that actually entered the class
+import { characterColumns } from './character-repo'
+
+// A student who comes back keeps the same enrollment, with the game stats and the character on it.
+// An enrollment still active isn't touched, so `returning` only brings the ones that actually entered
+// the class
 export const reactivateEndedEnrollment = {
   target: [enrollments.studentId, enrollments.classId],
   set: { endedAt: null },
   setWhere: isNotNull(enrollments.endedAt)
 }
 
-const insert = async (studentId: string, classId: string) => {
-  const [enrollment] = await database
+const insert = async (studentId: string, classId: string) =>
+  database
     .insert(enrollments)
     .values({ studentId, classId })
     .onConflictDoUpdate(reactivateEndedEnrollment)
-    .returning()
-  return enrollment
-}
 
 const listActiveClassesOf = async (studentId: string) =>
   database
@@ -54,6 +54,7 @@ const listEnrolledStudents = async (classId: string) =>
       xp: enrollments.xp,
       hp: enrollments.hp,
       coins: enrollments.coins,
+      ...characterColumns,
       pending: sql<boolean>`${accounts.id} is null`
     })
     .from(enrollments)

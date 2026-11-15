@@ -22,7 +22,10 @@ const StudentDashboardPage = async () => {
     <>
       <h1 className="text-sm leading-relaxed">Painel do aluno</h1>
       {classes.length > 0 ? (
-        <ClassSlots classes={classes} />
+        <ClassSlots
+          classes={classes}
+          hrefOf={({ id }) => `/aluno/turmas/${id}`}
+        />
       ) : (
         // Without `flex-none` it takes the free height and pushes the join form, the only action here, down
         <Empty className="flex-none">

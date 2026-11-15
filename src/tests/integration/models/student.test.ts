@@ -287,7 +287,7 @@ describe('studentModel', () => {
       }
       await expect(
         enrollmentModel.join(stored!.id, { code: schoolClass.joinCode })
-      ).resolves.toMatchObject({ alreadyEnrolled: true })
+      ).resolves.toMatchObject({ classId: schoolClass.id })
     })
 
     test('requires the terms, and a refused attempt keeps the link valid', async () => {
