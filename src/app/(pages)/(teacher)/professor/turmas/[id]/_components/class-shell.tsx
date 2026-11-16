@@ -77,6 +77,12 @@ export const ClassShell = ({
           {pendingOrders > 0 ? `Entregas (${pendingOrders})` : 'Entregas'}
         </Link>
         <Link
+          href={`/professor/turmas/${schoolClass.id}/ranking`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Ranking
+        </Link>
+        <Link
           href={`/professor/turmas/${schoolClass.id}/historico`}
           className={linkButtonVariants({ variant: 'outline' })}
         >

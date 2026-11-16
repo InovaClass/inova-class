@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { describe, expect, test } from 'vitest'
 
 import { HP_MAX } from '@/constants/game'
@@ -57,6 +57,17 @@ const nameOf = async (userId: string) => {
     .where(eq(users.id, userId))
   return user?.name
 }
+
+const setXp = async (studentId: string, classId: string, xp: number) =>
+  database
+    .update(enrollments)
+    .set({ xp })
+    .where(
+      and(
+        eq(enrollments.studentId, studentId),
+        eq(enrollments.classId, classId)
+      )
+    )
 
 const enrollByCode = async (joinCode: string) => {
   const studentId = await newUserId('student')
@@ -354,6 +365,140 @@ describe('enrollmentModel', () => {
       await expect(
         enrollmentModel.listRoster(other.teacherId, schoolClass.id)
       ).rejects.toBeInstanceOf(NotFoundError)
+    })
+  })
+
+  describe('findOfStudent', () => {
+    test('finds the stats of an active enrollment only', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const studentId = await enrollByCode(schoolClass.joinCode)
+      await setXp(studentId, schoolClass.id, 150)
+      const outsiderId = await newUserId('student')
+
+      const found = await enrollmentModel.findOfStudent(
+        studentId,
+        schoolClass.id
+      )
+      await enrollmentModel.remove(teacherId, schoolClass.id, studentId)
+
+      expect(found).toEqual({
+        className: schoolClass.name,
+        rankingVisible: false,
+        hp: HP_MAX,
+        coins: 0,
+        progress: { level: 2, current: 50, max: 200 },
+        look: null
+      })
+      for (const [id, classId] of [
+        [studentId, schoolClass.id],
+        [outsiderId, schoolClass.id],
+        [studentId, 'not-a-uuid']
+      ] as const) {
+        expect(await enrollmentModel.findOfStudent(id, classId)).toBeUndefined()
+      }
+    })
+  })
+
+  describe('listRanking', () => {
+    test('ranks the active students by XP and gives tied students the same position', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const students: Record<string, string> = {}
+      for (const [name, xp] of [
+        ['Bruno', 50],
+        ['Zeca', 120],
+        ['Ágata', 50],
+        ['Removido', 500]
+      ] as const) {
+        const studentId = await enrollByCode(schoolClass.joinCode)
+        await database
+          .update(users)
+          .set({ name })
+          .where(eq(users.id, studentId))
+        await setXp(studentId, schoolClass.id, xp)
+        students[name] = studentId
+      }
+      await enrollmentModel.remove(
+        teacherId,
+        schoolClass.id,
+        students.Removido!
+      )
+
+      const ranking = await enrollmentModel.listRanking(
+        teacherId,
+        schoolClass.id
+      )
+
+      expect(
+        ranking.map(({ position, name, xp, level }) => ({
+          position,
+          name,
+          xp,
+          level
+        }))
+      ).toEqual([
+        { position: 1, name: 'Zeca', xp: 120, level: 2 },
+        { position: 2, name: 'Ágata', xp: 50, level: 1 },
+        { position: 2, name: 'Bruno', xp: 50, level: 1 }
+      ])
+      expect(ranking[0]!.detail).toContain('@example.com')
+    })
+
+    test('rejects a class of another teacher', async () => {
+      const { schoolClass } = await newClass()
+      const other = await newClass()
+
+      await expect(
+        enrollmentModel.listRanking(other.teacherId, schoolClass.id)
+      ).rejects.toBeInstanceOf(NotFoundError)
+    })
+  })
+
+  describe('listRankingForStudent', () => {
+    test('shows the ranking only once the teacher turns it on', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const studentId = await enrollByCode(schoolClass.joinCode)
+      const classmateId = await enrollByCode(schoolClass.joinCode)
+      await setXp(classmateId, schoolClass.id, 30)
+
+      const hidden = await enrollmentModel.listRankingForStudent(
+        studentId,
+        schoolClass.id
+      )
+      await classModel.setRankingVisible(teacherId, schoolClass.id, true)
+      const visible = await enrollmentModel.listRankingForStudent(
+        studentId,
+        schoolClass.id
+      )
+
+      expect(hidden).toBeUndefined()
+      expect(visible).toEqual([
+        {
+          position: 1,
+          name: await nameOf(classmateId),
+          xp: 30,
+          level: 1,
+          look: null,
+          isCurrentStudent: false
+        },
+        {
+          position: 2,
+          name: await nameOf(studentId),
+          xp: 0,
+          level: 1,
+          look: null,
+          isCurrentStudent: true
+        }
+      ])
+    })
+
+    test('hides the ranking from a student outside the class', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      await classModel.setRankingVisible(teacherId, schoolClass.id, true)
+      const outsiderId = await newUserId('student')
+
+      expect(
+        await enrollmentModel.listRankingForStudent(outsiderId, schoolClass.id)
+      ).toBeUndefined()
     })
   })
 

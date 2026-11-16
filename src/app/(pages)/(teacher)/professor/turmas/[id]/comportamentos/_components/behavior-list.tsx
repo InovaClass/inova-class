@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { describeBehaviorValues } from '@/app/(pages)/(teacher)/professor/turmas/[id]/comportamentos/behavior-values'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import {
@@ -15,6 +14,7 @@ import {
 import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
+import { describeBehaviorValues } from '@/app/helpers/behavior-values'
 import type { FormState } from '@/entry/form-action'
 
 type BehaviorListProps = {

@@ -109,6 +109,7 @@ export const classes = snakeCase.table(
     description: text(),
     joinCode: text().notNull().unique(),
     joinCodeEnabled: boolean().notNull().default(true),
+    rankingVisible: boolean().notNull().default(false),
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },

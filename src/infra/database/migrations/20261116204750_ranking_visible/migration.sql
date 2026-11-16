@@ -1,0 +1,1 @@
+ALTER TABLE "classes" ADD COLUMN "ranking_visible" boolean DEFAULT false NOT NULL;

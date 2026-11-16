@@ -445,3 +445,51 @@ describe('ledgerModel.listHistory', () => {
     }
   })
 })
+
+describe('ledgerModel.listStudentHistory', () => {
+  test('lists only the entries of the student, without the author', async () => {
+    const { teacherId, studentId, classId, enrollmentId } =
+      await newEnrollment()
+    const classmateId = await newUserId('student')
+    const [classmateEnrollment] = await database
+      .insert(enrollments)
+      .values({ studentId: classmateId, classId })
+      .returning()
+    const { entry } = await ledgerModel.record(
+      behaviorEntry(enrollmentId, { xpDelta: 100, createdById: teacherId })
+    )
+    await ledgerModel.record(
+      behaviorEntry(classmateEnrollment!.id, { xpDelta: 20 })
+    )
+    await ledgerModel.reverseEntry(teacherId, classId, entry.id)
+
+    const history = await ledgerModel.listStudentHistory(studentId, classId, {})
+
+    expect(history).toMatchObject({ page: 1, hasNextPage: false })
+    expect(history!.entries).toHaveLength(1)
+    const [listed] = history!.entries
+    expect(listed).toMatchObject({ id: entry.id, xpDelta: 100 })
+    expect(listed).not.toHaveProperty('authorName')
+    expect(listed!.derivedEntries).toMatchObject([{ type: 'level_bonus' }])
+    expect(listed!.reversals).toHaveLength(2)
+  })
+
+  test('finds nothing for a student who left or never joined the class', async () => {
+    const { studentId, classId, enrollmentId } = await newEnrollment()
+    const outsiderId = await newUserId('student')
+    await database
+      .update(enrollments)
+      .set({ endedAt: new Date() })
+      .where(eq(enrollments.id, enrollmentId))
+
+    for (const [id, targetClassId] of [
+      [studentId, classId],
+      [outsiderId, classId],
+      [outsiderId, 'malformed']
+    ] as const) {
+      expect(
+        await ledgerModel.listStudentHistory(id, targetClassId, {})
+      ).toBeUndefined()
+    }
+  })
+})

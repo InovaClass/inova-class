@@ -127,11 +127,15 @@ describe('classModel', () => {
         classModel.setJoinCodeEnabled(otherTeacherId, id, false)
       ).rejects.toBeInstanceOf(NotFoundError)
       await expect(
+        classModel.setRankingVisible(otherTeacherId, id, true)
+      ).rejects.toBeInstanceOf(NotFoundError)
+      await expect(
         classModel.regenerateJoinCode(teacherId, archived.id)
       ).rejects.toBeInstanceOf(NotFoundError)
       expect(await findStoredClass(id)).toMatchObject({
         joinCode,
-        joinCodeEnabled: true
+        joinCodeEnabled: true,
+        rankingVisible: false
       })
     })
   })
