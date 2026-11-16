@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from 'cn'
 import { type ReactNode, useActionState, useState } from 'react'
 
 import {
@@ -24,6 +25,8 @@ type ConfirmActionDialogProps = {
   title: string
   description: string
   confirmLabel: string
+  // An action that loses nothing, such as an approval, doesn't need the warning of the default
+  confirmVariant?: 'destructive' | 'default'
   action: (state: FormState, formData: FormData) => Promise<FormState>
   onSuccess?: (result: FormState) => void
 }
@@ -35,6 +38,7 @@ export const ConfirmActionDialog = ({
   title,
   description,
   confirmLabel,
+  confirmVariant = 'destructive',
   action,
   onSuccess
 }: ConfirmActionDialogProps) => {
@@ -96,10 +100,13 @@ export const ConfirmActionDialog = ({
             </AlertDialogCancel>
             <SubmitButton
               pending={pending}
-              variant="destructive"
+              variant={confirmVariant}
               // `text-destructive` on the variant's tinted background stays under the 4.5:1 of WCAG
               // 1.4.3, so the frame carries the warning
-              className="text-foreground [--pixel-border:var(--destructive)] hover:text-foreground"
+              className={cn(
+                confirmVariant === 'destructive' &&
+                  'text-foreground [--pixel-border:var(--destructive)] hover:text-foreground'
+              )}
             >
               {confirmLabel}
             </SubmitButton>

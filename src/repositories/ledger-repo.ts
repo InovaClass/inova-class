@@ -8,6 +8,7 @@ import {
   consequences,
   enrollments,
   ledgerEntries,
+  powers,
   users
 } from '@/infra/database/schema'
 
@@ -34,7 +35,9 @@ export type RecordedEntry = Pick<
 
 type ReversalPlan = { reversals: NewEntry[]; balances: Balances }
 
-type Transaction = Parameters<Parameters<typeof database.transaction>[0]>[0]
+export type Transaction = Parameters<
+  Parameters<typeof database.transaction>[0]
+>[0]
 
 const balanceColumns = {
   xp: enrollments.xp,
@@ -86,10 +89,12 @@ const lockBalances = async (
     .for('update')
 
 // The row lock makes concurrent entries of one enrollment wait for each other, so each plan starts
-// from the balances the previous one left. `plan` may throw to cancel the transaction
+// from the balances the previous one left. `plan` and `afterWrite` may throw to cancel the
+// transaction
 const record = async (
   enrollmentId: string,
-  plan: (balances: Balances) => EntryPlan
+  plan: (balances: Balances) => EntryPlan,
+  afterWrite?: (transaction: Transaction, entryId: string) => Promise<void>
 ) =>
   database.transaction(async (transaction) => {
     const [current] = await transaction
@@ -99,7 +104,9 @@ const record = async (
       .for('update')
     if (!current) return
 
-    return writePlan(transaction, enrollmentId, plan(current))
+    const recorded = await writePlan(transaction, enrollmentId, plan(current))
+    await afterWrite?.(transaction, recorded.entry.id)
+    return recorded
   })
 
 // All or nothing: a batch never reaches only part of the students
@@ -273,6 +280,7 @@ const listHistory = async (
       enrollmentEndedAt: enrollments.endedAt,
       behaviorName: behaviors.name,
       consequenceName: consequences.name,
+      powerName: powers.name,
       authorName: entryAuthors.name
     })
     .from(ledgerEntries)
@@ -290,6 +298,13 @@ const listHistory = async (
       and(
         eq(consequences.id, ledgerEntries.sourceId),
         eq(ledgerEntries.type, 'hp_restore')
+      )
+    )
+    .leftJoin(
+      powers,
+      and(
+        eq(powers.id, ledgerEntries.sourceId),
+        eq(ledgerEntries.type, 'power')
       )
     )
     .leftJoin(entryAuthors, eq(entryAuthors.id, ledgerEntries.createdById))

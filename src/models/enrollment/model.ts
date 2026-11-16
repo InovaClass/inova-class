@@ -103,7 +103,7 @@ const remove = async (
   await requireOwnedClass(teacherId, classId)
   // The id comes from the client, and Postgres rejects a value that isn't a UUID
   const enrollment = z.uuid().safeParse(studentId).success
-    ? await enrollmentRepo.end(classId, studentId)
+    ? await enrollmentRepo.end(classId, studentId, teacherId)
     : undefined
   if (!enrollment) throw studentNotInClass()
 }

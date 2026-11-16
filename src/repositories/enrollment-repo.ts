@@ -6,6 +6,7 @@ import {
   classes,
   enrollments,
   joinAttempts,
+  powerRequests,
   users
 } from '@/infra/database/schema'
 
@@ -86,20 +87,34 @@ const findStudent = async (classId: string, studentId: string) => {
   return student
 }
 
-const end = async (classId: string, studentId: string) => {
-  const [enrollment] = await database
-    .update(enrollments)
-    .set({ endedAt: new Date() })
-    .where(
-      and(
-        eq(enrollments.classId, classId),
-        eq(enrollments.studentId, studentId),
-        isNull(enrollments.endedAt)
+// The pending power requests are refused in the same transaction, so a student who comes back
+// doesn't find coins still held by them (#20)
+const end = async (classId: string, studentId: string, endedById: string) =>
+  database.transaction(async (transaction) => {
+    const [enrollment] = await transaction
+      .update(enrollments)
+      .set({ endedAt: new Date() })
+      .where(
+        and(
+          eq(enrollments.classId, classId),
+          eq(enrollments.studentId, studentId),
+          isNull(enrollments.endedAt)
+        )
       )
-    )
-    .returning({ id: enrollments.id })
-  return enrollment
-}
+      .returning({ id: enrollments.id })
+    if (!enrollment) return
+
+    await transaction
+      .update(powerRequests)
+      .set({ status: 'refused', decidedById: endedById, decidedAt: new Date() })
+      .where(
+        and(
+          eq(powerRequests.enrollmentId, enrollment.id),
+          eq(powerRequests.status, 'pending')
+        )
+      )
+    return enrollment
+  })
 
 // A single statement, so parallel requests can't all read the same count and pass the limit together
 const recordJoinAttempt = async (

@@ -8,7 +8,8 @@ import { enrollmentRepo } from '@/repositories/enrollment-repo'
 import {
   type Balances,
   ledgerRepo,
-  type RecordedEntry
+  type RecordedEntry,
+  type Transaction
 } from '@/repositories/ledger-repo'
 
 import { applyDeltas, applyReversals } from './balance'
@@ -20,6 +21,7 @@ import {
   entryNotFound,
   entryNotReversible,
   notEnoughCoins,
+  studentLacksCoins,
   studentNotFallen
 } from './errors'
 import { levelOf } from './level'
@@ -107,6 +109,39 @@ const restoreFallen = async (
     if (balances.hp > 0) throw studentNotFallen()
     return plan(balances)
   })
+  if (!recorded) throw studentNotInClass()
+}
+
+// Checked under the lock of the enrollment, as the reservation was, so the coins are never spent twice.
+// `confirm` runs in the same transaction, so the entry and the decision on the request go together
+const spendOnPower = async (
+  enrollmentId: string,
+  {
+    powerId,
+    cost,
+    createdById
+  }: { powerId: string; cost: number; createdById: string },
+  confirm: (transaction: Transaction, entryId: string) => Promise<void>
+) => {
+  const { enrollmentId: id, ...entry } = ledgerEntrySchema.parse({
+    enrollmentId,
+    type: 'power',
+    xpDelta: 0,
+    hpDelta: 0,
+    coinDelta: -cost,
+    sourceId: powerId,
+    createdById
+  })
+  const plan = planEntry(entry)
+  const recorded = await ledgerRepo.record(
+    id,
+    (balances) => {
+      // A coin penalty doesn't respect the reservation, so the coins may no longer cover the cost
+      if (balances.coins < cost) throw studentLacksCoins()
+      return plan(balances)
+    },
+    confirm
+  )
   if (!recorded) throw studentNotInClass()
 }
 
@@ -215,6 +250,7 @@ export const ledgerModel = {
   record,
   recordBatch,
   restoreFallen,
+  spendOnPower,
   reverseBatch,
   reverseEntry,
   listHistory

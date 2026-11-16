@@ -108,9 +108,14 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 16. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
 17. **A:** on the class page, click "Poderes". The default powers are listed under "Guerreiro", "Mago" and "Curandeiro", each with its cost and "A partir do nível ...".
 18. **A:** click "Novo poder", pick the character class of student B, fill in "Nome", "Custo em moedas" and "Nível mínimo", and submit. Edit it and save: the list shows the new values.
-19. **B:** reload the class page. "Poderes" lists the powers of the character's class only, with "Disponível" or "Disponível a partir do nível ...".
+19. **B:** reload the class page. "Poderes" lists the powers of the character's class only, with "Moedas disponíveis" above them. A power below the minimum level shows "Disponível a partir do nível ...", one the coins don't cover shows "Moedas insuficientes" and the others have a "Usar poder" button.
 20. **A:** click "Desativar" next to a power. It shows "Desativado" and the button turns into "Reativar". **B:** reload: the power is gone. **A:** click "Reativar", and it's back for B.
 21. **A:** click "Remover" next to a power and confirm. It shows "Poder removido." and the power is gone for both.
+22. **A:** apply a behavior that gives coins to student B (e.g. "Ajudou um colega"). **B:** reload and click "Usar poder" on a power the coins cover. It shows "Pedido enviado. Aguarde a resposta do professor.", the power shows "Pedido pendente", "Pedidos pendentes" lists it and "Moedas disponíveis" goes down by its cost, while the class page of A still shows the same coins.
+23. **B:** click "Cancelar pedido". The coins are available again. Request the power once more.
+24. **A:** reload the class page. The "Pedidos" button shows the count of pending requests. Click it: the request is listed with the student, the power, the cost and the date. Click "Aprovar" and confirm: it shows "Pedido aprovado. As moedas foram descontadas.", the class page shows the coins of B down by the cost and "Histórico" lists "Poder: ..." without "Reverter".
+25. **B:** request a power again. **A:** click "Recusar" on "Pedidos": it shows "Pedido recusado. As moedas reservadas foram liberadas." and the coins of B don't change.
+26. **B:** request a power. **A:** remove B from the class: the request leaves "Pedidos", and if B comes back through the join code the coins aren't reserved anymore.
 
 ## 10. Invite a student by email
 

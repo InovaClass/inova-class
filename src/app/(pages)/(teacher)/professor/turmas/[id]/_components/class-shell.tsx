@@ -8,11 +8,16 @@ import { archiveClass } from './action'
 
 type ClassShellProps = {
   schoolClass: { id: string; name: string; description: string | null }
+  pendingRequests: number
   children: ReactNode
 }
 
 // A component rather than a layout, since the edit page under this route doesn't use the shell
-export const ClassShell = ({ schoolClass, children }: ClassShellProps) => (
+export const ClassShell = ({
+  schoolClass,
+  pendingRequests,
+  children
+}: ClassShellProps) => (
   <>
     <Link
       href="/professor"
@@ -50,6 +55,12 @@ export const ClassShell = ({ schoolClass, children }: ClassShellProps) => (
           className={linkButtonVariants({ variant: 'outline' })}
         >
           Poderes
+        </Link>
+        <Link
+          href={`/professor/turmas/${schoolClass.id}/pedidos`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          {pendingRequests > 0 ? `Pedidos (${pendingRequests})` : 'Pedidos'}
         </Link>
         <Link
           href={`/professor/turmas/${schoolClass.id}/historico`}

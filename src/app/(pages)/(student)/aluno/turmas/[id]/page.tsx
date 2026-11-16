@@ -9,9 +9,14 @@ import { AVATAR_MANIFEST } from '@/models/avatar/manifest'
 import { appearanceOf } from '@/models/character/look'
 import { characterModel } from '@/models/character/model'
 import type { CharacterInput } from '@/models/character/schema'
-import { powerModel } from '@/models/power/model'
+import { powerRequestModel } from '@/models/power-request/model'
 
-import { chooseCharacter, updateAppearance } from './_components/action'
+import {
+  cancelPowerRequest,
+  chooseCharacter,
+  requestPower,
+  updateAppearance
+} from './_components/action'
 import { CharacterForm } from './_components/character-form'
 import { PowerList } from './_components/power-list'
 
@@ -34,7 +39,9 @@ const StudentClassPage = async ({
   const enrollment = await characterModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
   const { className, look } = enrollment
-  const powers = look ? await powerModel.listForStudent(user.id, classId) : []
+  const powers = look
+    ? await powerRequestModel.listForStudent(user.id, classId)
+    : undefined
 
   return (
     <>
@@ -68,7 +75,13 @@ const StudentClassPage = async ({
           />
         </CardContent>
       </Card>
-      {look && <PowerList powers={powers} />}
+      {powers && (
+        <PowerList
+          {...powers}
+          requestAction={requestPower.bind(null, classId)}
+          cancelAction={cancelPowerRequest.bind(null, classId)}
+        />
+      )}
     </>
   )
 }

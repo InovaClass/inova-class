@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useActionState, useState } from 'react'
+import { useState } from 'react'
 
 import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
@@ -12,9 +12,9 @@ import {
   EmptyHeader,
   EmptyTitle
 } from '@/app/components/ui/8bit/empty'
+import { ActionButton } from '@/app/components/ui/custom/action-button'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
-import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import type { FormState } from '@/entry/form-action'
 import type { CharacterClass } from '@/models/avatar/layers'
@@ -39,33 +39,6 @@ type PowerListProps = {
 }
 
 const IDLE_STATE: FormState = { status: 'idle' }
-
-type PowerToggleProps = {
-  power: Power
-  setEnabledAction: PowerListProps['setEnabledAction']
-  onResult: (result: FormState) => void
-}
-
-const PowerToggle = ({
-  power,
-  setEnabledAction,
-  onResult
-}: PowerToggleProps) => {
-  const [, dispatch, pending] = useActionState(async () => {
-    const result = await setEnabledAction(power.id, power.disabled)
-    onResult(result)
-    return result
-  }, IDLE_STATE)
-
-  return (
-    <form action={dispatch}>
-      <SubmitButton pending={pending} variant="outline">
-        {power.disabled ? 'Reativar' : 'Desativar'}
-        <span className="sr-only"> {power.name}</span>
-      </SubmitButton>
-    </form>
-  )
-}
 
 export const PowerList = ({
   classId,
@@ -153,11 +126,16 @@ export const PowerList = ({
                           Editar
                           <span className="sr-only"> {power.name}</span>
                         </Link>
-                        <PowerToggle
-                          power={power}
-                          setEnabledAction={setEnabledAction}
+                        <ActionButton
+                          variant="outline"
+                          action={() =>
+                            setEnabledAction(power.id, power.disabled)
+                          }
                           onResult={handleToggle}
-                        />
+                        >
+                          {power.disabled ? 'Reativar' : 'Desativar'}
+                          <span className="sr-only"> {power.name}</span>
+                        </ActionButton>
                         <ConfirmActionDialog
                           triggerLabel={
                             <>

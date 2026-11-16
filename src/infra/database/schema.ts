@@ -9,10 +9,15 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid
 } from 'drizzle-orm/pg-core'
 
-import { HP_MAX, LEDGER_ENTRY_TYPES } from '@/constants/game'
+import {
+  HP_MAX,
+  LEDGER_ENTRY_TYPES,
+  POWER_REQUEST_STATUSES
+} from '@/constants/game'
 import { USER_ROLES } from '@/constants/user'
 
 // The tables up to `verifications` are Better Auth's, kept in sync with `pnpm dlx auth@latest generate` (#3)
@@ -249,6 +254,41 @@ export const ledgerEntries = snakeCase.table(
     index().on(table.enrollmentId, table.createdAt),
     index().on(table.parentEntryId),
     index().on(table.batchId)
+  ]
+)
+
+// `cost` is copied from the power, so editing the power never changes what a pending request holds.
+// A pending request reserves its cost from the coins of the enrollment until the teacher decides (#20)
+export const powerRequests = snakeCase.table(
+  'power_requests',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    enrollmentId: uuid()
+      .notNull()
+      .references(() => enrollments.id, { onDelete: 'cascade' }),
+    powerId: uuid()
+      .notNull()
+      .references(() => powers.id, { onDelete: 'cascade' }),
+    cost: integer().notNull(),
+    status: text({ enum: POWER_REQUEST_STATUSES }).notNull().default('pending'),
+    ledgerEntryId: uuid().references(() => ledgerEntries.id, {
+      onDelete: 'cascade'
+    }),
+    decidedById: uuid().references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    index().on(table.enrollmentId, table.status),
+    // A second click on the same power never reserves its cost twice
+    uniqueIndex()
+      .on(table.enrollmentId, table.powerId)
+      .where(sql`${table.status} = 'pending'`),
+    check('power_requests_cost_check', sql`${table.cost} > 0`),
+    check(
+      'power_requests_ledger_entry_check',
+      sql`(${table.status} = 'approved') = (${table.ledgerEntryId} is not null)`
+    )
   ]
 )
 
