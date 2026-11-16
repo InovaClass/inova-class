@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import {
@@ -14,6 +13,7 @@ import {
 } from '@/app/components/ui/8bit/empty'
 import { ActionButton } from '@/app/components/ui/custom/action-button'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
+import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import type { FormState } from '@/entry/form-action'

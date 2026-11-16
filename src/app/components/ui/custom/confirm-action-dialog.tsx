@@ -9,8 +9,6 @@ import {
   AlertDialogFooter
 } from '@/app/components/ui/8bit/alert-dialog'
 import { Button } from '@/app/components/ui/8bit/button'
-import { FormMessage } from '@/app/components/ui/custom/form-message'
-import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import {
   AlertDialog,
   AlertDialogDescription,
@@ -20,11 +18,16 @@ import {
 } from '@/app/components/ui/shadcn/alert-dialog'
 import type { FormState } from '@/entry/form-action'
 
+import { FormMessage } from './form-message'
+import { SubmitButton } from './submit-button'
+
 type ConfirmActionDialogProps = {
   triggerLabel: ReactNode
   title: string
   description: string
   confirmLabel: string
+  // For a confirm that is itself a cancellation, where a second "Cancelar" would be ambiguous
+  dismissLabel?: string
   // An action that loses nothing, such as an approval, doesn't need the warning of the default
   confirmVariant?: 'destructive' | 'default'
   action: (state: FormState, formData: FormData) => Promise<FormState>
@@ -38,6 +41,7 @@ export const ConfirmActionDialog = ({
   title,
   description,
   confirmLabel,
+  dismissLabel = 'Cancelar',
   confirmVariant = 'destructive',
   action,
   onSuccess
@@ -96,7 +100,7 @@ export const ConfirmActionDialog = ({
               aria-disabled={pending}
               className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             >
-              Cancelar
+              {dismissLabel}
             </AlertDialogCancel>
             <SubmitButton
               pending={pending}

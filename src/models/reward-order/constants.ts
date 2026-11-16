@@ -1,0 +1,1 @@
+export const STUDENT_ORDERS_LIMIT = 10

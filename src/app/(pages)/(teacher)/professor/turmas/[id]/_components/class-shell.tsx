@@ -1,14 +1,15 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
+import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 
 import { archiveClass } from './action'
 
 type ClassShellProps = {
   schoolClass: { id: string; name: string; description: string | null }
   pendingRequests: number
+  pendingOrders: number
   children: ReactNode
 }
 
@@ -16,6 +17,7 @@ type ClassShellProps = {
 export const ClassShell = ({
   schoolClass,
   pendingRequests,
+  pendingOrders,
   children
 }: ClassShellProps) => (
   <>
@@ -61,6 +63,18 @@ export const ClassShell = ({
           className={linkButtonVariants({ variant: 'outline' })}
         >
           {pendingRequests > 0 ? `Pedidos (${pendingRequests})` : 'Pedidos'}
+        </Link>
+        <Link
+          href={`/professor/turmas/${schoolClass.id}/recompensas`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Recompensas
+        </Link>
+        <Link
+          href={`/professor/turmas/${schoolClass.id}/entregas`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          {pendingOrders > 0 ? `Entregas (${pendingOrders})` : 'Entregas'}
         </Link>
         <Link
           href={`/professor/turmas/${schoolClass.id}/historico`}

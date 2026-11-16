@@ -3,6 +3,7 @@ import { behaviorModel } from '@/models/behavior/model'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
 import { powerRequestModel } from '@/models/power-request/model'
+import { rewardOrderModel } from '@/models/reward-order/model'
 
 import { appendCredentials } from './credentials'
 import { runOnLocalDatabase } from './local-database'
@@ -49,6 +50,19 @@ const requestFirstPower = async (schoolClass: SeedClass, student: SeedUser) => {
   return power
 }
 
+const buyFirstReward = async (schoolClass: SeedClass, student: SeedUser) => {
+  const listed = await rewardOrderModel.listForStudent(
+    student.id,
+    schoolClass.id
+  )
+  const reward = listed?.rewards.find(
+    ({ soldOut, affordable }) => !soldOut && affordable
+  )
+  if (!reward) throw new Error(`No reward ${student.username} can buy`)
+  await rewardOrderModel.purchase(student.id, schoolClass.id, reward.id)
+  return reward
+}
+
 await runOnLocalDatabase(async () => {
   const [firstTeacher, secondTeacher] = (await createUsers('teacher', 2)) as [
     SeedUser,
@@ -83,6 +97,7 @@ await runOnLocalDatabase(async () => {
     Math.ceil(HP_MAX / 15)
   )
   const requestedPower = await requestFirstPower(fullClass, leveledUp!)
+  const boughtReward = await buyFirstReward(fullClass, leveledUp!)
   await enrollmentModel.remove(firstTeacher.id, fullClass.id, removed!.id)
   const pending = await invitePendingStudent(firstTeacher, fullClass)
 
@@ -162,6 +177,10 @@ await runOnLocalDatabase(async () => {
           [
             leveledUp!.username!,
             `Pediu o poder ${requestedPower.name} em ${fullClass.name}`
+          ],
+          [
+            leveledUp!.username!,
+            `Comprou ${boughtReward.name} em ${fullClass.name}, à espera da entrega`
           ],
           [fallen!.username!, `Sem HP em ${fullClass.name}`],
           [withoutCharacter!.username!, `Sem personagem em ${fullClass.name}`],

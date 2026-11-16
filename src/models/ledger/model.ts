@@ -145,6 +145,66 @@ const spendOnPower = async (
   if (!recorded) throw studentNotInClass()
 }
 
+// `claim` runs under the lock of the enrollment, before the entry, and gives back the price: it
+// checks and takes what else the purchase needs (the stock, the coins not reserved), so two
+// purchases never spend the same coins or the last unit. `confirm` runs in the same transaction
+const spendOnReward = async (
+  enrollmentId: string,
+  { rewardId, createdById }: { rewardId: string; createdById: string },
+  {
+    claim,
+    confirm
+  }: {
+    claim: (transaction: Transaction, balances: Balances) => Promise<number>
+    confirm: (transaction: Transaction, entryId: string) => Promise<void>
+  }
+) => {
+  // The price is only known under the lock, so the entry takes it from `claim`
+  const { enrollmentId: id, ...entry } = ledgerEntrySchema.parse({
+    enrollmentId,
+    type: 'reward_purchase',
+    xpDelta: 0,
+    hpDelta: 0,
+    coinDelta: 0,
+    sourceId: rewardId,
+    createdById,
+    requireCoins: true
+  })
+  const recorded = await ledgerRepo.record(
+    id,
+    async (balances, transaction) => {
+      const price = await claim(transaction, balances)
+      return planEntry({ ...entry, coinDelta: -price })(balances)
+    },
+    confirm
+  )
+  if (!recorded) throw studentNotInClass()
+}
+
+// A new entry rather than a reversal, so the purchase stays in the history next to its refund.
+// `confirm` runs in the same transaction, so the refund and the cancellation go together
+const refundReward = async (
+  enrollmentId: string,
+  {
+    rewardId,
+    price,
+    createdById
+  }: { rewardId: string; price: number; createdById: string },
+  confirm: (transaction: Transaction, entryId: string) => Promise<void>
+) => {
+  const { enrollmentId: id, ...entry } = ledgerEntrySchema.parse({
+    enrollmentId,
+    type: 'reward_refund',
+    xpDelta: 0,
+    hpDelta: 0,
+    coinDelta: price,
+    sourceId: rewardId,
+    createdById
+  })
+  const recorded = await ledgerRepo.record(id, planEntry(entry), confirm)
+  if (!recorded) throw studentNotInClass()
+}
+
 const planReversals =
   (createdById: string) => (balances: Balances, entries: RecordedEntry[]) => {
     const { applied, balances: next } = applyReversals(balances, entries)
@@ -251,6 +311,8 @@ export const ledgerModel = {
   recordBatch,
   restoreFallen,
   spendOnPower,
+  spendOnReward,
+  refundReward,
   reverseBatch,
   reverseEntry,
   listHistory

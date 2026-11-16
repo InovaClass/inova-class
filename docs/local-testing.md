@@ -88,7 +88,7 @@ To go through sign-up itself:
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 9. Behaviors, consequences and powers
+## 9. Behaviors, consequences, powers and rewards
 
 1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
 2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
@@ -116,6 +116,13 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 24. **A:** reload the class page. The "Pedidos" button shows the count of pending requests. Click it: the request is listed with the student, the power, the cost and the date. Click "Aprovar" and confirm: it shows "Pedido aprovado. As moedas foram descontadas.", the class page shows the coins of B down by the cost and "Histórico" lists "Poder: ..." without "Reverter".
 25. **B:** request a power again. **A:** click "Recusar" on "Pedidos": it shows "Pedido recusado. As moedas reservadas foram liberadas." and the coins of B don't change.
 26. **B:** request a power. **A:** remove B from the class: the request leaves "Pedidos", and if B comes back through the join code the coins aren't reserved anymore.
+27. **A:** on the class page, click "Recompensas". The default rewards are listed with their price and stock ("Sem limite de estoque" when blank).
+28. **A:** click "Nova recompensa", fill in "Nome", type `5` in "Preço em moedas" and `1` in "Estoque (opcional)", and submit. Edit it and save: the list shows the new values.
+29. **B:** reload the class page. "Loja" lists the rewards, with "Moedas disponíveis" above them, which already leave out the coins reserved by pending power requests (a note says how many when there are any). A reward the coins don't cover shows "Moedas insuficientes" and the others have a "Comprar" button; the new one shows "Última unidade". **A:** the list shows "1 unidade em estoque".
+30. **B:** with enough coins (apply "Ajudou um colega" from A), click "Comprar" on the new reward and confirm. It shows "Recompensa comprada. Aguarde o professor entregar.", the coins go down by the price right away, the reward shows "Esgotada" and "Meus pedidos" lists it as "Aguardando entrega".
+31. **A:** reload the class page. The "Entregas" button shows the count of pending orders. Click it, then "Cancelar" next to the order and confirm "Cancelar pedido": it shows "Pedido cancelado. As moedas voltaram para o aluno.". **B:** reload: the coins are back, the order shows "Cancelado, moedas devolvidas" and the reward has its unit back.
+32. **B:** buy the reward again. **A:** click "Entregar" on "Entregas": it shows "Recompensa entregue." and B's order shows "Entregue". "Histórico" lists "Compra de recompensa: ..." and "Reembolso de recompensa: ...", without "Reverter".
+33. **B:** buy a reward. **A:** remove B from the class: the order stays on "Entregas" with "Saiu da turma", and can still be delivered or canceled.
 
 ## 10. Invite a student by email
 

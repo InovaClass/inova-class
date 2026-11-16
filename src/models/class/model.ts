@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { DEFAULT_BEHAVIORS } from '@/models/behavior/constants'
 import { DEFAULT_CONSEQUENCES } from '@/models/consequence/constants'
 import { DEFAULT_POWERS } from '@/models/power/constants'
+import { DEFAULT_REWARDS } from '@/models/reward/constants'
 import { classRepo } from '@/repositories/class-repo'
 
 import { classNotFound } from './errors'
@@ -58,7 +59,8 @@ const create = async (teacherId: string, input: ClassInput) => {
     {
       behaviors: DEFAULT_BEHAVIORS,
       consequences: DEFAULT_CONSEQUENCES,
-      powers: DEFAULT_POWER_FIELDS
+      powers: DEFAULT_POWER_FIELDS,
+      rewards: DEFAULT_REWARDS
     }
   )
 }

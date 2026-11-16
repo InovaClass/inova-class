@@ -38,9 +38,13 @@ const titleOf = (entry: {
   behaviorName: string | null
   consequenceName: string | null
   powerName: string | null
+  rewardName: string | null
 }) => {
   if (entry.consequenceName) return `Consequência: ${entry.consequenceName}`
   if (entry.powerName) return `Poder: ${entry.powerName}`
+  if (entry.rewardName) {
+    return `${ENTRY_TITLES[entry.type]}: ${entry.rewardName}`
+  }
   return entry.behaviorName ?? ENTRY_TITLES[entry.type]
 }
 

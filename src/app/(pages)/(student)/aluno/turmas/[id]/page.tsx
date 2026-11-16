@@ -10,17 +10,26 @@ import { appearanceOf } from '@/models/character/look'
 import { characterModel } from '@/models/character/model'
 import type { CharacterInput } from '@/models/character/schema'
 import { powerRequestModel } from '@/models/power-request/model'
+import { rewardOrderModel } from '@/models/reward-order/model'
 
 import {
   cancelPowerRequest,
   chooseCharacter,
+  purchaseReward,
   requestPower,
   updateAppearance
 } from './_components/action'
 import { CharacterForm } from './_components/character-form'
 import { PowerList } from './_components/power-list'
+import { RewardShop } from './_components/reward-shop'
 
 export const metadata: Metadata = { title: 'Turma' }
+
+// Formatted here with a fixed zone: the server runs in UTC and students are in Brazil
+const dateFormat = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeZone: 'America/Sao_Paulo'
+})
 
 const FIRST_CHARACTER: CharacterInput = {
   characterClass: 'warrior',
@@ -39,9 +48,10 @@ const StudentClassPage = async ({
   const enrollment = await characterModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
   const { className, look } = enrollment
-  const powers = look
-    ? await powerRequestModel.listForStudent(user.id, classId)
-    : undefined
+  const [powers, shop] = await Promise.all([
+    look ? powerRequestModel.listForStudent(user.id, classId) : undefined,
+    rewardOrderModel.listForStudent(user.id, classId)
+  ])
 
   return (
     <>
@@ -80,6 +90,21 @@ const StudentClassPage = async ({
           {...powers}
           requestAction={requestPower.bind(null, classId)}
           cancelAction={cancelPowerRequest.bind(null, classId)}
+        />
+      )}
+      {shop && (
+        <RewardShop
+          availableCoins={shop.availableCoins}
+          reservedCoins={shop.reservedCoins}
+          rewards={shop.rewards}
+          orders={shop.orders.map((order) => ({
+            id: order.id,
+            rewardName: order.rewardName,
+            price: order.price,
+            status: order.status,
+            date: dateFormat.format(order.createdAt)
+          }))}
+          purchaseAction={purchaseReward.bind(null, classId)}
         />
       )}
     </>

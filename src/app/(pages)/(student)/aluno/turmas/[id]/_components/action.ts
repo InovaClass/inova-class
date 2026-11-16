@@ -7,6 +7,7 @@ import { requireRole } from '@/entry/session'
 import { characterModel } from '@/models/character/model'
 import type { CharacterInput } from '@/models/character/schema'
 import { powerRequestModel } from '@/models/power-request/model'
+import { rewardOrderModel } from '@/models/reward-order/model'
 
 export const chooseCharacter = async (
   classId: string,
@@ -53,4 +54,15 @@ export const cancelPowerRequest = async (
     return formSuccess(
       'Pedido cancelado. As moedas voltaram a ficar disponíveis.'
     )
+  })
+
+export const purchaseReward = async (
+  classId: string,
+  rewardId: string
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('student')
+    await rewardOrderModel.purchase(user.id, classId, rewardId)
+    revalidatePath('/aluno', 'layout')
+    return formSuccess('Recompensa comprada. Aguarde o professor entregar.')
   })
