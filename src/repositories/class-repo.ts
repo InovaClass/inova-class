@@ -5,12 +5,14 @@ import {
   behaviors,
   classes,
   consequences,
-  powers
+  powers,
+  rewards
 } from '@/infra/database/schema'
 
 import type { BehaviorFields } from './behavior-repo'
 import type { ConsequenceFields } from './consequence-repo'
 import type { PowerFields } from './power-repo'
+import type { RewardFields } from './reward-repo'
 
 type ClassDetails = { name: string; description: string | null }
 type ClassChanges = Partial<
@@ -80,6 +82,7 @@ const insert = async (
     behaviors: BehaviorFields[]
     consequences: ConsequenceFields[]
     powers: PowerFields[]
+    rewards: RewardFields[]
   }
 ) =>
   database.transaction(async (transaction) => {
@@ -104,6 +107,12 @@ const insert = async (
       .values(
         defaults.powers.map((power) => ({ ...power, classId: schoolClass!.id }))
       )
+    await transaction.insert(rewards).values(
+      defaults.rewards.map((reward) => ({
+        ...reward,
+        classId: schoolClass!.id
+      }))
+    )
     return schoolClass!
   })
 

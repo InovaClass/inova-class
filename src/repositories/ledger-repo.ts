@@ -9,6 +9,7 @@ import {
   enrollments,
   ledgerEntries,
   powers,
+  rewards,
   users
 } from '@/infra/database/schema'
 
@@ -90,10 +91,13 @@ const lockBalances = async (
 
 // The row lock makes concurrent entries of one enrollment wait for each other, so each plan starts
 // from the balances the previous one left. `plan` and `afterWrite` may throw to cancel the
-// transaction
+// transaction, and `plan` gets the transaction to read what else the lock guards
 const record = async (
   enrollmentId: string,
-  plan: (balances: Balances) => EntryPlan,
+  plan: (
+    balances: Balances,
+    transaction: Transaction
+  ) => EntryPlan | Promise<EntryPlan>,
   afterWrite?: (transaction: Transaction, entryId: string) => Promise<void>
 ) =>
   database.transaction(async (transaction) => {
@@ -104,7 +108,11 @@ const record = async (
       .for('update')
     if (!current) return
 
-    const recorded = await writePlan(transaction, enrollmentId, plan(current))
+    const recorded = await writePlan(
+      transaction,
+      enrollmentId,
+      await plan(current, transaction)
+    )
     await afterWrite?.(transaction, recorded.entry.id)
     return recorded
   })
@@ -281,6 +289,7 @@ const listHistory = async (
       behaviorName: behaviors.name,
       consequenceName: consequences.name,
       powerName: powers.name,
+      rewardName: rewards.name,
       authorName: entryAuthors.name
     })
     .from(ledgerEntries)
@@ -305,6 +314,13 @@ const listHistory = async (
       and(
         eq(powers.id, ledgerEntries.sourceId),
         eq(ledgerEntries.type, 'power')
+      )
+    )
+    .leftJoin(
+      rewards,
+      and(
+        eq(rewards.id, ledgerEntries.sourceId),
+        inArray(ledgerEntries.type, ['reward_purchase', 'reward_refund'])
       )
     )
     .leftJoin(entryAuthors, eq(entryAuthors.id, ledgerEntries.createdById))

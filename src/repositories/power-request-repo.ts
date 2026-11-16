@@ -227,6 +227,7 @@ const countPendingOfOwnedClass = async (teacherId: string, classId: string) => {
 }
 
 export const powerRequestRepo = {
+  pendingOf,
   reserve,
   findReservations,
   cancel,

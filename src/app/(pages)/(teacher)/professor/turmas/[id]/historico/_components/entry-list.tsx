@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
+import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import type { FormState } from '@/entry/form-action'
 

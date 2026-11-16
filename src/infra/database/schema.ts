@@ -16,7 +16,8 @@ import {
 import {
   HP_MAX,
   LEDGER_ENTRY_TYPES,
-  POWER_REQUEST_STATUSES
+  POWER_REQUEST_STATUSES,
+  REWARD_ORDER_STATUSES
 } from '@/constants/game'
 import { USER_ROLES } from '@/constants/user'
 
@@ -288,6 +289,63 @@ export const powerRequests = snakeCase.table(
     check(
       'power_requests_ledger_entry_check',
       sql`(${table.status} = 'approved') = (${table.ledgerEntryId} is not null)`
+    )
+  ]
+)
+
+// `stock` is empty for a reward without a limit. Removing one sets `removedAt`, since ledger entries
+// and orders keep pointing to it
+export const rewards = snakeCase.table(
+  'rewards',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    classId: uuid()
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    description: text(),
+    price: integer().notNull(),
+    stock: integer(),
+    removedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    index().on(table.classId),
+    check('rewards_price_check', sql`${table.price} > 0`),
+    check('rewards_stock_check', sql`${table.stock} >= 0`)
+  ]
+)
+
+// The coins leave at the purchase (#21), so `price` is copied from the reward and a cancellation
+// refunds exactly what was paid, even after the teacher edits the reward
+export const rewardOrders = snakeCase.table(
+  'reward_orders',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    enrollmentId: uuid()
+      .notNull()
+      .references(() => enrollments.id, { onDelete: 'cascade' }),
+    rewardId: uuid()
+      .notNull()
+      .references(() => rewards.id, { onDelete: 'cascade' }),
+    price: integer().notNull(),
+    status: text({ enum: REWARD_ORDER_STATUSES }).notNull().default('pending'),
+    purchaseEntryId: uuid()
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    refundEntryId: uuid().references(() => ledgerEntries.id, {
+      onDelete: 'cascade'
+    }),
+    decidedById: uuid().references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    index().on(table.enrollmentId, table.status),
+    check('reward_orders_price_check', sql`${table.price} > 0`),
+    check(
+      'reward_orders_refund_entry_check',
+      sql`(${table.status} = 'canceled') = (${table.refundEntryId} is not null)`
     )
   ]
 )

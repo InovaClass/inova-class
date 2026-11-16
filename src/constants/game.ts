@@ -20,3 +20,11 @@ export const POWER_REQUEST_STATUSES = [
 ] as const
 
 export type PowerRequestStatus = (typeof POWER_REQUEST_STATUSES)[number]
+
+export const REWARD_ORDER_STATUSES = [
+  'pending',
+  'delivered',
+  'canceled'
+] as const
+
+export type RewardOrderStatus = (typeof REWARD_ORDER_STATUSES)[number]

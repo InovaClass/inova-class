@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 
-import { ConfirmActionDialog } from '@/app/(pages)/(teacher)/_components/confirm-action-dialog'
 import {
   Empty,
   EmptyDescription,
@@ -11,6 +10,7 @@ import {
 } from '@/app/components/ui/8bit/empty'
 import { ActionButton } from '@/app/components/ui/custom/action-button'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
+import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import type { FormState } from '@/entry/form-action'
 
