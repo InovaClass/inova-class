@@ -3,13 +3,17 @@ import { z } from 'zod'
 import { lookOf } from '@/models/character/look'
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
-import { levelProgress } from '@/models/ledger/level'
+import { levelOf, levelProgress } from '@/models/ledger/level'
 import { classRepo } from '@/repositories/class-repo'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 
 import { JOIN_ATTEMPTS_MAX, JOIN_ATTEMPTS_WINDOW_MINUTES } from './constants'
 import { studentNotInClass, tooManyJoinAttempts } from './errors'
+import { rank } from './ranking'
 import { type JoinClassInput, joinClassSchema } from './schema'
+
+// The ids come from the URL, and Postgres rejects a value that isn't a UUID instead of finding nothing
+const isId = (id: string) => z.uuid().safeParse(id).success
 
 const requireOwnedClass = async (teacherId: string, classId: string) => {
   const schoolClass = await classModel.findOwned(teacherId, classId)
@@ -95,6 +99,56 @@ const listRoster = async (teacherId: string, classId: string) => {
   )
 }
 
+const findOfStudent = async (studentId: string, classId: string) => {
+  const enrollment = isId(classId)
+    ? await enrollmentRepo.findOfStudent(studentId, classId)
+    : undefined
+  if (!enrollment) return
+  const { className, rankingVisible, xp, hp, coins, ...character } = enrollment
+  return {
+    className,
+    rankingVisible,
+    hp,
+    coins,
+    progress: levelProgress(xp),
+    look: lookOf(character)
+  }
+}
+
+const listRanking = async (teacherId: string, classId: string) => {
+  await requireOwnedClass(teacherId, classId)
+  const students = await enrollmentRepo.listEnrolledStudents(classId)
+  return rank(students).map(
+    ({ position, id, name, username, email, pending, xp, ...character }) => ({
+      position,
+      id,
+      name,
+      // Same rule as the roster: only a pending student's email is the teacher's to see
+      detail: pending ? email : username,
+      xp,
+      level: levelOf(xp),
+      look: lookOf(character)
+    })
+  )
+}
+
+// Only what a classmate may see: no id, contact, HP or coins
+const listRankingForStudent = async (studentId: string, classId: string) => {
+  const enrollment = isId(classId)
+    ? await enrollmentRepo.findOfStudent(studentId, classId)
+    : undefined
+  if (!enrollment?.rankingVisible) return
+  const students = await enrollmentRepo.listEnrolledStudents(classId)
+  return rank(students).map(({ position, id, name, xp, ...character }) => ({
+    position,
+    name,
+    xp,
+    level: levelOf(xp),
+    look: lookOf(character),
+    isCurrentStudent: id === studentId
+  }))
+}
+
 const remove = async (
   teacherId: string,
   classId: string,
@@ -112,5 +166,8 @@ export const enrollmentModel = {
   join,
   listClasses,
   listRoster,
+  findOfStudent,
+  listRanking,
+  listRankingForStudent,
   remove
 }

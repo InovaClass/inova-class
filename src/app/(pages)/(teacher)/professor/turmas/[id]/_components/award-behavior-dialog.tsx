@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
 
-import { describeBehaviorValues } from '@/app/(pages)/(teacher)/professor/turmas/[id]/comportamentos/behavior-values'
 import { Button, linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { DialogContent } from '@/app/components/ui/8bit/dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
@@ -14,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/app/components/ui/shadcn/dialog'
+import { describeBehaviorValues } from '@/app/helpers/behavior-values'
 import type { FormState } from '@/entry/form-action'
 
 export type BehaviorOption = {

@@ -259,6 +259,25 @@ const reverseEntry = async (
   if (result === 'already_reversed') throw entryAlreadyReversed()
 }
 
+const listPage = async (
+  classId: string,
+  { studentId, page: rawPage }: { studentId?: string; page?: unknown }
+) => {
+  // The page comes from the URL, where anything but a page number means the first one
+  const page = historyPageSchema.safeParse(rawPage).data ?? 1
+  // One more than a page, to know whether there is a next one
+  const found = await ledgerRepo.listHistory(classId, {
+    studentId,
+    limit: HISTORY_PAGE_SIZE + 1,
+    offset: (page - 1) * HISTORY_PAGE_SIZE
+  })
+  return {
+    page,
+    hasNextPage: found.length > HISTORY_PAGE_SIZE,
+    entries: found.slice(0, HISTORY_PAGE_SIZE)
+  }
+}
+
 const listHistory = async (
   teacherId: string,
   classId: string,
@@ -272,37 +291,66 @@ const listHistory = async (
     : undefined
   if (studentId && !student) return
 
-  // The page comes from the URL, where anything but a page number means the first one
-  const page = historyPageSchema.safeParse(rawPage).data ?? 1
-  // One more than a page, to know whether there is a next one
-  const found = await ledgerRepo.listHistory(schoolClass.id, {
+  const { page, hasNextPage, entries } = await listPage(schoolClass.id, {
     studentId,
-    limit: HISTORY_PAGE_SIZE + 1,
-    offset: (page - 1) * HISTORY_PAGE_SIZE
+    page: rawPage
   })
   return {
     schoolClass,
     student,
     page,
-    hasNextPage: found.length > HISTORY_PAGE_SIZE,
-    entries: found
-      .slice(0, HISTORY_PAGE_SIZE)
-      .map(
-        ({
-          enrollmentEndedAt,
-          studentEmail,
-          studentUsername,
-          studentPending,
-          ...entry
-        }) => ({
-          ...entry,
-          // Same rule as the roster: only a pending student's email is the teacher's to see
-          studentDetail: studentPending ? studentEmail : studentUsername,
-          reversible:
-            entry.reversals.length === 0 &&
-            canReverse(entry.type, enrollmentEndedAt)
-        })
-      )
+    hasNextPage,
+    entries: entries.map(
+      ({
+        enrollmentEndedAt,
+        studentEmail,
+        studentUsername,
+        studentPending,
+        ...entry
+      }) => ({
+        ...entry,
+        // Same rule as the roster: only a pending student's email is the teacher's to see
+        studentDetail: studentPending ? studentEmail : studentUsername,
+        reversible:
+          entry.reversals.length === 0 &&
+          canReverse(entry.type, enrollmentEndedAt)
+      })
+    )
+  }
+}
+
+// Who recorded an entry and whether it can be reversed are the teacher's to see, not the student's
+const listStudentHistory = async (
+  studentId: string,
+  classId: string,
+  { page: rawPage }: { page?: unknown }
+) => {
+  const enrollment = isId(classId)
+    ? await enrollmentRepo.findOfStudent(studentId, classId)
+    : undefined
+  if (!enrollment) return
+  const { page, hasNextPage, entries } = await listPage(classId, {
+    studentId,
+    page: rawPage
+  })
+  return {
+    className: enrollment.className,
+    page,
+    hasNextPage,
+    entries: entries.map((entry) => ({
+      id: entry.id,
+      type: entry.type,
+      xpDelta: entry.xpDelta,
+      hpDelta: entry.hpDelta,
+      coinDelta: entry.coinDelta,
+      createdAt: entry.createdAt,
+      behaviorName: entry.behaviorName,
+      consequenceName: entry.consequenceName,
+      powerName: entry.powerName,
+      rewardName: entry.rewardName,
+      derivedEntries: entry.derivedEntries,
+      reversals: entry.reversals
+    }))
   }
 }
 
@@ -315,5 +363,6 @@ export const ledgerModel = {
   refundReward,
   reverseBatch,
   reverseEntry,
-  listHistory
+  listHistory,
+  listStudentHistory
 }

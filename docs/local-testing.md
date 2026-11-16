@@ -124,7 +124,16 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 32. **B:** buy the reward again. **A:** click "Entregar" on "Entregas": it shows "Recompensa entregue." and B's order shows "Entregue". "Histórico" lists "Compra de recompensa: ..." and "Reembolso de recompensa: ...", without "Reverter".
 33. **B:** buy a reward. **A:** remove B from the class: the order stays on "Entregas" with "Saiu da turma", and can still be delivered or canceled.
 
-## 10. Invite a student by email
+## 10. Progress, history and ranking
+
+1. **B:** open the class page. "Seu progresso" shows the character moving in place, the class, the level, the coins and the XP and HP bars. Before choosing a character it shows the same values without the avatar.
+2. **A:** apply a behavior to B that crosses a level (e.g. 100 XP). **B:** reload: the level goes up and the coins include the level bonus.
+3. **B:** click "Ver histórico". "Seu histórico" lists the behavior with its values, the level bonus and the date, without who applied it. **A:** reverse it from "Histórico". **B:** reload: the entry shows "Revertido em ..." and the values go back on the class page.
+4. **A:** on the class page, click "Ranking". The students are listed by XP, with the position, the avatar, the level and the username (or the email, for a pending student). Students with the same XP share the position.
+5. **B:** the class page has no "Ranking". **A:** click "Mostrar aos alunos": it reads "Visível" and the button turns into "Ocultar dos alunos". **B:** reload: "Ranking" lists the classmates with name, level and XP only, and B's own row shows "Você".
+6. **A:** click "Ocultar dos alunos". **B:** reload: "Ranking" is gone.
+
+## 11. Invite a student by email
 
 Use a new private window for the invited student, since the invite signs them in.
 
@@ -134,7 +143,7 @@ Use a new private window for the invited student, since the invite signs them in
 4. **Private window:** the page shows the generated username. Set a password, accept the terms and click "Criar senha".
 5. **A:** reload the class page. Ana is now listed with the username.
 
-## 11. Sign-in and password
+## 12. Sign-in and password
 
 - **Sign-in:** sign out and go to `/entrar`. A student signs in with either the email or the username, and a teacher with the email. A wrong password shows the same message as an unknown account.
 - **Unverified email:** sign up without opening the link and try to sign in. It's rejected, Mailpit gets a new link and "Reenviar e-mail" appears below the form.
@@ -142,18 +151,18 @@ Use a new private window for the invited student, since the invite signs them in
 - **Password reset:** go to `/esqueci-a-senha`, click "Enviar link", open the link in Mailpit and set a new password.
 - **Pending student:** request a password reset for a student who hasn't accepted their invite. Mailpit gets a new invite instead of a reset link.
 
-## 12. Role areas
+## 13. Role areas
 
 - **B:** open `/professor`. You're sent back to `/aluno`.
 - **A:** open `/aluno`. You're sent back to `/professor`.
 - **A:** open the address of a class created by another teacher. It shows a 404 page.
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 
-## 13. Credits
+## 14. Credits
 
 - Open `/creditos` (also linked from the "Arte" section of `/termos`). Three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links.
 - Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
 
-## 14. Stop
+## 15. Stop
 
 Press `Ctrl+C` in the terminal to stop the app. The containers keep running; `pnpm services:stop` stops them and keeps the data, so the same accounts work next time.

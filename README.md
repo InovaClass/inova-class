@@ -122,6 +122,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Each class has its own rewards (`rewards`), seeded and removed the same way and managed at `/professor/turmas/[id]/recompensas`. A student buys one at `/aluno/turmas/[id]`, which debits the coins at once and creates an order (`reward_orders`) that the teacher delivers or cancels, with a refund, at `/professor/turmas/[id]/entregas`.
 - Each enrollment carries the student's character (class, appearance and equipped items), empty until the student chooses it at `/aluno/turmas/[id]`. After that only the teacher changes the class, from the roster; the student keeps changing the appearance.
 - The teacher awards a behavior to one or more students on the class page. The entries of an award share a `batchId`, and "Desfazer" reverses them all with `reversal` entries, level bonuses included.
+- A student follows their level, XP, HP and coins at `/aluno/turmas/[id]` and their own entries at `/aluno/turmas/[id]/historico`. The ranking of a class by XP is always at `/professor/turmas/[id]/ranking` for the teacher, who decides whether the students see it too (`classes.ranking_visible`, off by default).
 
 ### Auth and email
 

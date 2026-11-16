@@ -10,7 +10,7 @@ import {
   users
 } from '@/infra/database/schema'
 
-import { characterColumns } from './character-repo'
+import { activeEnrollmentOf, characterColumns } from './character-repo'
 
 // A student who comes back keeps the same enrollment, with the game stats and the character on it.
 // An enrollment still active isn't touched, so `returning` only brings the ones that actually entered
@@ -43,6 +43,22 @@ const listActiveClassesOf = async (studentId: string) =>
         isNull(classes.archivedAt)
       )
     )
+
+const findOfStudent = async (studentId: string, classId: string) => {
+  const [enrollment] = await database
+    .select({
+      className: classes.name,
+      rankingVisible: classes.rankingVisible,
+      xp: enrollments.xp,
+      hp: enrollments.hp,
+      coins: enrollments.coins,
+      ...characterColumns
+    })
+    .from(enrollments)
+    .innerJoin(classes, eq(classes.id, enrollments.classId))
+    .where(activeEnrollmentOf(studentId, classId))
+  return enrollment
+}
 
 // `pending` is the same in every row of a user, so DISTINCT keeps one row per user
 const listEnrolledStudents = async (classId: string) =>
@@ -145,6 +161,7 @@ const forgiveJoinAttempt = async (studentId: string) =>
 export const enrollmentRepo = {
   insert,
   listActiveClassesOf,
+  findOfStudent,
   listEnrolledStudents,
   listActiveIds,
   findStudent,

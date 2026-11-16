@@ -16,7 +16,11 @@ import type { RewardFields } from './reward-repo'
 
 type ClassDetails = { name: string; description: string | null }
 type ClassChanges = Partial<
-  ClassDetails & { joinCode: string; joinCodeEnabled: boolean }
+  ClassDetails & {
+    joinCode: string
+    joinCodeEnabled: boolean
+    rankingVisible: boolean
+  }
 >
 
 const activeClassOf = (teacherId: string, classId: string) =>

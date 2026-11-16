@@ -1,11 +1,9 @@
-import { cn } from 'cn'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { describeBehaviorValues } from '@/app/(pages)/(teacher)/professor/turmas/[id]/comportamentos/behavior-values'
 import { identifyStudent } from '@/app/(pages)/(teacher)/professor/turmas/[id]/identify-student'
-import { linkButtonVariants } from '@/app/components/ui/8bit/button'
+import { PageNav } from '@/app/components/blocks/page-nav'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import {
   Empty,
@@ -14,7 +12,11 @@ import {
   EmptyTitle
 } from '@/app/components/ui/8bit/empty'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
-import type { LedgerEntryType } from '@/constants/game'
+import {
+  describeDeltas,
+  entryTitle,
+  sumDeltas
+} from '@/app/helpers/ledger-entry'
 import { requireRole } from '@/entry/session'
 import { ledgerModel } from '@/models/ledger/model'
 
@@ -23,76 +25,12 @@ import { EntryList, type HistoryEntry } from './_components/entry-list'
 
 export const metadata: Metadata = { title: 'Histórico' }
 
-const ENTRY_TITLES: Record<LedgerEntryType, string> = {
-  behavior: 'Comportamento',
-  level_bonus: 'Bônus de nível',
-  reward_purchase: 'Compra de recompensa',
-  reward_refund: 'Reembolso de recompensa',
-  power: 'Poder',
-  hp_restore: 'HP restaurado',
-  reversal: 'Reversão'
-}
-
-const titleOf = (entry: {
-  type: LedgerEntryType
-  behaviorName: string | null
-  consequenceName: string | null
-  powerName: string | null
-  rewardName: string | null
-}) => {
-  if (entry.consequenceName) return `Consequência: ${entry.consequenceName}`
-  if (entry.powerName) return `Poder: ${entry.powerName}`
-  if (entry.rewardName) {
-    return `${ENTRY_TITLES[entry.type]}: ${entry.rewardName}`
-  }
-  return entry.behaviorName ?? ENTRY_TITLES[entry.type]
-}
-
 // Formatted here with a fixed zone: the server runs in UTC and teachers are in Brazil
 const dateFormat = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
   timeStyle: 'short',
   timeZone: 'America/Sao_Paulo'
 })
-
-type Deltas = { xpDelta: number; hpDelta: number; coinDelta: number }
-
-const describeDeltas = ({ xpDelta, hpDelta, coinDelta }: Deltas) =>
-  describeBehaviorValues({ xp: xpDelta, hp: hpDelta, coins: coinDelta }) ||
-  'Sem alteração'
-
-const sumDeltas = (entries: Deltas[]) => {
-  const total = { xpDelta: 0, hpDelta: 0, coinDelta: 0 }
-  for (const { xpDelta, hpDelta, coinDelta } of entries) {
-    total.xpDelta += xpDelta
-    total.hpDelta += hpDelta
-    total.coinDelta += coinDelta
-  }
-  return total
-}
-
-// Kept focusable and in place at the ends of the list, or the focus would drop to the body when
-// the link just followed stops existing
-const PageLink = ({
-  href,
-  disabled,
-  children
-}: {
-  href: string
-  disabled: boolean
-  children: string
-}) => (
-  <Link
-    href={href}
-    aria-disabled={disabled || undefined}
-    className={cn(
-      linkButtonVariants({ variant: 'outline' }),
-      'aria-disabled:pointer-events-none aria-disabled:opacity-50'
-    )}
-  >
-    {children}
-  </Link>
-)
 
 const HistoryPage = async ({
   params,
@@ -115,7 +53,7 @@ const HistoryPage = async ({
     const [firstReversal] = entry.reversals
     return {
       id: entry.id,
-      title: titleOf(entry),
+      title: entryTitle(entry),
       values: describeDeltas(entry),
       bonus:
         entry.derivedEntries.length > 0
@@ -197,27 +135,7 @@ const HistoryPage = async ({
           )}
         </CardContent>
       </Card>
-      {(page > 1 || hasNextPage) && (
-        // The frame is drawn outside the links, so the row needs room for it
-        <nav
-          aria-label="Páginas"
-          className="flex flex-wrap items-center gap-6 p-1.5"
-        >
-          <PageLink
-            href={pageHref(page > 1 ? page - 1 : page)}
-            disabled={page <= 1}
-          >
-            Anterior
-          </PageLink>
-          <p className="text-xs leading-relaxed">Página {page}</p>
-          <PageLink
-            href={pageHref(hasNextPage ? page + 1 : page)}
-            disabled={!hasNextPage}
-          >
-            Próxima
-          </PageLink>
-        </nav>
-      )}
+      <PageNav page={page} hasNextPage={hasNextPage} hrefOf={pageHref} />
     </>
   )
 }

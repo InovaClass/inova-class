@@ -24,7 +24,7 @@ const activeClass = (classId: string) =>
     .from(classes)
     .where(and(eq(classes.id, classId), isNull(classes.archivedAt)))
 
-const activeEnrollmentOf = (studentId: string, classId: string) =>
+export const activeEnrollmentOf = (studentId: string, classId: string) =>
   and(
     eq(enrollments.studentId, studentId),
     eq(enrollments.classId, classId),

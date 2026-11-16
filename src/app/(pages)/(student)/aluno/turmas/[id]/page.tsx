@@ -2,13 +2,15 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { Leaderboard } from '@/app/components/blocks/class/leaderboard'
+import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import { requireRole } from '@/entry/session'
 import { AVATAR_MANIFEST } from '@/models/avatar/manifest'
 import { appearanceOf } from '@/models/character/look'
-import { characterModel } from '@/models/character/model'
 import type { CharacterInput } from '@/models/character/schema'
+import { enrollmentModel } from '@/models/enrollment/model'
 import { powerRequestModel } from '@/models/power-request/model'
 import { rewardOrderModel } from '@/models/reward-order/model'
 
@@ -22,6 +24,7 @@ import {
 import { CharacterForm } from './_components/character-form'
 import { PowerList } from './_components/power-list'
 import { RewardShop } from './_components/reward-shop'
+import { StudentStats } from './_components/student-stats'
 
 export const metadata: Metadata = { title: 'Turma' }
 
@@ -45,12 +48,15 @@ const StudentClassPage = async ({
 }: PageProps<'/aluno/turmas/[id]'>) => {
   const { id: classId } = await params
   const { user } = await requireRole('student')
-  const enrollment = await characterModel.findOfStudent(user.id, classId)
+  const enrollment = await enrollmentModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
-  const { className, look } = enrollment
-  const [powers, shop] = await Promise.all([
+  const { className, rankingVisible, look, progress, hp, coins } = enrollment
+  const [powers, shop, ranking] = await Promise.all([
     look ? powerRequestModel.listForStudent(user.id, classId) : undefined,
-    rewardOrderModel.listForStudent(user.id, classId)
+    rewardOrderModel.listForStudent(user.id, classId),
+    rankingVisible
+      ? enrollmentModel.listRankingForStudent(user.id, classId)
+      : undefined
   ])
 
   return (
@@ -62,6 +68,16 @@ const StudentClassPage = async ({
         Voltar ao painel
       </Link>
       <h1 className="text-sm leading-relaxed wrap-anywhere">{className}</h1>
+      <StudentStats look={look} progress={progress} hp={hp} coins={coins} />
+      {/* The frame is drawn outside the link, so it needs room for it */}
+      <div className="p-1.5">
+        <Link
+          href={`/aluno/turmas/${classId}/historico`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Ver histórico
+        </Link>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>
@@ -105,6 +121,21 @@ const StudentClassPage = async ({
             date: dateFormat.format(order.createdAt)
           }))}
           purchaseAction={purchaseReward.bind(null, classId)}
+        />
+      )}
+      {ranking && (
+        <Leaderboard
+          title="Ranking"
+          players={ranking.map((student, index) => ({
+            // A classmate's id isn't the student's to see, so the index in the list keys the row
+            key: String(index),
+            position: student.position,
+            name: student.name,
+            level: student.level,
+            xp: student.xp,
+            look: student.look,
+            isCurrentPlayer: student.isCurrentStudent
+          }))}
         />
       )}
     </>
