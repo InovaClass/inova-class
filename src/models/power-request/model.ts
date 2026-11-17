@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
+import { classEventModel } from '@/models/class-event/model'
 import { levelOf } from '@/models/ledger/level'
 import { ledgerModel } from '@/models/ledger/model'
 import { powerNotFound } from '@/models/power/errors'
@@ -18,6 +19,9 @@ import {
 
 // The ids come from the URL or the client, and Postgres rejects a value that isn't a UUID
 const isId = (id: string) => z.uuid().safeParse(id).success
+
+const announce = (classId: string) =>
+  classEventModel.publish(classId, 'power-request')
 
 const request = async (studentId: string, classId: string, powerId: string) => {
   if (!isId(classId)) throw classNotFound()
@@ -38,6 +42,7 @@ const request = async (studentId: string, classId: string, powerId: string) => {
     }
   )
   if (!created) throw classNotFound()
+  await announce(classId)
   return created
 }
 
@@ -75,6 +80,7 @@ const cancel = async (
       ? await powerRequestRepo.cancel(studentId, classId, requestId)
       : undefined
   if (!canceled) throw requestNotFound()
+  await announce(classId)
 }
 
 const requireOwnedClass = async (teacherId: string, classId: string) => {
@@ -107,6 +113,7 @@ const approve = async (
       if (!settled) throw requestNotFound()
     }
   )
+  await announce(schoolClass.id)
 }
 
 const refuse = async (
@@ -122,6 +129,7 @@ const refuse = async (
       })
     : undefined
   if (!settled) throw requestNotFound()
+  await announce(schoolClass.id)
 }
 
 const listPending = async (teacherId: string, classId: string) => {

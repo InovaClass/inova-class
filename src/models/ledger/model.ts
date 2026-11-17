@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { HP_MAX, type LedgerEntryType } from '@/constants/game'
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
+import { classEventModel } from '@/models/class-event/model'
 import { studentNotInClass } from '@/models/enrollment/errors'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 import {
@@ -34,6 +35,9 @@ import {
 type ParsedEntry = Omit<z.output<typeof ledgerEntrySchema>, 'enrollmentId'>
 
 const isId = (id: string) => z.uuid().safeParse(id).success
+
+// After the transaction, so a screen that fetches again on the event sees the change
+const announce = (classId: string) => classEventModel.publish(classId, 'ledger')
 
 // A purchase, a power or an HP restore has a flow of its own (#17, #20, #21), and a level bonus only
 // leaves together with its entry
@@ -68,6 +72,7 @@ const record = async (input: LedgerEntryInput) => {
   const { enrollmentId, ...entry } = ledgerEntrySchema.parse(input)
   const recorded = await ledgerRepo.record(enrollmentId, planEntry(entry))
   if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
   return { ...recorded, level: levelOf(recorded.balances.xp) }
 }
 
@@ -84,9 +89,10 @@ const recordBatch = async (
       return [enrollmentId, planEntry(entry)]
     })
   )
-  const batchId = await ledgerRepo.recordBatch(plans)
-  if (!batchId) throw studentNotInClass()
-  return batchId
+  const recorded = await ledgerRepo.recordBatch(plans)
+  if (!recorded) throw studentNotInClass()
+  await Promise.all(recorded.classIds.map((classId) => announce(classId)))
+  return recorded.batchId
 }
 
 // Checked under the lock of the enrollment, so two concurrent draws can't both restore the HP
@@ -110,6 +116,7 @@ const restoreFallen = async (
     return plan(balances)
   })
   if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
 }
 
 // Checked under the lock of the enrollment, as the reservation was, so the coins are never spent twice.
@@ -143,6 +150,7 @@ const spendOnPower = async (
     confirm
   )
   if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
 }
 
 // `claim` runs under the lock of the enrollment, before the entry, and gives back the price: it
@@ -179,6 +187,7 @@ const spendOnReward = async (
     confirm
   )
   if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
 }
 
 // A new entry rather than a reversal, so the purchase stays in the history next to its refund.
@@ -203,6 +212,7 @@ const refundReward = async (
   })
   const recorded = await ledgerRepo.record(id, planEntry(entry), confirm)
   if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
 }
 
 const planReversals =
@@ -232,6 +242,7 @@ const reverseBatch = async (
   )
   if (result === 'not_found') throw batchNotFound()
   if (result === 'already_reversed') throw batchAlreadyReversed()
+  await announce(classId)
 }
 
 const reverseEntry = async (
@@ -257,6 +268,7 @@ const reverseEntry = async (
   )
   if (result === 'not_found') throw entryNotFound()
   if (result === 'already_reversed') throw entryAlreadyReversed()
+  await announce(schoolClass.id)
 }
 
 const listPage = async (

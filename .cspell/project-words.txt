@@ -54,6 +54,7 @@ timestamptz
 ulpc
 unpooled
 unrs
+unstub
 vercel
 vneck
 zanetti

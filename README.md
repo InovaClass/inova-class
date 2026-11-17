@@ -13,9 +13,9 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` starts the local services (`src/infra/compose.yml`: Postgres and [Mailpit](https://mailpit.axllent.org)), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Every email the app sends locally (account verification, password reset) is caught by Mailpit, at [http://localhost:8025](http://localhost:8025). To try every feature by hand, as a teacher and a student, follow [`docs/local-testing.md`](./docs/local-testing.md), which each feature keeps up to date.
+`pnpm dev` starts the local services (`src/infra/compose.yml`: Postgres, [Mailpit](https://mailpit.axllent.org) and Redis), waits for the database, applies the pending migrations and only then runs `next dev`. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. Every email the app sends locally (account verification, password reset) is caught by Mailpit, at [http://localhost:8025](http://localhost:8025). To try every feature by hand, as a teacher and a student, follow [`docs/local-testing.md`](./docs/local-testing.md), which each feature keeps up to date.
 
-The local settings live in the committed `.env.development`, all of them local-only values: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`), the `DATABASE_URL` that points at it, a `BETTER_AUTH_SECRET` used only by local runs and the Mailpit `SMTP_URL`. There is no `.env`. The git-ignored `.env.local` created by `vercel link` holds the `VERCEL_OIDC_TOKEN` and, optionally, the Google credentials (see [Google sign-in](#google-sign-in)); never pull the Neon variables into it, since it would take precedence over `.env.development`.
+The local settings live in the committed `.env.development`, all of them local-only values: the Postgres container's credentials (`POSTGRES_*`, read by `compose.yml`), the `DATABASE_URL` that points at it, a `BETTER_AUTH_SECRET` used only by local runs, the Mailpit `SMTP_URL` and the Redis `REDIS_URL`. There is no `.env`. The git-ignored `.env.local` created by `vercel link` holds the `VERCEL_OIDC_TOKEN` and, optionally, the Google credentials (see [Google sign-in](#google-sign-in)); never pull the Neon variables into it, since it would take precedence over `.env.development`.
 
 ## Deployment
 
@@ -25,6 +25,7 @@ The project is deployed on [Vercel](https://vercel.com) (project `inova-class`),
 - **Build:** `vercel.json` sets the build command to `pnpm migrations:up && pnpm build`, so the pending migrations are applied before every deployment. It also pins the functions to `gru1` (São Paulo), the database's region.
 - **Previews:** each Preview deployment gets its own Neon branch, so the migrations of a pull request never touch the production database.
 - **Email:** [Resend](https://resend.com), provisioned through the Vercel Marketplace for Production and Preview only, sends the auth emails over SMTP.
+- **Class events:** they need Redis (`REDIS_URL`), not provisioned on Vercel yet (#28). Without it the screens work and just don't update by themselves.
 
 | Variable                       | Environments        | Set by                                                              |
 | ------------------------------ | ------------------- | ------------------------------------------------------------------- |
@@ -111,7 +112,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Database
 
 - **Postgres** with **Drizzle ORM** (`drizzle-orm`/`drizzle-kit` on the `1.0.0` release candidate) and the `pg` driver, so the same code runs against the local container and Neon.
-- Everything infrastructure-related lives in `src/infra`: `compose.yml` for the local services, `scripts/` for the startup helpers and `database/` for the client (`client.ts`), the schema (`schema.ts`) and the generated migrations (`migrations/`).
+- Everything infrastructure-related lives in `src/infra`: `compose.yml` for the local services, `scripts/` for the startup helpers, `realtime.ts` for the Redis pub/sub and `database/` for the client (`client.ts`), the schema (`schema.ts`) and the generated migrations (`migrations/`).
 - Tables are declared with `snakeCase.table(...)`, so camelCase keys map to snake_case columns.
 - Change the schema, then run `pnpm migrations:generate --name <name>` and commit the generated folder. Never edit an applied migration.
 - The seed scripts (`src/tests/seed/`, `pnpm db:seed*` and `pnpm db:reset`) only run against `localhost`. They insert verified accounts sharing one password and append the credentials to the git-ignored `seed-credentials.md`; classes, characters and awards go through the models.
@@ -122,6 +123,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - Each class has its own rewards (`rewards`), seeded and removed the same way and managed at `/professor/turmas/[id]/recompensas`. A student buys one at `/aluno/turmas/[id]`, which debits the coins at once and creates an order (`reward_orders`) that the teacher delivers or cancels, with a refund, at `/professor/turmas/[id]/entregas`.
 - Each enrollment carries the student's character (class, appearance and equipped items), empty until the student chooses it at `/aluno/turmas/[id]`. After that only the teacher changes the class, from the roster; the student keeps changing the appearance.
 - The teacher awards a behavior to one or more students on the class page. The entries of an award share a `batchId`, and "Desfazer" reverses them all with `reversal` entries, level bonuses included.
+- The screens of a class learn that something changed through Server-Sent Events (`/api/turmas/[id]/eventos`, `useClassEvents` in `src/app/hooks/`): after each change to the ledger, a power request or a reward order, `classEventModel` publishes a signal without data on the class channel in Redis, and only the class teacher and its enrolled students can listen to it.
 - A student follows their level, XP, HP and coins at `/aluno/turmas/[id]` and their own entries at `/aluno/turmas/[id]/historico`. The ranking of a class by XP is always at `/professor/turmas/[id]/ranking` for the teacher, who decides whether the students see it too (`classes.ranking_visible`, off by default).
 
 ### Auth and email
@@ -166,7 +168,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 ### Testing
 
 - **Unit tests:** Vitest with `jsdom` and Testing Library, next to the code they test. Run `pnpm test` (once) or `pnpm test:watch`.
-- **Integration tests:** Vitest in `node`, in `src/tests/integration`, calling the models against the local Postgres and Mailpit. Run `pnpm test:integration`, which starts the services first. Shared helpers, including the test data generated with [Faker](https://fakerjs.dev), live in `src/tests/orchestrator.ts`.
+- **Integration tests:** Vitest in `node`, in `src/tests/integration`, calling the models against the local Postgres, Mailpit and Redis. Run `pnpm test:integration`, which starts the services first. Shared helpers, including the test data generated with [Faker](https://fakerjs.dev), live in `src/tests/orchestrator.ts`.
 - **E2E tests:** Playwright (Chromium) in `src/tests/e2e`. Run `pnpm test:e2e` or `pnpm test:e2e:ui`. The dev server starts automatically and compiles each route on its first request, so assertions wait up to 15s. Tests that need an email read it from Mailpit through the orchestrator.
 - Only the logic we wrote is tested, not library or framework behavior.
 

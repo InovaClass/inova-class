@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
+import { classEventModel } from '@/models/class-event/model'
 import { ledgerModel } from '@/models/ledger/model'
 import { availableCoins } from '@/models/power-request/balance'
 import { rewardNotFound } from '@/models/reward/errors'
@@ -15,6 +16,9 @@ import { checkPurchase } from './purchase'
 
 // The ids come from the URL or the client, and Postgres rejects a value that isn't a UUID
 const isId = (id: string) => z.uuid().safeParse(id).success
+
+const announce = (classId: string) =>
+  classEventModel.publish(classId, 'reward-order')
 
 const purchase = async (
   studentId: string,
@@ -64,6 +68,7 @@ const purchase = async (
       }
     }
   )
+  await announce(classId)
   return order!
 }
 
@@ -107,6 +112,7 @@ const deliver = async (teacherId: string, classId: string, orderId: string) => {
       })
     : undefined
   if (!delivered) throw orderNotFound()
+  await announce(schoolClass.id)
 }
 
 // The refund, the cancellation and the unit back in stock go in one transaction
@@ -135,6 +141,7 @@ const cancel = async (teacherId: string, classId: string, orderId: string) => {
       await rewardRepo.changeStock(transaction, pending.rewardId, 1)
     }
   )
+  await announce(schoolClass.id)
 }
 
 const listPending = async (teacherId: string, classId: string) => {

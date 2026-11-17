@@ -1,4 +1,5 @@
 import { database } from '@/infra/database/client'
+import { closeRealtime } from '@/infra/realtime'
 
 // The scripts insert accounts with a known password, so they must never reach a hosted database
 const requireLocalDatabase = () => {
@@ -20,5 +21,6 @@ export const runOnLocalDatabase = async (task: () => Promise<void>) => {
     process.exitCode = 1
   } finally {
     await database.$client.end()
+    closeRealtime()
   }
 }
