@@ -46,6 +46,12 @@ const balanceColumns = {
   coins: enrollments.coins
 }
 
+const balancesOf = ({ xp, hp, coins }: Balances): Balances => ({
+  xp,
+  hp,
+  coins
+})
+
 const writePlan = async (
   transaction: Transaction,
   enrollmentId: string,
@@ -83,7 +89,11 @@ const lockBalances = async (
   enrollmentIds: string[]
 ) =>
   transaction
-    .select({ id: enrollments.id, ...balanceColumns })
+    .select({
+      id: enrollments.id,
+      classId: enrollments.classId,
+      ...balanceColumns
+    })
     .from(enrollments)
     .where(inArray(enrollments.id, enrollmentIds))
     .orderBy(asc(enrollments.id))
@@ -101,20 +111,20 @@ const record = async (
   afterWrite?: (transaction: Transaction, entryId: string) => Promise<void>
 ) =>
   database.transaction(async (transaction) => {
-    const [current] = await transaction
-      .select(balanceColumns)
+    const [locked] = await transaction
+      .select({ classId: enrollments.classId, ...balanceColumns })
       .from(enrollments)
       .where(eq(enrollments.id, enrollmentId))
       .for('update')
-    if (!current) return
+    if (!locked) return
 
     const recorded = await writePlan(
       transaction,
       enrollmentId,
-      await plan(current, transaction)
+      await plan(balancesOf(locked), transaction)
     )
     await afterWrite?.(transaction, recorded.entry.id)
-    return recorded
+    return { ...recorded, classId: locked.classId }
   })
 
 // All or nothing: a batch never reaches only part of the students
@@ -126,10 +136,18 @@ const recordBatch = async (
     if (locked.length !== plans.size) return
 
     const batchId = crypto.randomUUID()
-    for (const { id, ...balances } of locked) {
-      await writePlan(transaction, id, plans.get(id)!(balances), batchId)
+    for (const row of locked) {
+      await writePlan(
+        transaction,
+        row.id,
+        plans.get(row.id)!(balancesOf(row)),
+        batchId
+      )
     }
-    return batchId
+    return {
+      batchId,
+      classIds: [...new Set(locked.map(({ classId }) => classId))]
+    }
   })
 
 const recordedColumns = {
@@ -197,13 +215,13 @@ const reverseBatch = async (
       return 'already_reversed' as const
     }
 
-    for (const { id: enrollmentId, ...current } of locked) {
+    for (const row of locked) {
       await writeReversals(
         transaction,
-        enrollmentId,
+        row.id,
         plan(
-          current,
-          entries.filter((entry) => entry.enrollmentId === enrollmentId)
+          balancesOf(row),
+          entries.filter((entry) => entry.enrollmentId === row.id)
         )
       )
     }
