@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { PageNav } from '@/app/components/blocks/page-nav'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import {
@@ -45,6 +46,7 @@ const StudentHistoryPage = async ({
 
   return (
     <>
+      <ClassEventsRefresh classId={classId} events={['ledger']} />
       <Link
         href={`/aluno/turmas/${classId}`}
         className="w-fit text-xs underline underline-offset-4"

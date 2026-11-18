@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { identifyStudent } from '@/app/(pages)/(teacher)/professor/turmas/[id]/identify-student'
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { requireRole } from '@/entry/session'
 import { powerRequestModel } from '@/models/power-request/model'
 
@@ -29,6 +30,7 @@ const PowerRequestsPage = async ({
 
   return (
     <>
+      <ClassEventsRefresh classId={classId} events={['power-request']} />
       <Link
         href={`/professor/turmas/${classId}`}
         className="w-fit text-xs underline underline-offset-4"

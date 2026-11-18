@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { Leaderboard } from '@/app/components/blocks/class/leaderboard'
 import { requireRole } from '@/entry/session'
 import { classModel } from '@/models/class/model'
@@ -23,6 +24,7 @@ const RankingPage = async ({
 
   return (
     <>
+      <ClassEventsRefresh classId={classId} events={['ledger']} />
       <Link
         href={`/professor/turmas/${classId}`}
         className="w-fit text-xs underline underline-offset-4"

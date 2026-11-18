@@ -20,6 +20,8 @@ Nothing leaves your machine: Mailpit catches every email, so any address works (
 
 Use two browsers, or a browser and its private window, because each one keeps its own session. This guide calls them **browser A** (teacher) and **browser B** (student).
 
+The screens of a class update by themselves when XP, HP, coins, a power request or a reward order change, so the steps below only reload where something else changed (e.g. a new reward, a disabled power).
+
 ## 2. Create the accounts
 
 To skip signing up by hand, the seed scripts create verified accounts and write their credentials to `seed-credentials.md` at the root of the repository (git-ignored). Every account shares the password shown in the file, and a student signs in with the username too. They only run against the local database:
@@ -104,31 +106,32 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 12. **A:** on the class page, click "Consequências". The default consequences are listed. Create one, edit it and remove it.
 13. **A:** create a behavior with `-50` in "HP" and apply it to a student. The row shows "Sem HP" and a "Sortear consequência" button.
 14. **A:** click it, then "Sortear". The page shows the consequence drawn, and the class page shows that student with `HP 50/50`.
-15. **A:** on the "Histórico" of that student, the draw is listed as "Consequência: ...", with `+50 HP` and without "Reverter".
-16. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
-17. **A:** on the class page, click "Poderes". The default powers are listed under "Guerreiro", "Mago" and "Curandeiro", each with its cost and "A partir do nível ...".
-18. **A:** click "Novo poder", pick the character class of student B, fill in "Nome", "Custo em moedas" and "Nível mínimo", and submit. Edit it and save: the list shows the new values.
-19. **B:** reload the class page. "Poderes" lists the powers of the character's class only, with "Moedas disponíveis" above them. A power below the minimum level shows "Disponível a partir do nível ...", one the coins don't cover shows "Moedas insuficientes" and the others have a "Usar poder" button.
-20. **A:** click "Desativar" next to a power. It shows "Desativado" and the button turns into "Reativar". **B:** reload: the power is gone. **A:** click "Reativar", and it's back for B.
-21. **A:** click "Remover" next to a power and confirm. It shows "Poder removido." and the power is gone for both.
-22. **A:** apply a behavior that gives coins to student B (e.g. "Ajudou um colega"). **B:** reload and click "Usar poder" on a power the coins cover. It shows "Pedido enviado. Aguarde a resposta do professor.", the power shows "Pedido pendente", "Pedidos pendentes" lists it and "Moedas disponíveis" goes down by its cost, while the class page of A still shows the same coins.
-23. **B:** click "Cancelar pedido". The coins are available again. Request the power once more.
-24. **A:** reload the class page. The "Pedidos" button shows the count of pending requests. Click it: the request is listed with the student, the power, the cost and the date. Click "Aprovar" and confirm: it shows "Pedido aprovado. As moedas foram descontadas.", the class page shows the coins of B down by the cost and "Histórico" lists "Poder: ..." without "Reverter".
-25. **B:** request a power again. **A:** click "Recusar" on "Pedidos": it shows "Pedido recusado. As moedas reservadas foram liberadas." and the coins of B don't change.
-26. **B:** request a power. **A:** remove B from the class: the request leaves "Pedidos", and if B comes back through the join code the coins aren't reserved anymore.
-27. **A:** on the class page, click "Recompensas". The default rewards are listed with their price and stock ("Sem limite de estoque" when blank).
-28. **A:** click "Nova recompensa", fill in "Nome", type `5` in "Preço em moedas" and `1` in "Estoque (opcional)", and submit. Edit it and save: the list shows the new values.
-29. **B:** reload the class page. "Loja" lists the rewards, with "Moedas disponíveis" above them, which already leave out the coins reserved by pending power requests (a note says how many when there are any). A reward the coins don't cover shows "Moedas insuficientes" and the others have a "Comprar" button; the new one shows "Última unidade". **A:** the list shows "1 unidade em estoque".
-30. **B:** with enough coins (apply "Ajudou um colega" from A), click "Comprar" on the new reward and confirm. It shows "Recompensa comprada. Aguarde o professor entregar.", the coins go down by the price right away, the reward shows "Esgotada" and "Meus pedidos" lists it as "Aguardando entrega".
-31. **A:** reload the class page. The "Entregas" button shows the count of pending orders. Click it, then "Cancelar" next to the order and confirm "Cancelar pedido": it shows "Pedido cancelado. As moedas voltaram para o aluno.". **B:** reload: the coins are back, the order shows "Cancelado, moedas devolvidas" and the reward has its unit back.
-32. **B:** buy the reward again. **A:** click "Entregar" on "Entregas": it shows "Recompensa entregue." and B's order shows "Entregue". "Histórico" lists "Compra de recompensa: ..." and "Reembolso de recompensa: ...", without "Reverter".
-33. **B:** buy a reward. **A:** remove B from the class: the order stays on "Entregas" with "Saiu da turma", and can still be delivered or canceled.
+15. **A:** open the draw page of a student with HP in a second tab: it says there's nothing to draw. In the first tab, apply the `-50` HP behavior to that student. Without reloading, the second tab shows "Sortear".
+16. **A:** on the "Histórico" of that student, the draw is listed as "Consequência: ...", with `+50 HP` and without "Reverter".
+17. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
+18. **A:** on the class page, click "Poderes". The default powers are listed under "Guerreiro", "Mago" and "Curandeiro", each with its cost and "A partir do nível ...".
+19. **A:** click "Novo poder", pick the character class of student B, fill in "Nome", "Custo em moedas" and "Nível mínimo", and submit. Edit it and save: the list shows the new values.
+20. **B:** reload the class page. "Poderes" lists the powers of the character's class only, with "Moedas disponíveis" above them. A power below the minimum level shows "Disponível a partir do nível ...", one the coins don't cover shows "Moedas insuficientes" and the others have a "Usar poder" button.
+21. **A:** click "Desativar" next to a power. It shows "Desativado" and the button turns into "Reativar". **B:** reload: the power is gone. **A:** click "Reativar", and it's back for B.
+22. **A:** click "Remover" next to a power and confirm. It shows "Poder removido." and the power is gone for both.
+23. **A:** apply a behavior that gives coins to student B (e.g. "Ajudou um colega"). **B:** without reloading, click "Usar poder" on a power the coins cover. It shows "Pedido enviado. Aguarde a resposta do professor.", the power shows "Pedido pendente", "Pedidos pendentes" lists it and "Moedas disponíveis" goes down by its cost, while the class page of A still shows the same coins.
+24. **B:** click "Cancelar pedido". The coins are available again. Request the power once more.
+25. **A:** without reloading the class page, the "Pedidos" button shows the count of pending requests. Click it: the request is listed with the student, the power, the cost and the date. Click "Aprovar" and confirm: it shows "Pedido aprovado. As moedas foram descontadas.", the class page shows the coins of B down by the cost and "Histórico" lists "Poder: ..." without "Reverter".
+26. **B:** request a power again. **A:** click "Recusar" on "Pedidos": it shows "Pedido recusado. As moedas reservadas foram liberadas." and the coins of B don't change.
+27. **B:** request a power. **A:** remove B from the class: the request leaves "Pedidos", and if B comes back through the join code the coins aren't reserved anymore.
+28. **A:** on the class page, click "Recompensas". The default rewards are listed with their price and stock ("Sem limite de estoque" when blank).
+29. **A:** click "Nova recompensa", fill in "Nome", type `5` in "Preço em moedas" and `1` in "Estoque (opcional)", and submit. Edit it and save: the list shows the new values.
+30. **B:** reload the class page. "Loja" lists the rewards, with "Moedas disponíveis" above them, which already leave out the coins reserved by pending power requests (a note says how many when there are any). A reward the coins don't cover shows "Moedas insuficientes" and the others have a "Comprar" button; the new one shows "Última unidade". **A:** the list shows "1 unidade em estoque".
+31. **B:** with enough coins (apply "Ajudou um colega" from A), click "Comprar" on the new reward and confirm. It shows "Recompensa comprada. Aguarde o professor entregar.", the coins go down by the price right away, the reward shows "Esgotada" and "Meus pedidos" lists it as "Aguardando entrega".
+32. **A:** without reloading the class page, the "Entregas" button shows the count of pending orders. Click it, then "Cancelar" next to the order and confirm "Cancelar pedido": it shows "Pedido cancelado. As moedas voltaram para o aluno.". **B:** without reloading, the coins are back, the order shows "Cancelado, moedas devolvidas" and the reward has its unit back.
+33. **B:** buy the reward again. **A:** click "Entregar" on "Entregas": it shows "Recompensa entregue." and B's order shows "Entregue". "Histórico" lists "Compra de recompensa: ..." and "Reembolso de recompensa: ...", without "Reverter".
+34. **B:** buy a reward. **A:** remove B from the class: the order stays on "Entregas" with "Saiu da turma", and can still be delivered or canceled.
 
 ## 10. Progress, history and ranking
 
 1. **B:** open the class page. "Seu progresso" shows the character moving in place, the class, the level, the coins and the XP and HP bars. Before choosing a character it shows the same values without the avatar.
-2. **A:** apply a behavior to B that crosses a level (e.g. 100 XP). **B:** reload: the level goes up and the coins include the level bonus.
-3. **B:** click "Ver histórico". "Seu histórico" lists the behavior with its values, the level bonus and the date, without who applied it. **A:** reverse it from "Histórico". **B:** reload: the entry shows "Revertido em ..." and the values go back on the class page.
+2. **A:** apply a behavior to B that crosses a level (e.g. 100 XP). **B:** without reloading, the level goes up and the coins include the level bonus.
+3. **B:** click "Ver histórico". "Seu histórico" lists the behavior with its values, the level bonus and the date, without who applied it. **A:** reverse it from "Histórico". **B:** without reloading, the entry shows "Revertido em ..." and the values go back on the class page.
 4. **A:** on the class page, click "Ranking". The students are listed by XP, with the position, the avatar, the level and the username (or the email, for a pending student). Students with the same XP share the position.
 5. **B:** the class page has no "Ranking". **A:** click "Mostrar aos alunos": it reads "Visível" and the button turns into "Ocultar dos alunos". **B:** reload: "Ranking" lists the classmates with name, level and XP only, and B's own row shows "Você".
 6. **A:** click "Ocultar dos alunos". **B:** reload: "Ranking" is gone.
