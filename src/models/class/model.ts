@@ -91,6 +91,15 @@ const setRankingVisible = async (
     rankingVisible: z.boolean().parse(visible)
   })
 
+const setItemShopEnabled = async (
+  teacherId: string,
+  classId: string,
+  enabled: boolean
+) =>
+  updateOwned(teacherId, classId, {
+    itemShopEnabled: z.boolean().parse(enabled)
+  })
+
 const archive = async (teacherId: string, classId: string) => {
   const schoolClass = isClassId(classId)
     ? await classRepo.archiveActive(teacherId, classId)
@@ -114,6 +123,7 @@ export const classModel = {
   regenerateJoinCode,
   setJoinCodeEnabled,
   setRankingVisible,
+  setItemShopEnabled,
   archive,
   restore
 }

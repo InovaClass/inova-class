@@ -20,6 +20,7 @@ type ClassChanges = Partial<
     joinCode: string
     joinCodeEnabled: boolean
     rankingVisible: boolean
+    itemShopEnabled: boolean
   }
 >
 

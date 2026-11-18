@@ -7,6 +7,7 @@ const ENTRY_TITLES: Record<LedgerEntryType, string> = {
   level_bonus: 'Bônus de nível',
   reward_purchase: 'Compra de recompensa',
   reward_refund: 'Reembolso de recompensa',
+  item_purchase: 'Compra de item',
   power: 'Poder',
   hp_restore: 'HP restaurado',
   reversal: 'Reversão'
@@ -18,12 +19,14 @@ export const entryTitle = (entry: {
   consequenceName: string | null
   powerName: string | null
   rewardName: string | null
+  itemName: string | null
 }) => {
   if (entry.consequenceName) return `Consequência: ${entry.consequenceName}`
   if (entry.powerName) return `Poder: ${entry.powerName}`
   if (entry.rewardName) {
     return `${ENTRY_TITLES[entry.type]}: ${entry.rewardName}`
   }
+  if (entry.itemName) return `${ENTRY_TITLES[entry.type]}: ${entry.itemName}`
   return entry.behaviorName ?? ENTRY_TITLES[entry.type]
 }
 

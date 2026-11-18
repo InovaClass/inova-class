@@ -9,20 +9,26 @@ import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import { requireRole } from '@/entry/session'
 import { AVATAR_MANIFEST } from '@/models/avatar/manifest'
+import { CHARACTER_CLASS_NAMES } from '@/models/character/constants'
 import { appearanceOf } from '@/models/character/look'
 import type { CharacterInput } from '@/models/character/schema'
 import { enrollmentModel } from '@/models/enrollment/model'
+import { itemModel } from '@/models/item/model'
+import { equipItem } from '@/models/item/rules'
 import { powerRequestModel } from '@/models/power-request/model'
 import { rewardOrderModel } from '@/models/reward-order/model'
 
 import {
   cancelPowerRequest,
   chooseCharacter,
+  purchaseItem,
   purchaseReward,
   requestPower,
+  setItemEquipped,
   updateAppearance
 } from './_components/action'
 import { CharacterForm } from './_components/character-form'
+import { ItemShop } from './_components/item-shop'
 import { PowerList } from './_components/power-list'
 import { RewardShop } from './_components/reward-shop'
 import { StudentStats } from './_components/student-stats'
@@ -52,8 +58,9 @@ const StudentClassPage = async ({
   const enrollment = await enrollmentModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
   const { className, rankingVisible, look, progress, hp, coins } = enrollment
-  const [powers, shop, ranking] = await Promise.all([
+  const [powers, items, shop, ranking] = await Promise.all([
     look ? powerRequestModel.listForStudent(user.id, classId) : undefined,
+    look ? itemModel.listForStudent(user.id, classId) : undefined,
     rewardOrderModel.listForStudent(user.id, classId),
     rankingVisible
       ? enrollmentModel.listRankingForStudent(user.id, classId)
@@ -94,6 +101,7 @@ const StudentClassPage = async ({
         <CardContent>
           <CharacterForm
             chosenCharacterClass={look?.characterClass}
+            equippedItems={look?.items}
             defaultValues={
               look
                 ? { characterClass: look.characterClass, ...appearanceOf(look) }
@@ -106,6 +114,24 @@ const StudentClassPage = async ({
           />
         </CardContent>
       </Card>
+      {look && items && (
+        <ItemShop
+          shopEnabled={items.shopEnabled}
+          availableCoins={items.availableCoins}
+          items={items.items.map(({ exclusiveTo, ...item }) => ({
+            ...item,
+            exclusiveToName: exclusiveTo && CHARACTER_CLASS_NAMES[exclusiveTo],
+            previewLook: {
+              ...look,
+              items: item.equipped
+                ? items.equippedItems
+                : equipItem(items.equippedItems, item.id)
+            }
+          }))}
+          purchaseAction={purchaseItem.bind(null, classId)}
+          equipAction={setItemEquipped.bind(null, classId)}
+        />
+      )}
       {powers && (
         <PowerList
           {...powers}

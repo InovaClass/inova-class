@@ -16,7 +16,7 @@ import { FormRadioGroup } from '@/app/components/ui/custom/form-radio-group'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
 import type { FormState } from '@/entry/form-action'
-import type { CharacterClass } from '@/models/avatar/layers'
+import type { AvatarItem, CharacterClass } from '@/models/avatar/layers'
 import { AVATAR_MANIFEST } from '@/models/avatar/manifest'
 import { CHARACTER_CLASS_NAMES, NO_HAIR } from '@/models/character/constants'
 import {
@@ -30,6 +30,8 @@ import { type CharacterInput, characterSchema } from '@/models/character/schema'
 type CharacterFormProps = {
   // Set once the student chose: from then on only the teacher changes it
   chosenCharacterClass?: CharacterClass
+  // So the preview wears what the character wears
+  equippedItems?: readonly AvatarItem[]
   defaultValues: CharacterInput
   action: (input: CharacterInput) => Promise<FormState<CharacterInput>>
 }
@@ -48,6 +50,7 @@ const optionsOf = <T extends string>(
 
 export const CharacterForm = ({
   chosenCharacterClass,
+  equippedItems,
   defaultValues,
   action
 }: CharacterFormProps) => {
@@ -65,7 +68,7 @@ export const CharacterForm = ({
     >
       <div className="flex flex-col items-center gap-4 md:sticky md:top-8">
         <CharacterAvatar
-          look={lookFrom(characterClass, appearance)}
+          look={lookFrom(characterClass, appearance, equippedItems)}
           scale={4}
           aria-label="Prévia do personagem"
         />

@@ -6,6 +6,7 @@ import { formAction, type FormState, formSuccess } from '@/entry/form-action'
 import { requireRole } from '@/entry/session'
 import { characterModel } from '@/models/character/model'
 import type { CharacterInput } from '@/models/character/schema'
+import { itemModel } from '@/models/item/model'
 import { powerRequestModel } from '@/models/power-request/model'
 import { rewardOrderModel } from '@/models/reward-order/model'
 
@@ -65,4 +66,31 @@ export const purchaseReward = async (
     await rewardOrderModel.purchase(user.id, classId, rewardId)
     revalidatePath('/aluno', 'layout')
     return formSuccess('Recompensa comprada. Aguarde o professor entregar.')
+  })
+
+export const purchaseItem = async (
+  classId: string,
+  itemId: string
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('student')
+    await itemModel.purchase(user.id, classId, itemId)
+    revalidatePath('/aluno', 'layout')
+    return formSuccess('Item comprado. Ele é seu em todas as turmas.')
+  })
+
+export const setItemEquipped = async (
+  classId: string,
+  itemId: string,
+  equipped: boolean
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('student')
+    await (equipped ? itemModel.equip : itemModel.unequip)(
+      user.id,
+      classId,
+      itemId
+    )
+    revalidatePath('/aluno', 'layout')
+    return formSuccess(equipped ? 'Item equipado.' : 'Item desequipado.')
   })

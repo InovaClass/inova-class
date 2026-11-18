@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { studentNotInClass } from '@/models/enrollment/errors'
+import { itemsExclusiveToOthers } from '@/models/item/rules'
 import { characterRepo } from '@/repositories/character-repo'
 
 import {
@@ -90,12 +91,11 @@ const changeCharacterClass = async (
   if (!schoolClass) throw classNotFound()
   // A student who hasn't chosen yet has no character to change, and the roster offers none
   const changed = isId(studentId)
-    ? await characterRepo.changeCharacterClass(
-        schoolClass.id,
-        studentId,
+    ? await characterRepo.changeCharacterClass(schoolClass.id, studentId, {
         characterClass,
-        outfitColorsOf(characterClass)[0]!
-      )
+        firstOutfitColor: outfitColorsOf(characterClass)[0]!,
+        removedItems: itemsExclusiveToOthers(characterClass)
+      })
     : undefined
   if (!changed) throw studentNotInClass()
 }

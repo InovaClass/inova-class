@@ -110,6 +110,7 @@ export const classes = snakeCase.table(
     joinCode: text().notNull().unique(),
     joinCodeEnabled: boolean().notNull().default(true),
     rankingVisible: boolean().notNull().default(false),
+    itemShopEnabled: boolean().notNull().default(true),
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },
@@ -238,7 +239,8 @@ export const ledgerEntries = snakeCase.table(
     xpDelta: integer().notNull(),
     hpDelta: integer().notNull(),
     coinDelta: integer().notNull(),
-    // No foreign key, since it points to a behavior, reward or power depending on `type`
+    // No foreign key, since it points to a behavior, consequence, power, reward or owned item depending
+    // on `type`
     sourceId: uuid(),
     parentEntryId: uuid().references((): AnyPgColumn => ledgerEntries.id, {
       onDelete: 'cascade'
@@ -349,6 +351,26 @@ export const rewardOrders = snakeCase.table(
       sql`(${table.status} = 'canceled') = (${table.refundEntryId} is not null)`
     )
   ]
+)
+
+// On the account, not the enrollment: an item bought once is used in any class (#32). `itemId` is
+// validated against the catalog in `itemModel`, which an import can change, so the database doesn't
+// list it. The entry goes to null rather than taking the item with it, since the item outlives the
+// class it was bought in
+export const ownedItems = snakeCase.table(
+  'owned_items',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    itemId: text().notNull(),
+    purchaseEntryId: uuid().references(() => ledgerEntries.id, {
+      onDelete: 'set null'
+    }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [unique().on(table.studentId, table.itemId)]
 )
 
 // One row per student instead of one per attempt, so the table doesn't grow with each attempt (#58)

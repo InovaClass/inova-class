@@ -80,18 +80,32 @@ const updateAppearance = async (
   return enrollment
 }
 
-// The outfit colors belong to each character class, so a new one takes the first color of its class
+// The outfit colors belong to each character class, so a new one takes the first color of its class,
+// and the items exclusive to another class leave the character (#32)
 const changeCharacterClass = async (
   classId: string,
   studentId: string,
-  characterClass: string,
-  firstOutfitColor: string
+  {
+    characterClass,
+    firstOutfitColor,
+    removedItems
+  }: {
+    characterClass: string
+    firstOutfitColor: string
+    removedItems: string[]
+  }
 ) => {
   const [enrollment] = await database
     .update(enrollments)
     .set({
       characterClass,
-      outfitColor: sql`case when ${enrollments.characterClass} = ${characterClass} then ${enrollments.outfitColor} else ${firstOutfitColor} end`
+      outfitColor: sql`case when ${enrollments.characterClass} = ${characterClass} then ${enrollments.outfitColor} else ${firstOutfitColor} end`,
+      ...(removedItems.length > 0 && {
+        equippedItems: sql`array(select item from unnest(${enrollments.equippedItems}) with ordinality as equipped(item, position) where item not in (${sql.join(
+          removedItems.map((item) => sql`${item}`),
+          sql`, `
+        )}) order by position)`
+      })
     })
     .where(
       and(

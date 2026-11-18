@@ -5,6 +5,7 @@ export const LEDGER_ENTRY_TYPES = [
   'level_bonus',
   'reward_purchase',
   'reward_refund',
+  'item_purchase',
   'power',
   'hp_restore',
   'reversal'
