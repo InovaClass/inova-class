@@ -12,6 +12,23 @@ const COIN_ROWS = [
   [2, 7, 4]
 ] as const
 
+export const CoinIcon = ({
+  className,
+  ...props
+}: Omit<ComponentProps<'svg'>, 'children'>) => (
+  <svg
+    viewBox="0 0 8 8"
+    shapeRendering="crispEdges"
+    aria-hidden="true"
+    className={cn('size-4 fill-coin', className)}
+    {...props}
+  >
+    {COIN_ROWS.map(([x, y, width]) => (
+      <rect key={y} x={x} y={y} width={width} height="1" />
+    ))}
+  </svg>
+)
+
 type CoinCounterProps = Omit<ComponentProps<'span'>, 'children'> & {
   value: number
 }
@@ -26,16 +43,7 @@ export const CoinCounter = ({
     className={cn('inline-flex items-center gap-2 text-xs', className)}
     {...props}
   >
-    <svg
-      viewBox="0 0 8 8"
-      shapeRendering="crispEdges"
-      aria-hidden="true"
-      className="size-4 fill-coin"
-    >
-      {COIN_ROWS.map(([x, y, width]) => (
-        <rect key={y} x={x} y={y} width={width} height="1" />
-      ))}
-    </svg>
+    <CoinIcon />
     <span>
       {value.toLocaleString('pt-BR')}
       <span className="sr-only"> {value === 1 ? 'moeda' : 'moedas'}</span>

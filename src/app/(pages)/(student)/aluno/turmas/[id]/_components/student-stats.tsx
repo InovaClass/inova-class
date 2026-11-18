@@ -1,7 +1,7 @@
+import { StatsAvatar } from '@/app/components/blocks/class/stats-avatar'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { HealthBar } from '@/app/components/ui/8bit/health-bar'
 import { XpBar } from '@/app/components/ui/8bit/xp-bar'
-import { CharacterAvatar } from '@/app/components/ui/custom/character-avatar'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { LevelBadge } from '@/app/components/ui/custom/level-badge'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
@@ -28,8 +28,13 @@ export const StudentStats = ({
         <h2 className="text-sm leading-relaxed">Seu progresso</h2>
       </CardTitle>
     </CardHeader>
-    <CardContent className="flex flex-wrap items-center gap-6">
-      {look && <CharacterAvatar look={look} scale={2} />}
+    <CardContent className="relative flex flex-wrap items-center gap-6">
+      <StatsAvatar
+        look={look}
+        stats={{ progress, hp, coins }}
+        scale={2}
+        celebrate
+      />
       <div className="flex min-w-0 flex-1 basis-56 flex-col gap-4">
         {look && (
           <p className="text-xs leading-relaxed text-muted-foreground">

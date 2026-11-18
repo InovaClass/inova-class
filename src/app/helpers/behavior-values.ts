@@ -1,6 +1,7 @@
 import type { BehaviorValues } from '@/models/behavior/kind'
 
-const signed = (value: number) => `${value > 0 ? '+' : '-'}${Math.abs(value)}`
+export const signed = (value: number) =>
+  `${value > 0 ? '+' : '-'}${Math.abs(value)}`
 
 export const describeBehaviorValues = ({ xp, hp, coins }: BehaviorValues) =>
   [
