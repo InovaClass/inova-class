@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { ToastProvider } from '@/app/components/ui/8bit/toast'
 import { requireRole } from '@/entry/session'
@@ -44,6 +45,10 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
       pendingRequests={pendingRequests}
       pendingOrders={pendingOrders}
     >
+      <ClassEventsRefresh
+        classId={classId}
+        events={['ledger', 'power-request', 'reward-order']}
+      />
       <ToastProvider>
         <StudentRoster
           classId={classId}

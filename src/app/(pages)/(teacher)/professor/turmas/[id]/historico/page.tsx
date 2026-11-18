@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { identifyStudent } from '@/app/(pages)/(teacher)/professor/turmas/[id]/identify-student'
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { PageNav } from '@/app/components/blocks/page-nav'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import {
@@ -82,6 +83,7 @@ const HistoryPage = async ({
 
   return (
     <>
+      <ClassEventsRefresh classId={classId} events={['ledger']} />
       <Link
         href={`/professor/turmas/${classId}`}
         className="w-fit text-xs underline underline-offset-4"

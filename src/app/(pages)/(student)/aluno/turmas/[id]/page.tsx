@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { Leaderboard } from '@/app/components/blocks/class/leaderboard'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
@@ -61,6 +62,10 @@ const StudentClassPage = async ({
 
   return (
     <>
+      <ClassEventsRefresh
+        classId={classId}
+        events={['ledger', 'power-request', 'reward-order']}
+      />
       <Link
         href="/aluno"
         className="w-fit text-xs underline underline-offset-4"

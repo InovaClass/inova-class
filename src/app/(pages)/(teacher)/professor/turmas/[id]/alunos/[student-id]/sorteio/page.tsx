@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { identifyStudent } from '@/app/(pages)/(teacher)/professor/turmas/[id]/identify-student'
+import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { requireRole } from '@/entry/session'
 import { classModel } from '@/models/class/model'
 import { consequenceModel } from '@/models/consequence/model'
@@ -29,6 +30,7 @@ const DrawPage = async ({
 
   return (
     <>
+      <ClassEventsRefresh classId={classId} events={['ledger']} />
       <Link
         href={`/professor/turmas/${classId}`}
         className="w-fit text-xs underline underline-offset-4"
