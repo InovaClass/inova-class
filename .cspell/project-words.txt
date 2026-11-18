@@ -40,6 +40,7 @@ mousedown
 nvmrc
 oklch
 openssl
+ordinality
 postgres
 postgresql
 resends
@@ -52,6 +53,7 @@ spritesheets
 tailwindcss
 timestamptz
 ulpc
+unequip
 unpooled
 unrs
 unstub

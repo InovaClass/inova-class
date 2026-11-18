@@ -90,7 +90,7 @@ To go through sign-up itself:
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 9. Behaviors, consequences, powers and rewards
+## 9. Behaviors, consequences, powers, rewards and items
 
 1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
 2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
@@ -126,6 +126,12 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 32. **A:** without reloading the class page, the "Entregas" button shows the count of pending orders. Click it, then "Cancelar" next to the order and confirm "Cancelar pedido": it shows "Pedido cancelado. As moedas voltaram para o aluno.". **B:** without reloading, the coins are back, the order shows "Cancelado, moedas devolvidas" and the reward has its unit back.
 33. **B:** buy the reward again. **A:** click "Entregar" on "Entregas": it shows "Recompensa entregue." and B's order shows "Entregue". "Histórico" lists "Compra de recompensa: ..." and "Reembolso de recompensa: ...", without "Reverter".
 34. **B:** buy a reward. **A:** remove B from the class: the order stays on "Entregas" with "Saiu da turma", and can still be delivered or canceled.
+35. **B:** with the character chosen, reload the class page. "Itens" lists every item with a still preview of the character wearing it, its price and "Moedas disponíveis" above them. "Chapéu de mago" shows "Só para Mago" for a character of another class, and "Coroa" shows "Disponível a partir do nível 3" below that level.
+36. **B:** with enough coins, click "Comprar" on "Bandana" and confirm. It shows "Item comprado. Ele é seu em todas as turmas.", the coins go down by the price right away and the row shows "Comprado" with an "Equipar" button. "Ver histórico" lists "Compra de item: Bandana". **A:** "Histórico" lists it too, without "Reverter".
+37. **B:** click "Equipar". The row shows "Equipado", the button turns into "Desequipar" and the avatar of "Seu progresso" and of the character form wears the bandana. Buy and equip another head item ("Chapéu de mago" as a mage at level 2, or "Coroa" at level 3): it takes the place of the bandana, while "Óculos redondos" stays next to either.
+38. **B:** join a second class of A and choose a character there. "Itens" shows the bandana as "Comprado", without a price, ready to equip.
+39. **A:** with B a mage wearing "Chapéu de mago", click "Trocar classe" on the roster and pick another class. **B:** reload: the hat left the character and shows "Só para Mago", and the other equipped items stay.
+40. **A:** on "Recompensas", click "Fechar loja de itens": it reads "Fechada" and the button turns into "Abrir loja de itens". **B:** reload: "Itens" says the shop is closed, lists only the items B owns and still puts them on and takes them off. The second class keeps its shop open.
 
 ## 10. Progress, history and ranking
 

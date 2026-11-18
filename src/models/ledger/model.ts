@@ -5,6 +5,7 @@ import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { classEventModel } from '@/models/class-event/model'
 import { studentNotInClass } from '@/models/enrollment/errors'
+import { isItemId, ITEM_CATALOG } from '@/models/item/constants'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 import {
   type Balances,
@@ -39,8 +40,8 @@ const isId = (id: string) => z.uuid().safeParse(id).success
 // After the transaction, so a screen that fetches again on the event sees the change
 const announce = (classId: string) => classEventModel.publish(classId, 'ledger')
 
-// A purchase, a power or an HP restore has a flow of its own (#17, #20, #21), and a level bonus only
-// leaves together with its entry
+// A purchase, a power or an HP restore has a flow of its own (#17, #20, #21, #32), and a level
+// bonus only leaves together with its entry
 const canReverse = (type: LedgerEntryType, enrollmentEndedAt: Date | null) =>
   type === 'behavior' && !enrollmentEndedAt
 
@@ -190,6 +191,40 @@ const spendOnReward = async (
   await announce(recorded.classId)
 }
 
+// `sourceId` is the inventory row, since an item id isn't a UUID
+const spendOnItem = async (
+  enrollmentId: string,
+  { ownedItemId, createdById }: { ownedItemId: string; createdById: string },
+  {
+    claim,
+    confirm
+  }: {
+    claim: (transaction: Transaction, balances: Balances) => Promise<number>
+    confirm: (transaction: Transaction, entryId: string) => Promise<void>
+  }
+) => {
+  const { enrollmentId: id, ...entry } = ledgerEntrySchema.parse({
+    enrollmentId,
+    type: 'item_purchase',
+    xpDelta: 0,
+    hpDelta: 0,
+    coinDelta: 0,
+    sourceId: ownedItemId,
+    createdById,
+    requireCoins: true
+  })
+  const recorded = await ledgerRepo.record(
+    id,
+    async (balances, transaction) => {
+      const price = await claim(transaction, balances)
+      return planEntry({ ...entry, coinDelta: -price })(balances)
+    },
+    confirm
+  )
+  if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
+}
+
 // A new entry rather than a reversal, so the purchase stays in the history next to its refund.
 // `confirm` runs in the same transaction, so the refund and the cancellation go together
 const refundReward = async (
@@ -286,7 +321,10 @@ const listPage = async (
   return {
     page,
     hasNextPage: found.length > HISTORY_PAGE_SIZE,
-    entries: found.slice(0, HISTORY_PAGE_SIZE)
+    entries: found.slice(0, HISTORY_PAGE_SIZE).map(({ itemId, ...entry }) => ({
+      ...entry,
+      itemName: itemId && isItemId(itemId) ? ITEM_CATALOG[itemId].name : null
+    }))
   }
 }
 
@@ -360,6 +398,7 @@ const listStudentHistory = async (
       consequenceName: entry.consequenceName,
       powerName: entry.powerName,
       rewardName: entry.rewardName,
+      itemName: entry.itemName,
       derivedEntries: entry.derivedEntries,
       reversals: entry.reversals
     }))
@@ -372,6 +411,7 @@ export const ledgerModel = {
   restoreFallen,
   spendOnPower,
   spendOnReward,
+  spendOnItem,
   refundReward,
   reverseBatch,
   reverseEntry,

@@ -7,7 +7,8 @@ import { requireRole } from '@/entry/session'
 import { classModel } from '@/models/class/model'
 import { rewardModel } from '@/models/reward/model'
 
-import { removeReward } from './_components/action'
+import { removeReward, setItemShopEnabled } from './_components/action'
+import { ItemShopToggle } from './_components/item-shop-toggle'
 import { RewardList } from './_components/reward-list'
 
 export const metadata: Metadata = { title: 'Recompensas' }
@@ -50,6 +51,14 @@ const RewardsPage = async ({
         classId={classId}
         rewards={rewards}
         removeAction={removeReward.bind(null, classId)}
+      />
+      <ItemShopToggle
+        enabled={schoolClass.itemShopEnabled}
+        toggleAction={setItemShopEnabled.bind(
+          null,
+          classId,
+          !schoolClass.itemShopEnabled
+        )}
       />
     </>
   )

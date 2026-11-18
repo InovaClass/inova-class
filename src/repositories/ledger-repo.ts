@@ -8,6 +8,7 @@ import {
   consequences,
   enrollments,
   ledgerEntries,
+  ownedItems,
   powers,
   rewards,
   users
@@ -308,6 +309,7 @@ const listHistory = async (
       consequenceName: consequences.name,
       powerName: powers.name,
       rewardName: rewards.name,
+      itemId: ownedItems.itemId,
       authorName: entryAuthors.name
     })
     .from(ledgerEntries)
@@ -339,6 +341,13 @@ const listHistory = async (
       and(
         eq(rewards.id, ledgerEntries.sourceId),
         inArray(ledgerEntries.type, ['reward_purchase', 'reward_refund'])
+      )
+    )
+    .leftJoin(
+      ownedItems,
+      and(
+        eq(ownedItems.id, ledgerEntries.sourceId),
+        eq(ledgerEntries.type, 'item_purchase')
       )
     )
     .leftJoin(entryAuthors, eq(entryAuthors.id, ledgerEntries.createdById))
