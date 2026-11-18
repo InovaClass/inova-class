@@ -31,7 +31,10 @@ export default defineConfig({
           setupFiles: ['src/tests/integration/setup.ts'],
           // The files share one database and one Mailpit inbox
           fileParallelism: false,
-          testTimeout: 15_000
+          testTimeout: 15_000,
+          // Emails go out one at a time after the call, and under the whole suite they can take more
+          // than the default 1 second to reach Mailpit, as long as `waitForLinkSentTo` waits
+          expect: { poll: { timeout: 10_000 } }
         }
       }
     ]
