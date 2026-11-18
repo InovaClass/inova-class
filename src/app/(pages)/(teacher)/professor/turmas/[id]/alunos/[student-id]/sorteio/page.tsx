@@ -50,7 +50,7 @@ const DrawPage = async ({
           student.email ?? student.username
         )}
         fallen={student.hp === 0}
-        hasConsequences={consequences.length > 0}
+        consequenceNames={consequences.map(({ name }) => name)}
         drawAction={drawConsequence.bind(null, classId, studentId)}
       />
     </>

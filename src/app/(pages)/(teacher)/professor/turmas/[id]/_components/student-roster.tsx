@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { identifyStudent } from '@/app/(pages)/(teacher)/professor/turmas/[id]/identify-student'
+import { StatsAvatar } from '@/app/components/blocks/class/stats-avatar'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { Checkbox } from '@/app/components/ui/8bit/checkbox'
@@ -17,7 +18,6 @@ import {
 import { HealthBar } from '@/app/components/ui/8bit/health-bar'
 import { useToast } from '@/app/components/ui/8bit/toast'
 import { XpBar } from '@/app/components/ui/8bit/xp-bar'
-import { CharacterAvatar } from '@/app/components/ui/custom/character-avatar'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
@@ -197,14 +197,18 @@ export const StudentRoster = ({
                             {identifyStudent(name, email ?? username)}
                           </span>
                         </label>
-                        {look ? (
-                          <CharacterAvatar look={look} scale={1} still />
-                        ) : (
-                          <div
-                            aria-hidden="true"
-                            className="size-16 shrink-0 border-2 border-dashed border-border"
-                          />
-                        )}
+                        <StatsAvatar
+                          look={look}
+                          stats={{ progress, hp, coins }}
+                          scale={1}
+                          still
+                          placeholder={
+                            <div
+                              aria-hidden="true"
+                              className="size-16 border-2 border-dashed border-border"
+                            />
+                          }
+                        />
                         <div className="flex min-w-0 flex-1 flex-col gap-3">
                           <p className="text-xs leading-relaxed wrap-anywhere">
                             {name}

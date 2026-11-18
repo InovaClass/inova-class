@@ -97,7 +97,7 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 3. **A:** click "Editar" next to it, change the values and save. The list shows the new values.
 4. **A:** click "Remover" next to it and confirm. It shows "Comportamento removido." and the behavior is gone.
 5. **A:** create another class. It starts with the default behaviors, without the ones you changed in the first class.
-6. **A:** on the page of a class with students, check "Selecionar todos" (or some of the students), click "Aplicar comportamento" and pick one. A toast confirms it, the selection clears and each student shows the new XP, HP and coins.
+6. **A:** on the page of a class with students, check "Selecionar todos" (or some of the students), click "Aplicar comportamento" and pick one. A toast confirms it, the selection clears and each student shows the new XP, HP and coins, with the values floating over the avatar ("+10 XP", the coins, "Nv. 2!" across a level), which plays its `cast` animation once. A behavior that takes HP floats "-5 HP" and plays `hurt`.
 7. **A:** click "Desfazer" in the toast, within 15 seconds. It shows "Aplicação desfeita." and the values go back to what they were.
 8. **A:** apply a behavior that takes a student across a level (100 XP for level 2) and undo it: the level and the coins of the level bonus go back too.
 9. **A:** on the class page, click "Histórico". Each student of an award has a row with the behavior, the values, the date and who applied it, and an undone award shows "Revertido".
@@ -105,7 +105,7 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 11. **A:** remove that student from the class and open "Histórico" on the class page: their rows are still listed, without "Reverter".
 12. **A:** on the class page, click "Consequências". The default consequences are listed. Create one, edit it and remove it.
 13. **A:** create a behavior with `-50` in "HP" and apply it to a student. The row shows "Sem HP" and a "Sortear consequência" button.
-14. **A:** click it, then "Sortear". The page shows the consequence drawn, and the class page shows that student with `HP 50/50`.
+14. **A:** click it, then "Sortear". The names of the consequences go by, slowing down, and stop on the one drawn, which the page then shows. The class page shows that student with `HP 50/50`.
 15. **A:** open the draw page of a student with HP in a second tab: it says there's nothing to draw. In the first tab, apply the `-50` HP behavior to that student. Without reloading, the second tab shows "Sortear".
 16. **A:** on the "Histórico" of that student, the draw is listed as "Consequência: ...", with `+50 HP` and without "Reverter".
 17. **A:** remove every consequence and take a student to zero HP again. The draw page says that there's nothing to draw and links to the list.
@@ -127,7 +127,7 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 33. **B:** buy the reward again. **A:** click "Entregar" on "Entregas": it shows "Recompensa entregue." and B's order shows "Entregue". "Histórico" lists "Compra de recompensa: ..." and "Reembolso de recompensa: ...", without "Reverter".
 34. **B:** buy a reward. **A:** remove B from the class: the order stays on "Entregas" with "Saiu da turma", and can still be delivered or canceled.
 35. **B:** with the character chosen, reload the class page. "Itens" lists every item with a still preview of the character wearing it, its price and "Moedas disponíveis" above them. "Chapéu de mago" shows "Só para Mago" for a character of another class, and "Coroa" shows "Disponível a partir do nível 3" below that level.
-36. **B:** with enough coins, click "Comprar" on "Bandana" and confirm. It shows "Item comprado. Ele é seu em todas as turmas.", the coins go down by the price right away and the row shows "Comprado" with an "Equipar" button. "Ver histórico" lists "Compra de item: Bandana". **A:** "Histórico" lists it too, without "Reverter".
+36. **B:** with enough coins, click "Comprar" on "Bandana" and confirm. It shows "Item comprado. Ele é seu em todas as turmas.", the coins go down by the price right away, with a spinning coin and the price floating over the avatar of "Seu progresso" and the row shows "Comprado" with an "Equipar" button. "Ver histórico" lists "Compra de item: Bandana". **A:** "Histórico" lists it too, without "Reverter".
 37. **B:** click "Equipar". The row shows "Equipado", the button turns into "Desequipar" and the avatar of "Seu progresso" and of the character form wears the bandana. Buy and equip another head item ("Chapéu de mago" as a mage at level 2, or "Coroa" at level 3): it takes the place of the bandana, while "Óculos redondos" stays next to either.
 38. **B:** join a second class of A and choose a character there. "Itens" shows the bandana as "Comprado", without a price, ready to equip.
 39. **A:** with B a mage wearing "Chapéu de mago", click "Trocar classe" on the roster and pick another class. **B:** reload: the hat left the character and shows "Só para Mago", and the other equipped items stay.
@@ -136,11 +136,12 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 ## 10. Progress, history and ranking
 
 1. **B:** open the class page. "Seu progresso" shows the character moving in place, the class, the level, the coins and the XP and HP bars. Before choosing a character it shows the same values without the avatar.
-2. **A:** apply a behavior to B that crosses a level (e.g. 100 XP). **B:** without reloading, the level goes up and the coins include the level bonus.
+2. **A:** apply a behavior to B that crosses a level (e.g. 100 XP). **B:** without reloading, the level goes up and the coins include the level bonus. A "Subiu de nível!" banner shows the new level over the page for a moment, without taking the focus, and the avatar of "Seu progresso" floats the XP and the coins.
 3. **B:** click "Ver histórico". "Seu histórico" lists the behavior with its values, the level bonus and the date, without who applied it. **A:** reverse it from "Histórico". **B:** without reloading, the entry shows "Revertido em ..." and the values go back on the class page.
 4. **A:** on the class page, click "Ranking". The students are listed by XP, with the position, the avatar, the level and the username (or the email, for a pending student). Students with the same XP share the position.
 5. **B:** the class page has no "Ranking". **A:** click "Mostrar aos alunos": it reads "Visível" and the button turns into "Ocultar dos alunos". **B:** reload: "Ranking" lists the classmates with name, level and XP only, and B's own row shows "Você".
 6. **A:** click "Ocultar dos alunos". **B:** reload: "Ranking" is gone.
+7. Turn on "Reduce motion" in the system (or emulate `prefers-reduced-motion: reduce` in the browser's DevTools) and repeat the award and a draw: the numbers and the banner fade in and out without moving, the avatar stands still and the draw shows the result straight away.
 
 ## 11. Invite a student by email
 
