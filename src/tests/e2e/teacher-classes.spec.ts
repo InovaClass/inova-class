@@ -36,7 +36,9 @@ test('a teacher creates, edits and archives a class', async ({ page }) => {
   await expect(page.getByText('Nenhuma turma ainda')).toBeVisible()
 
   await page.goto(classPath)
-  await expect(page.getByRole('heading', { name: '404' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Página não encontrada' })
+  ).toBeVisible()
 })
 
 test('a teacher restores an archived class to the dashboard', async ({
@@ -120,7 +122,9 @@ test('a teacher cannot open the class of another teacher', async ({
 
   for (const path of [classPath, `${classPath}/editar`]) {
     await otherPage.goto(path)
-    await expect(otherPage.getByRole('heading', { name: '404' })).toBeVisible()
+    await expect(
+      otherPage.getByRole('heading', { name: 'Página não encontrada' })
+    ).toBeVisible()
   }
   await otherContext.close()
 })

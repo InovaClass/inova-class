@@ -92,7 +92,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 
 ### Project structure
 
-- `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files.
+- `src/app` holds frontend-exclusive code only. Routes live in the `src/app/(pages)` route group (which does not affect the URL), while the root layout, `not-found.tsx` and `global-error.tsx` stay directly in `src/app`, since Next.js only serves the root `not-found.tsx` for an unknown URL. Shared components live in `src/app/components`, React hooks in `src/app/hooks` and other helpers in `src/app/helpers`. There are no `index.ts` barrels: modules are imported directly from their files.
 - Components are grouped by role: `ui/` for visual building blocks (shadcn ones in `ui/shadcn/`, the 8bitcn ports in `ui/8bit/`), `blocks/` for composed pieces reused across pages (grouped by domain, e.g. `blocks/post/`) and `providers/` for context providers. A layout stays in the `layout.tsx` of its route or route group, with its private parts in a `_components/` folder next to it. Parts shared only by the pages of one route group live in that group's `_components/` (e.g. `(pages)/(auth)/_components/`), while a helper that isn't a component or a form's action sits at the root of the route or group it serves.
 - Global styles live in `src/app/styles/globals.css`.
 - Anything that is not frontend-exclusive, such as `src/tests`, sits directly under `src`, as a sibling of `app`.

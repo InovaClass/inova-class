@@ -167,7 +167,9 @@ Use a new private window for the invited student, since the invite signs them in
 
 - **B:** open `/professor`. You're sent back to `/aluno`.
 - **A:** open `/aluno`. You're sent back to `/professor`.
-- **A:** open the address of a class created by another teacher. It shows a 404 page.
+- **A:** open the address of a class created by another teacher. It shows "Página não encontrada" with a fallen warrior and a "Voltar ao início" link, which takes you back to `/professor`.
+- Open an address that doesn't exist (e.g. `/rota-inexistente`). It shows the same page.
+- To see the error page, stop the database (`docker compose -f src/infra/compose.yml stop database`) and reload `/professor`. It shows "Algo deu errado" with "Tentar de novo"; start the database again (`pnpm services:up`) and click "Tentar de novo" to get the dashboard back.
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 
 ## 14. Credits
