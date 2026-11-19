@@ -146,6 +146,13 @@ This is **inova.class**, a gamified classroom management platform (an alternativ
 - The draw page shows a roulette (`rouletteNames`, next to the page) with the names of the consequences after the server has drawn, and only then reveals the result, which takes the focus.
 - The pages that only list values (histories, ranking) don't animate.
 
+### Sound effects
+
+- The effects are chiptune sounds synthesized with [jsfxr](https://github.com/chr15m/jsfxr) (a devDependency) from the fixed parameters in `src/infra/scripts/generate-sounds.ts`, not from its presets, which roll new values on every run. `pnpm sounds:generate` writes them to `public/sounds/` with a hash of the content in the file name (served as `immutable`, like the sprites) and regenerates `src/app/helpers/sound-manifest.ts`. Both are committed; change a sound in the script and run it again. They're ours, released as CC0 and credited at `/creditos`.
+- A sound follows the same changes as the animations: `StatsAvatar` plays `soundFor(change)` (`stat-change.ts`, one sound per change: `level-up`, then `hurt`, then `power-up` for XP or HP gained, then `coins`; spending coins plays nothing), and the draw result plays `draw`. `useGameSound(effect, trigger)` (`src/app/hooks/`) plays it whenever `trigger` changes.
+- `playSound` (`src/app/helpers/game-sound.ts`) plays each effect at most once per `REPEAT_WINDOW_IN_MS`, so a behavior awarded to the whole roster sounds once. Before the person interacts with the page the browser keeps audio off, and a sound from then is dropped instead of queued. A sound that fails to load or play is only logged.
+- Sounds are on by default. `SoundToggle` (`blocks/`, in `AppHeader`, so both layouts have it) mutes them per browser, in `localStorage` (`sound-preference.ts`, read with `useSoundMuted`), and keeps the choice in memory when the storage is blocked. It's a toggle button (`aria-pressed`) with a fixed label, repeated in `title` for pointer users, and a speaker drawn on an 8 px grid, since lucide's smooth strokes clash with the pixel font.
+
 ### Avatar
 
 - A student's character is pixel art from the [Universal LPC Spritesheet Character Generator](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator), pinned to a commit in `src/infra/scripts/import-lpc-sprites.ts`, which also lists the parts we use: the body types, skins, hair styles and colors, the outfit of each character class with its colors, and the items.

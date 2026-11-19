@@ -1,6 +1,8 @@
 import type { AvatarAnimation } from '@/models/avatar/layers'
 import { xpForLevel } from '@/models/ledger/level'
 
+import type { SoundEffect } from './sound-manifest'
+
 export type StatsSnapshot = {
   progress: { level: number; current: number }
   hp: number
@@ -39,4 +41,12 @@ export const avatarAnimationFor = ({
 }: StatChange): AvatarAnimation | undefined => {
   if (hp < 0) return 'hurt'
   if (xp > 0 || hp > 0) return 'cast'
+}
+
+// One sound per change, the most significant one. Spending coins plays nothing, as the avatar does
+export const soundFor = (change: StatChange): SoundEffect | undefined => {
+  if (change.levelReached) return 'level-up'
+  if (change.hp < 0) return 'hurt'
+  if (change.xp > 0 || change.hp > 0) return 'power-up'
+  if (change.coins > 0) return 'coins'
 }

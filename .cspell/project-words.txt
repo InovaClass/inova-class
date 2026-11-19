@@ -9,6 +9,7 @@ bitcn's
 bradlc
 buzzcut
 caua
+chiptune
 Classcraft
 claude
 commitlint
@@ -18,6 +19,7 @@ davilaneto
 dbaeumer
 diasjoaovitor
 diasjoaovitors
+dramp
 dtos
 elia
 esbenp
@@ -33,6 +35,7 @@ healthcheck
 historico
 inovaclass
 joao
+jsfxr
 LGPD
 longsleeve
 mailpit
@@ -41,10 +44,12 @@ nvmrc
 oklch
 openssl
 ordinality
+Pettersson
 postgres
 postgresql
 resends
 retint
+sfxr
 shadcn
 shadcn's
 spellcast

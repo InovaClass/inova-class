@@ -46,44 +46,68 @@ const CreditsPage = () => (
   <>
     <h1>Créditos</h1>
 
-    <div className="flex flex-wrap justify-center gap-4">
-      {SAMPLE_LOOKS.map((look) => (
-        <CharacterAvatar key={look.characterClass} look={look} />
-      ))}
-    </div>
+    <section className="flex flex-col gap-6">
+      <h2>Personagens</h2>
 
-    <p>
-      Os personagens do inova.class usam arte do Liberated Pixel Cup (LPC),
-      reunida no{' '}
-      <a href={AVATAR_MANIFEST.upstream.repository} className={linkClassName}>
-        Universal LPC Spritesheet Character Generator
-      </a>
-      . Recortamos e recolorimos os sprites para o jogo, e cada peça mantém a
-      licença original, listada abaixo com os autores.
-    </p>
-
-    {AVATAR_MANIFEST.credits.map((credit) => (
-      <section key={credit.file} className="flex flex-col gap-1">
-        <h2>{credit.name}</h2>
-        <p className={cn(longTokenClassName, 'text-muted-foreground')}>
-          {credit.file}
-        </p>
-        {'notes' in credit && (
-          <p className={longTokenClassName}>{credit.notes}</p>
-        )}
-        <p>Autores: {credit.authors.join(', ')}</p>
-        <p>Licenças: {credit.licenses.join(', ')}</p>
-        {credit.urls.map((url) => (
-          <a
-            key={url}
-            href={url}
-            className={cn(linkClassName, longTokenClassName)}
-          >
-            {url}
-          </a>
+      <div className="flex flex-wrap justify-center gap-4">
+        {SAMPLE_LOOKS.map((look) => (
+          <CharacterAvatar key={look.characterClass} look={look} />
         ))}
-      </section>
-    ))}
+      </div>
+
+      <p>
+        Os personagens do inova.class usam arte do Liberated Pixel Cup (LPC),
+        reunida no{' '}
+        <a href={AVATAR_MANIFEST.upstream.repository} className={linkClassName}>
+          Universal LPC Spritesheet Character Generator
+        </a>
+        . Recortamos e recolorimos os sprites para o jogo, e cada peça mantém a
+        licença original, listada abaixo com os autores.
+      </p>
+
+      {AVATAR_MANIFEST.credits.map((credit) => (
+        <section key={credit.file} className="flex flex-col gap-1">
+          <h3>{credit.name}</h3>
+          <p className={cn(longTokenClassName, 'text-muted-foreground')}>
+            {credit.file}
+          </p>
+          {'notes' in credit && (
+            <p className={longTokenClassName}>{credit.notes}</p>
+          )}
+          <p>Autores: {credit.authors.join(', ')}</p>
+          <p>Licenças: {credit.licenses.join(', ')}</p>
+          {credit.urls.map((url) => (
+            <a
+              key={url}
+              href={url}
+              className={cn(linkClassName, longTokenClassName)}
+            >
+              {url}
+            </a>
+          ))}
+        </section>
+      ))}
+    </section>
+
+    <section className="flex flex-col gap-1">
+      <h2>Efeitos sonoros</h2>
+      <p>
+        Os efeitos sonoros foram criados para o inova.class com o{' '}
+        <a href="https://github.com/chr15m/jsfxr" className={linkClassName}>
+          jsfxr
+        </a>
+        , de Chris McCormick, versão em JavaScript do sfxr, de Tomas Pettersson.
+      </p>
+      <p>
+        Licença:{' '}
+        <a
+          href="https://creativecommons.org/publicdomain/zero/1.0/deed.pt-br"
+          className={linkClassName}
+        >
+          CC0 1.0
+        </a>
+      </p>
+    </section>
   </>
 )
 

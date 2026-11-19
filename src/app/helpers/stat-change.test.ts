@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import {
   avatarAnimationFor,
+  soundFor,
   statChangeOf,
   type StatsSnapshot
 } from './stat-change'
@@ -51,5 +52,31 @@ describe('avatarAnimationFor', () => {
 
   test('plays nothing for a change of coins alone', () => {
     expect(avatarAnimationFor({ xp: 0, hp: 0, coins: -20 })).toBeUndefined()
+  })
+})
+
+describe('soundFor', () => {
+  test('plays the level-up over every other change', () => {
+    expect(soundFor({ xp: 30, hp: -5, coins: 10, levelReached: 2 })).toBe(
+      'level-up'
+    )
+  })
+
+  test('plays hurt when the HP goes down, even with XP gained', () => {
+    expect(soundFor({ xp: 10, hp: -5, coins: 0 })).toBe('hurt')
+  })
+
+  test('plays power-up when the XP or the HP goes up, even with coins gained', () => {
+    expect(soundFor({ xp: 10, hp: 0, coins: 5 })).toBe('power-up')
+    expect(soundFor({ xp: 0, hp: 50, coins: 0 })).toBe('power-up')
+  })
+
+  test('plays coins for coins gained alone', () => {
+    expect(soundFor({ xp: 0, hp: 0, coins: 5 })).toBe('coins')
+  })
+
+  test('plays nothing for coins spent or a reversal of XP', () => {
+    expect(soundFor({ xp: 0, hp: 0, coins: -20 })).toBeUndefined()
+    expect(soundFor({ xp: -20, hp: 0, coins: 0 })).toBeUndefined()
   })
 })

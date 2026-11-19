@@ -141,7 +141,9 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 4. **A:** on the class page, click "Ranking". The students are listed by XP, with the position, the avatar, the level and the username (or the email, for a pending student). Students with the same XP share the position.
 5. **B:** the class page has no "Ranking". **A:** click "Mostrar aos alunos": it reads "Visível" and the button turns into "Ocultar dos alunos". **B:** reload: "Ranking" lists the classmates with name, level and XP only, and B's own row shows "Você".
 6. **A:** click "Ocultar dos alunos". **B:** reload: "Ranking" is gone.
-7. Turn on "Reduce motion" in the system (or emulate `prefers-reduced-motion: reduce` in the browser's DevTools) and repeat the award and a draw: the numbers and the banner fade in and out without moving, the avatar stands still and the draw shows the result straight away.
+7. **A:** with the sound on, click anywhere on the class page and apply a behavior to every student: a single power-up sound plays, however many students there are. A behavior that takes HP plays a hit, one that crosses a level plays a fanfare, and the draw result plays a chime. **B:** after a click on the class page, an award from A plays the same sounds over "Seu progresso", a refund of a reward order ("Cancelar" on "Entregas") plays a coin sound and a purchase plays nothing.
+8. **A:** click the speaker button next to "Sair": the icon shows it muted, and no sound plays. Reload: it stays muted. Click it again to turn the sound back on. **B:** the student's header has the same button, with its own choice per browser.
+9. Turn on "Reduce motion" in the system (or emulate `prefers-reduced-motion: reduce` in the browser's DevTools) and repeat the award and a draw: the numbers and the banner fade in and out without moving, the avatar stands still and the draw shows the result straight away.
 
 ## 11. Invite a student by email
 
@@ -170,7 +172,7 @@ Use a new private window for the invited student, since the invite signs them in
 
 ## 14. Credits
 
-- Open `/creditos` (also linked from the "Arte" section of `/termos`). Three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links.
+- Open `/creditos` (also linked from the "Arte" section of `/termos`). Under "Personagens", three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links. "Efeitos sonoros" credits jsfxr and the CC0 license of the sounds.
 - Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
 
 ## 15. Stop

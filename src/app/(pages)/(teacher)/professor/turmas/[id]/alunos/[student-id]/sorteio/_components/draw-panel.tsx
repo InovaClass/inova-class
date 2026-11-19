@@ -19,6 +19,7 @@ import { Card, CardHeader } from '@/app/components/ui/8bit/card'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
+import { useGameSound } from '@/app/hooks/use-game-sound'
 import { HP_MAX } from '@/constants/game'
 import type { FormState } from '@/entry/form-action'
 
@@ -102,6 +103,7 @@ const DrawResult = ({
   studentLabel: string
 }) => {
   const result = useRef<HTMLDivElement>(null)
+  useGameSound('draw', consequence)
 
   // The button that was pressed is gone, and the focus would drop to the body
   useEffect(() => {
