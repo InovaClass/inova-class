@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { SignOutForm } from './authentication/sign-out-form'
+import { SoundToggle } from './sound-toggle'
 
 export const AppHeader = ({ userName }: { userName: string }) => (
   <header className="flex flex-wrap items-center justify-end gap-6 border-b-4 border-foreground p-4 dark:border-ring">
@@ -14,6 +15,7 @@ export const AppHeader = ({ userName }: { userName: string }) => (
     <p className="hidden max-w-80 min-w-0 truncate text-xs text-muted-foreground sm:block">
       {userName}
     </p>
+    <SoundToggle />
     <SignOutForm />
   </header>
 )

@@ -52,30 +52,31 @@ Google doesn't accept wildcard redirect URIs, so Preview deployments sign in thr
 
 ## Scripts
 
-| Script                                      | What it does                                              |
-| ------------------------------------------- | --------------------------------------------------------- |
-| `pnpm dev`                                  | Start the services, migrate and run the dev server        |
-| `pnpm build`                                | Create the production build                               |
-| `pnpm start`                                | Serve the production build                                |
-| `pnpm type-check`                           | Generate route types and type-check with `tsc --noEmit`   |
-| `pnpm eslint:check` / `pnpm eslint:fix`     | Lint (and auto-fix) with ESLint                           |
-| `pnpm prettier:check` / `pnpm prettier:fix` | Check (and rewrite) formatting                            |
-| `pnpm spell:check`                          | Check spelling (English and pt-BR) with cspell            |
-| `pnpm test` / `pnpm test:watch`             | Run the Vitest unit tests                                 |
-| `pnpm test:integration`                     | Start the services, migrate and run integration tests     |
-| `pnpm test:e2e` / `pnpm test:e2e:ui`        | Run the Playwright end-to-end tests                       |
-| `pnpm services:up` / `pnpm services:stop`   | Start (detached) or stop the local services               |
-| `pnpm services:down`                        | Remove the local service containers                       |
-| `pnpm services:wait:database`               | Wait until the database accepts connections               |
-| `pnpm migrations:generate --name <name>`    | Generate a migration from the Drizzle schema              |
-| `pnpm migrations:up`                        | Apply the pending migrations                              |
-| `pnpm db:seed`                              | Fill the local database with a full scenario              |
-| `pnpm db:seed:users [teachers] [students]`  | Create verified accounts (1 and 1 by default)             |
-| `pnpm db:seed:class <teacher-email> [n]`    | Create a class for a teacher with n new students (5)      |
-| `pnpm db:seed:awards <class-id> [n]`        | Award n random behaviors in a class (10)                  |
-| `pnpm db:reset`                             | Empty every table of the local database                   |
-| `pnpm shadcn:add <name>`                    | Add a shadcn/ui component                                 |
-| `pnpm sprites:import`                       | Import the LPC avatar sprites and regenerate the manifest |
+| Script                                      | What it does                                               |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| `pnpm dev`                                  | Start the services, migrate and run the dev server         |
+| `pnpm build`                                | Create the production build                                |
+| `pnpm start`                                | Serve the production build                                 |
+| `pnpm type-check`                           | Generate route types and type-check with `tsc --noEmit`    |
+| `pnpm eslint:check` / `pnpm eslint:fix`     | Lint (and auto-fix) with ESLint                            |
+| `pnpm prettier:check` / `pnpm prettier:fix` | Check (and rewrite) formatting                             |
+| `pnpm spell:check`                          | Check spelling (English and pt-BR) with cspell             |
+| `pnpm test` / `pnpm test:watch`             | Run the Vitest unit tests                                  |
+| `pnpm test:integration`                     | Start the services, migrate and run integration tests      |
+| `pnpm test:e2e` / `pnpm test:e2e:ui`        | Run the Playwright end-to-end tests                        |
+| `pnpm services:up` / `pnpm services:stop`   | Start (detached) or stop the local services                |
+| `pnpm services:down`                        | Remove the local service containers                        |
+| `pnpm services:wait:database`               | Wait until the database accepts connections                |
+| `pnpm migrations:generate --name <name>`    | Generate a migration from the Drizzle schema               |
+| `pnpm migrations:up`                        | Apply the pending migrations                               |
+| `pnpm db:seed`                              | Fill the local database with a full scenario               |
+| `pnpm db:seed:users [teachers] [students]`  | Create verified accounts (1 and 1 by default)              |
+| `pnpm db:seed:class <teacher-email> [n]`    | Create a class for a teacher with n new students (5)       |
+| `pnpm db:seed:awards <class-id> [n]`        | Award n random behaviors in a class (10)                   |
+| `pnpm db:reset`                             | Empty every table of the local database                    |
+| `pnpm shadcn:add <name>`                    | Add a shadcn/ui component                                  |
+| `pnpm sprites:import`                       | Import the LPC avatar sprites and regenerate the manifest  |
+| `pnpm sounds:generate`                      | Synthesize the sound effects and regenerate their manifest |
 
 ## Project conventions
 
@@ -153,6 +154,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **8bitcn blocks first:** before building a page or section, check the [8bitcn blocks](https://www.8bitcn.com/docs/blocks) and port the matching one (source at `https://8bitcn.com/r/<block>.json`) onto our components and conventions, keeping its structure and spacing.
 - **Avatar:** LPC pixel art imported by `pnpm sprites:import` into `public/sprites/lpc/`, recolored at import time, with the generated manifest in `src/models/avatar/manifest.ts`, and stacked and animated with CSS by `CharacterAvatar`. Every asset is credited at `/creditos`.
 - **Gameplay animations** with [Motion](https://motion.dev): the class screens compare the stats of each render with the ones before (`useStatChanges`) and animate the avatar, the floating numbers, the level-up and the draw roulette, all of them reduced under `prefers-reduced-motion`.
+- **Sound effects:** chiptune sounds synthesized with jsfxr by `pnpm sounds:generate` into `public/sounds/` (CC0, credited at `/creditos`), played on XP, HP, level and coin changes and on the draw result, and muted per browser from the header.
 - **Dark mode** follows the system preference (`prefers-color-scheme`).
 - Links that look like buttons stay `<a>`/`Link` elements styled with `buttonVariants(...)` (or `linkButtonVariants(...)` from `ui/8bit/button`), never rendered through `Button`.
 

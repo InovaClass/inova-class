@@ -6,8 +6,10 @@ import { type ReactNode, useState } from 'react'
 import { CharacterAvatar } from '@/app/components/ui/custom/character-avatar'
 import {
   avatarAnimationFor,
+  soundFor,
   type StatsSnapshot
 } from '@/app/helpers/stat-change'
+import { useGameSound } from '@/app/hooks/use-game-sound'
 import { useStatChanges } from '@/app/hooks/use-stat-changes'
 import type { AvatarLook } from '@/models/avatar/layers'
 
@@ -39,6 +41,7 @@ export const StatsAvatar = ({
   const [endedId, setEndedId] = useState<number>()
   const animation =
     latest && latest.id !== endedId ? avatarAnimationFor(latest) : undefined
+  useGameSound(latest && soundFor(latest), latest?.id)
 
   return (
     <MotionConfig reducedMotion="user">
