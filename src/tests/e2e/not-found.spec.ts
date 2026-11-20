@@ -8,5 +8,7 @@ test('an unknown address shows the not-found page', async ({ page }) => {
   ).toBeVisible()
 
   await page.getByRole('link', { name: 'Voltar ao início' }).click()
-  await expect(page).toHaveURL('/entrar')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Sua turma em uma aventura' })
+  ).toBeVisible()
 })

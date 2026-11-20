@@ -171,6 +171,7 @@ Use a new private window for the invited student, since the invite signs them in
 - Open an address that doesn't exist (e.g. `/rota-inexistente`). It shows the same page.
 - To see the error page, stop the database (`docker compose -f src/infra/compose.yml stop database`) and reload `/professor`. It shows "Algo deu errado" with "Tentar de novo"; start the database again (`pnpm services:up`) and click "Tentar de novo" to get the dashboard back.
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
+- Signed out, open `/`. The landing page shows how XP, HP and coins work and the three character classes, each with its color under the name; "Sou professor" and "Sou aluno" lead to their sign-up pages, "Entrar" to `/entrar`, and the footer links to the terms, the privacy policy and the credits. Signed in, `/` sends you to your dashboard.
 
 ## 14. Credits
 
