@@ -294,6 +294,21 @@ describe('enrollmentModel', () => {
       expect(classes.map(({ id }) => id)).toEqual([kept.schoolClass.id])
     })
 
+    test('marks as deletable only a student the teacher created', async () => {
+      const { teacherId, schoolClass } = await newClass()
+      const createdId = await enrollByCode(schoolClass.joinCode)
+      const joinedId = await enrollByCode(schoolClass.joinCode)
+      await database
+        .update(users)
+        .set({ createdById: teacherId })
+        .where(eq(users.id, createdId))
+
+      const roster = await enrollmentModel.listRoster(teacherId, schoolClass.id)
+
+      expect(roster.find(({ id }) => id === createdId)?.deletable).toBe(true)
+      expect(roster.find(({ id }) => id === joinedId)?.deletable).toBe(false)
+    })
+
     test('sorts by name following pt-BR', async () => {
       const teacherId = await newUserId('teacher')
       const studentId = await newUserId('student')
@@ -332,6 +347,7 @@ describe('enrollmentModel', () => {
         username: null,
         pending: false,
         email: undefined,
+        deletable: false,
         hp: HP_MAX,
         coins: 0,
         progress: { level: 1, current: 0, max: 100 },

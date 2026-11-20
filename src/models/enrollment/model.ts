@@ -4,6 +4,7 @@ import { lookOf } from '@/models/character/look'
 import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { levelOf, levelProgress } from '@/models/ledger/level'
+import { accountRepo } from '@/repositories/account-repo'
 import { classRepo } from '@/repositories/class-repo'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 
@@ -67,6 +68,12 @@ const listClasses = async (studentId: string) => {
 const listRoster = async (teacherId: string, classId: string) => {
   await requireOwnedClass(teacherId, classId)
   const students = await enrollmentRepo.listEnrolledStudents(classId)
+  const deletableIds = new Set(
+    await accountRepo.listDeletableStudents(
+      teacherId,
+      students.map(({ id }) => id)
+    )
+  )
   return (
     students
       // A pending student only enters through an invite, so the teacher already has that email;
@@ -88,6 +95,7 @@ const listRoster = async (teacherId: string, classId: string) => {
           username,
           pending,
           email: pending ? email : undefined,
+          deletable: deletableIds.has(id),
           hp,
           coins,
           progress: levelProgress(xp),

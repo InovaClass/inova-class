@@ -139,6 +139,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - A student has 10 attempts with a wrong join code every 15 minutes.
 - A teacher restores an archived class at `/professor/turmas/arquivadas`, with its students and join code.
 - A teacher invites students to a class by email at `/professor/turmas/[id]/alunos/novo`; the invite link (`/convite`, 7 days) sets the password, records the terms acceptance and verifies the email.
+- Each account can be deleted at `/professor/conta` or `/aluno/conta` ("Minha conta" in the header), with the password or, for an account without one, a sign-in from the last 24 hours. A teacher's classes go with them, and a teacher deletes the account of a student they invited from the class page while the student is in no other teacher's class.
 - Google sign-in is optional (see [Google sign-in](#google-sign-in)). Signing in with Google never creates an account, only the sign-up pages do (keeping the name and email, not the picture), and Google links to an existing account only when both sides verified the same email.
 - The auth pages (`/cadastro` with the role choice, `/cadastro/professor`, `/cadastro/aluno`, `/entrar`, `/esqueci-a-senha`, `/redefinir-senha`) call the `authenticationModel` (which wraps `auth.api`) from Server Actions; `src/app/api/auth/[...all]` serves the links sent by email.
 - Emails go out over SMTP with `nodemailer` (`src/infra/email/`): Mailpit locally, Resend's SMTP when `RESEND_API_KEY` is set.

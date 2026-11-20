@@ -173,11 +173,20 @@ Use a new private window for the invited student, since the invite signs them in
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 - Signed out, open `/`. The landing page shows how XP, HP and coins work and the three character classes, each with its color under the name; "Sou professor" and "Sou aluno" lead to their sign-up pages, "Entrar" to `/entrar`, and the footer links to the terms, the privacy policy and the credits. Signed in, `/` sends you to your dashboard.
 
-## 14. Credits
+## 14. Delete an account
+
+Do this last, or with accounts created only for it (`pnpm db:seed:users 1 1`), since nothing comes back.
+
+- **A:** on a class page, invite a new email. "Excluir conta" shows up next to that student only, not next to a student who joined by code. Click it and confirm: the student leaves the list, and the invite link from Mailpit no longer works.
+- **B:** buy a reward with a limited stock, then click "Minha conta" in the header. The text says how many classes lose the progress. Type a wrong password and click "Excluir conta": "Senha incorreta." shows under the field. Type the right one: you land on `/entrar` with "Sua conta foi excluída.", and the email and username no longer sign in. **A:** the reward got its unit back, and the order is gone from "Entregas".
+- **A:** click "Minha conta". The text counts the classes (archived ones too) and the students in them. Confirming with the password deletes the classes, and every student who joined them keeps the account, without those classes. A student A invited who never accepted the invite, and who isn't in another teacher's class, is deleted too.
+- With Google sign-in on, an account created with Google has no password: "Excluir conta" opens a confirmation instead. More than 24 hours after signing in, it asks to sign in again.
+
+## 15. Credits
 
 - Open `/creditos` (also linked from the "Arte" section of `/termos`). Under "Personagens", three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links. "Efeitos sonoros" credits jsfxr and the CC0 license of the sounds.
 - Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
 
-## 15. Stop
+## 16. Stop
 
 Press `Ctrl+C` in the terminal to stop the app. The containers keep running; `pnpm services:stop` stops them and keeps the data, so the same accounts work next time.

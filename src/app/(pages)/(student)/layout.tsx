@@ -6,7 +6,7 @@ const StudentLayout = async ({ children }: LayoutProps<'/'>) => {
 
   return (
     <>
-      <AppHeader userName={user.name} />
+      <AppHeader userName={user.name} accountHref="/aluno/conta" />
       <main className="flex flex-1 flex-col gap-4 px-4 py-8">{children}</main>
     </>
   )
