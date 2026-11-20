@@ -86,7 +86,8 @@ const PrivacyPage = () => (
     <p>
       Você pode pedir a confirmação do tratamento, o acesso, a correção, a
       exclusão ou a portabilidade dos seus dados e revogar o seu consentimento.
-      Para isso, escreva para {LEGAL_CONTACT_EMAIL}. Você também pode reclamar à
+      A conta pode ser excluída em “Minha conta”, depois de entrar. Para o
+      resto, escreva para {LEGAL_CONTACT_EMAIL}. Você também pode reclamar à
       Autoridade Nacional de Proteção de Dados (ANPD).
     </p>
 

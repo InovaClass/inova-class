@@ -20,7 +20,8 @@ type SearchParams = Record<string, string | string[] | undefined>
 const noticeFrom = ({
   error,
   origem,
-  senha
+  senha,
+  conta
 }: SearchParams): FormState<never> | undefined => {
   if (typeof error === 'string' && origem !== 'google') {
     return formError(authErrorFromCode(error))
@@ -28,6 +29,7 @@ const noticeFrom = ({
   if (senha === 'redefinida') {
     return formSuccess('Senha redefinida. Entre com a nova senha.')
   }
+  if (conta === 'apagada') return formSuccess('Sua conta foi excluída.')
 }
 
 const SignInPage = async ({ searchParams }: PageProps<'/entrar'>) => {

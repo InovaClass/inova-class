@@ -42,6 +42,7 @@ type StudentRosterProps = {
     username: string | null
     pending: boolean
     email?: string
+    deletable: boolean
     hp: number
     coins: number
     progress: { level: number; current: number; max: number }
@@ -54,6 +55,7 @@ type StudentRosterProps = {
   ) => Promise<{ state: FormState; batchId?: string }>
   undoAction: (batchId: string) => Promise<FormState>
   removeAction: (studentId: string) => Promise<FormState>
+  deleteAccountAction: (studentId: string) => Promise<FormState>
   changeCharacterClassAction: (
     studentId: string,
     input: { characterClass: CharacterClass }
@@ -72,6 +74,7 @@ export const StudentRoster = ({
   awardAction,
   undoAction,
   removeAction,
+  deleteAccountAction,
   changeCharacterClassAction
 }: StudentRosterProps) => {
   // Out here because the dialog leaves with its row. This message also takes the focus, since the
@@ -172,6 +175,7 @@ export const StudentRoster = ({
                     username,
                     pending,
                     email,
+                    deletable,
                     hp,
                     coins,
                     progress,
@@ -327,6 +331,29 @@ export const StudentRoster = ({
                           }}
                           onSuccess={setFeedback}
                         />
+                        {deletable && (
+                          <ConfirmActionDialog
+                            triggerLabel={
+                              <>
+                                Excluir conta
+                                <span className="sr-only">
+                                  {' '}
+                                  de {identifyStudent(name, email ?? username)}
+                                </span>
+                              </>
+                            }
+                            title="Excluir conta do aluno?"
+                            description={`A conta de ${identifyStudent(name, email ?? username)} será apagada para sempre, com todo o progresso nas turmas. Não é possível desfazer.`}
+                            confirmLabel="Excluir conta"
+                            action={async () => {
+                              const result = await deleteAccountAction(id)
+                              if (result.status === 'error')
+                                setFeedback(IDLE_STATE)
+                              return result
+                            }}
+                            onSuccess={setFeedback}
+                          />
+                        )}
                       </div>
                     </li>
                   )

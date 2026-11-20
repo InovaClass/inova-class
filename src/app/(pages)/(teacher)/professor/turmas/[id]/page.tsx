@@ -15,6 +15,7 @@ import { rewardOrderModel } from '@/models/reward-order/model'
 import {
   awardBehavior,
   changeCharacterClass,
+  deleteStudentAccount,
   regenerateJoinCode,
   removeStudent,
   setJoinCodeEnabled,
@@ -57,6 +58,7 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
           awardAction={awardBehavior.bind(null, classId)}
           undoAction={undoAward.bind(null, classId)}
           removeAction={removeStudent.bind(null, classId)}
+          deleteAccountAction={deleteStudentAccount.bind(null, classId)}
           changeCharacterClassAction={changeCharacterClass.bind(null, classId)}
         />
       </ToastProvider>

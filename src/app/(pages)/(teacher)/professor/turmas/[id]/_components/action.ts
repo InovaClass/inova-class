@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { formAction, type FormState, formSuccess } from '@/entry/form-action'
 import { requireRole } from '@/entry/session'
+import { accountModel } from '@/models/account/model'
 import { behaviorModel } from '@/models/behavior/model'
 import { CHARACTER_CLASS_NAMES } from '@/models/character/constants'
 import { characterModel } from '@/models/character/model'
@@ -48,6 +49,17 @@ export const removeStudent = async (
     await enrollmentModel.remove(user.id, classId, studentId)
     revalidatePath('/professor', 'layout')
     return formSuccess('Aluno removido da turma.')
+  })
+
+export const deleteStudentAccount = async (
+  classId: string,
+  studentId: string
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('teacher')
+    await accountModel.deleteInvitedStudent(user.id, classId, studentId)
+    revalidatePath('/professor', 'layout')
+    return formSuccess('Conta do aluno excluída.')
   })
 
 export const changeCharacterClass = async (
