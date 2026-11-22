@@ -5,6 +5,13 @@ import { useState, useTransition } from 'react'
 
 import { Button, linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { DialogContent } from '@/app/components/ui/8bit/dialog'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle
+} from '@/app/components/ui/8bit/empty'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import {
   Dialog,
@@ -72,6 +79,7 @@ export const AwardBehaviorDialog = ({
       returns here when the dialog closes */}
       <Button
         aria-haspopup="dialog"
+        aria-expanded={open}
         disabled={selectedCount === 0}
         focusableWhenDisabled
         onClick={() => {
@@ -100,14 +108,24 @@ export const AwardBehaviorDialog = ({
             {pending ? 'Aplicando comportamento…' : ''}
           </p>
           {behaviors.length === 0 && (
-            <div className="p-1.5">
-              <Link
-                href={`/professor/turmas/${classId}/comportamentos`}
-                className={linkButtonVariants({ variant: 'outline' })}
-              >
-                Criar comportamentos
-              </Link>
-            </div>
+            <Empty className="p-0 md:p-0">
+              <EmptyHeader>
+                <EmptyTitle className="text-sm leading-relaxed">
+                  Nenhum comportamento
+                </EmptyTitle>
+                <EmptyDescription className="text-xs leading-relaxed">
+                  Crie os comportamentos da turma para aplicá-los aos alunos.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent className="p-1.5">
+                <Link
+                  href={`/professor/turmas/${classId}/comportamentos`}
+                  className={linkButtonVariants({ variant: 'outline' })}
+                >
+                  Criar comportamentos
+                </Link>
+              </EmptyContent>
+            </Empty>
           )}
           {GROUPS.map(({ kind, title }) => {
             const group = behaviors.filter((behavior) => behavior.kind === kind)

@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import { useEffect, useEffectEvent } from 'react'
 
 type LevelUpOverlayProps = {
@@ -51,10 +51,12 @@ const LevelUpBanner = ({
 // Doesn't take the focus nor block the page, since the student may be in the middle of a purchase:
 // the level is announced by the live region of the page
 export const LevelUpOverlay = ({ levelUp, onDone }: LevelUpOverlayProps) => (
-  <AnimatePresence>
-    {levelUp && (
-      // Keyed by the change, so a second level-up while one shows plays again
-      <LevelUpBanner key={levelUp.id} level={levelUp.level} onDone={onDone} />
-    )}
-  </AnimatePresence>
+  <MotionConfig reducedMotion="user">
+    <AnimatePresence>
+      {levelUp && (
+        // Keyed by the change, so a second level-up while one shows plays again
+        <LevelUpBanner key={levelUp.id} level={levelUp.level} onDone={onDone} />
+      )}
+    </AnimatePresence>
+  </MotionConfig>
 )

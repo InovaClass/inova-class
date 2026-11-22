@@ -36,7 +36,10 @@ const ToastProvider = ({ children }: { children: ReactNode }) => (
     {children}
     <Toast.Portal>
       {/* Above the bottom bar of the screens that have one */}
-      <Toast.Viewport className="fixed right-6 bottom-28 z-50 flex w-[calc(100vw-3rem)] flex-col gap-6 sm:w-md">
+      <Toast.Viewport
+        aria-label="Notificações"
+        className="fixed right-6 bottom-28 z-50 flex w-[calc(100vw-3rem)] flex-col gap-6 sm:w-md"
+      >
         <ToastList />
       </Toast.Viewport>
     </Toast.Portal>

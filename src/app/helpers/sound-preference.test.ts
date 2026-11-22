@@ -44,4 +44,12 @@ describe('sound preference', () => {
     setSoundMuted(true)
     expect(isSoundMuted()).toBe(true)
   })
+
+  test('keeps the choice in memory when only writing to the storage fails', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('full', 'QuotaExceededError')
+    })
+    setSoundMuted(true)
+    expect(isSoundMuted()).toBe(true)
+  })
 })

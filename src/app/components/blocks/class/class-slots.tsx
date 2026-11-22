@@ -46,7 +46,11 @@ export const ClassSlots = ({ classes, hrefOf }: ClassSlotsProps) => (
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Tailwind's `list-style: none` makes Safari drop the list semantics */}
+      <ul
+        role="list"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+      >
         {classes.map((schoolClass) => (
           <li key={schoolClass.id} className="min-w-0">
             {hrefOf ? (

@@ -45,7 +45,7 @@ export const SignInForm = ({ notice }: { notice?: SignInState }) => {
           labelAction={
             <Link
               href="/esqueci-a-senha"
-              className="text-xs underline-offset-4 hover:underline"
+              className="text-xs underline underline-offset-4"
             >
               Esqueci minha senha
             </Link>

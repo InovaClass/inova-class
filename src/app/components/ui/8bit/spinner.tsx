@@ -51,7 +51,7 @@ export const Spinner = ({ className, ...props }: ComponentProps<'svg'>) => (
     strokeWidth="0.25"
     role="status"
     aria-label="Carregando"
-    className={cn('size-5 animate-spin', className)}
+    className={cn('size-5 animate-spin motion-reduce:animate-none', className)}
     {...props}
   >
     {CELLS.map(([x, y]) => (

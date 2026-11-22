@@ -1,10 +1,13 @@
 const STORAGE_KEY = 'inova-class:sound-muted'
 
 const listeners = new Set<() => void>()
-// Keeps the choice for this page when the browser blocks the storage (private mode, blocked site data)
-const inMemory = { muted: false }
+// Keeps the choice for this page when the browser blocks the storage (private mode, blocked site
+// data, a full quota). A failed write also wins over a read that works, or the stored value would
+// undo the choice
+const inMemory = { muted: false, writeFailed: false }
 
 export const isSoundMuted = () => {
+  if (inMemory.writeFailed) return inMemory.muted
   try {
     return localStorage.getItem(STORAGE_KEY) === 'true'
   } catch {
@@ -17,8 +20,9 @@ export const setSoundMuted = (muted: boolean) => {
   try {
     if (muted) localStorage.setItem(STORAGE_KEY, 'true')
     else localStorage.removeItem(STORAGE_KEY)
+    inMemory.writeFailed = false
   } catch {
-    // Already kept in `inMemory`, which `isSoundMuted` falls back to
+    inMemory.writeFailed = true
   }
   for (const listener of listeners) listener()
 }

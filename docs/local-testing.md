@@ -98,7 +98,7 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 4. **A:** click "Remover" next to it and confirm. It shows "Comportamento removido." and the behavior is gone.
 5. **A:** create another class. It starts with the default behaviors, without the ones you changed in the first class.
 6. **A:** on the page of a class with students, check "Selecionar todos" (or some of the students), click "Aplicar comportamento" and pick one. A toast confirms it, the selection clears and each student shows the new XP, HP and coins, with the values floating over the avatar ("+10 XP", the coins, "Nv. 2!" across a level), which plays its `cast` animation once. A behavior that takes HP floats "-5 HP" and plays `hurt`.
-7. **A:** click "Desfazer" in the toast, within 15 seconds. It shows "Aplicação desfeita." and the values go back to what they were.
+7. **A:** click "Desfazer" in the toast, within 15 seconds (from the keyboard: F6, then Tab twice). It shows "Aplicação desfeita." and the values go back to what they were.
 8. **A:** apply a behavior that takes a student across a level (100 XP for level 2) and undo it: the level and the coins of the level bonus go back too.
 9. **A:** on the class page, click "Histórico". Each student of an award has a row with the behavior, the values, the date and who applied it, and an undone award shows "Revertido".
 10. **A:** apply a behavior again, let the toast go, and click "Histórico" on that student's row. Only that student is listed. Click "Reverter" and confirm: it shows "Lançamento revertido.", the row shows "Revertido" and the values on the class page go back, level bonus included.
@@ -119,7 +119,7 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 25. **A:** without reloading the class page, the "Pedidos" button shows the count of pending requests. Click it: the request is listed with the student, the power, the cost and the date. Click "Aprovar" and confirm: it shows "Pedido aprovado. As moedas foram descontadas.", the class page shows the coins of B down by the cost and "Histórico" lists "Poder: ..." without "Reverter".
 26. **B:** request a power again. **A:** click "Recusar" on "Pedidos": it shows "Pedido recusado. As moedas reservadas foram liberadas." and the coins of B don't change.
 27. **B:** request a power. **A:** remove B from the class: the request leaves "Pedidos", and if B comes back through the join code the coins aren't reserved anymore.
-28. **A:** on the class page, click "Recompensas". The default rewards are listed with their price and stock ("Sem limite de estoque" when blank).
+28. **A:** on the class page, click "Recompensas". Under "Lista da turma", the default rewards are listed with their price and stock ("Sem limite de estoque" when blank).
 29. **A:** click "Nova recompensa", fill in "Nome", type `5` in "Preço em moedas" and `1` in "Estoque (opcional)", and submit. Edit it and save: the list shows the new values.
 30. **B:** reload the class page. "Loja" lists the rewards, with "Moedas disponíveis" above them, which already leave out the coins reserved by pending power requests (a note says how many when there are any). A reward the coins don't cover shows "Moedas insuficientes" and the others have a "Comprar" button; the new one shows "Última unidade". **A:** the list shows "1 unidade em estoque".
 31. **B:** with enough coins (apply "Ajudou um colega" from A), click "Comprar" on the new reward and confirm. It shows "Recompensa comprada. Aguarde o professor entregar.", the coins go down by the price right away, the reward shows "Esgotada" and "Meus pedidos" lists it as "Aguardando entrega".
@@ -184,7 +184,7 @@ Do this last, or with accounts created only for it (`pnpm db:seed:users 1 1`), s
 
 ## 15. Credits
 
-- Open `/creditos` (also linked from the "Arte" section of `/termos`). Under "Personagens", three characters, a warrior, a mage and a healer, breathe in their idle animation, and every LPC asset is listed below them with its authors, licenses and links. "Efeitos sonoros" credits jsfxr and the CC0 license of the sounds.
+- Open `/creditos` (also linked from the "Arte" section of `/termos`). Under "Personagens", three characters, a warrior, a mage and a healer, stand still in their first idle frame, and every LPC asset is listed below them with its authors, licenses and links. "Efeitos sonoros" credits jsfxr and the CC0 license of the sounds.
 - Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
 
 ## 16. Stop
