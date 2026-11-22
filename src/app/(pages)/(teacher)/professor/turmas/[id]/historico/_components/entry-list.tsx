@@ -58,6 +58,10 @@ export const EntryList = ({
                   className="w-fit wrap-anywhere underline underline-offset-4"
                 >
                   {entry.studentName}
+                  {/* Two students may share a name */}
+                  <span className="sr-only">
+                    {entry.studentLabel.slice(entry.studentName.length)}
+                  </span>
                 </Link>
               )}
               <p>{entry.values}</p>

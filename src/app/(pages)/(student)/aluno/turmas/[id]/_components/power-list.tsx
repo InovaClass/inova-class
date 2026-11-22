@@ -4,6 +4,12 @@ import { cn } from 'cn'
 import { useState } from 'react'
 
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle
+} from '@/app/components/ui/8bit/empty'
 import { ActionButton } from '@/app/components/ui/custom/action-button'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
@@ -105,9 +111,16 @@ export const PowerList = ({
           </section>
         )}
         {powers.length === 0 ? (
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Sua classe ainda não tem poderes nesta turma.
-          </p>
+          <Empty className="p-0 md:p-0">
+            <EmptyHeader>
+              <EmptyTitle className="text-sm leading-relaxed">
+                Nenhum poder
+              </EmptyTitle>
+              <EmptyDescription className="text-xs leading-relaxed">
+                Sua classe ainda não tem poderes nesta turma.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           // Tailwind's `list-style: none` makes Safari drop the list semantics
           <ul role="list" className="flex flex-col gap-6">

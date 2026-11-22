@@ -51,7 +51,7 @@ const CreditsPage = () => (
 
       <div className="flex flex-wrap justify-center gap-4">
         {SAMPLE_LOOKS.map((look) => (
-          <CharacterAvatar key={look.characterClass} look={look} />
+          <CharacterAvatar key={look.characterClass} look={look} still />
         ))}
       </div>
 

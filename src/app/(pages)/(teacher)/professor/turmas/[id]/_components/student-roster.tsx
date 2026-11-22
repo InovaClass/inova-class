@@ -115,9 +115,12 @@ export const StudentRoster = ({
       setCheckedIds(new Set())
       const toastId = toast.add({
         title: state.message,
-        // The toast sits at the end of the document, and F6 is Base UI's shortcut to it
+        // The toast sits at the end of the document, and F6 is Base UI's shortcut to it: F6 focuses
+        // the region, the first Tab the toast and the second its action
         description: (
-          <span className="max-md:sr-only">F6 leva ao botão Desfazer.</span>
+          <span className="max-md:sr-only">
+            F6 e depois Tab duas vezes levam ao botão Desfazer.
+          </span>
         ),
         timeout: UNDO_TIMEOUT_IN_MS,
         actionProps: {
@@ -158,6 +161,7 @@ export const StudentRoster = ({
               <label className="flex w-fit cursor-pointer items-center gap-4 p-1.5 text-xs leading-relaxed">
                 <Checkbox
                   checked={allSelected}
+                  indeterminate={selectedIds.length > 0 && !allSelected}
                   onCheckedChange={(checked) =>
                     setCheckedIds(
                       new Set(checked ? students.map(({ id }) => id) : [])

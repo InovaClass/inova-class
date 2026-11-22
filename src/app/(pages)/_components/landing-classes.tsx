@@ -85,6 +85,7 @@ export const LandingClasses = () => (
                 <CharacterAvatar
                   look={SHOWCASES[characterClass].look}
                   scale={3}
+                  still
                 />
                 <h3
                   className={cn(

@@ -8,7 +8,7 @@ const TermsLinks = () => (
       target="_blank"
       className="underline underline-offset-4"
     >
-      Termos de Uso
+      Termos de Uso<span className="sr-only"> (abre em nova aba)</span>
     </Link>{' '}
     e a{' '}
     <Link
@@ -17,6 +17,7 @@ const TermsLinks = () => (
       className="underline underline-offset-4"
     >
       Política de Privacidade
+      <span className="sr-only"> (abre em nova aba)</span>
     </Link>
   </>
 )

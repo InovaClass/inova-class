@@ -3,6 +3,12 @@
 import { useState } from 'react'
 
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle
+} from '@/app/components/ui/8bit/empty'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
@@ -79,9 +85,16 @@ export const RewardShop = ({
         </div>
         <FormMessage state={feedback} />
         {rewards.length === 0 ? (
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            O professor ainda não colocou recompensas na loja.
-          </p>
+          <Empty className="p-0 md:p-0">
+            <EmptyHeader>
+              <EmptyTitle className="text-sm leading-relaxed">
+                Nenhuma recompensa
+              </EmptyTitle>
+              <EmptyDescription className="text-xs leading-relaxed">
+                O professor ainda não colocou recompensas na loja.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           // Tailwind's `list-style: none` makes Safari drop the list semantics
           <ul role="list" className="flex flex-col gap-6">

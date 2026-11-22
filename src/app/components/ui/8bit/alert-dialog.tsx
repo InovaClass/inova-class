@@ -20,7 +20,7 @@ const AlertDialogContent = ({
     className={cn(
       // `pixel-border` sets `position: relative`, which would take the dialog out of the viewport's
       // center. The narrower width keeps the frame, drawn outside the box, on a phone's screen
-      'pixel-border fixed! block w-[calc(100%-3rem)] rounded-none p-0 retro ring-0',
+      'pixel-border fixed! block w-[calc(100%-3rem)] rounded-none p-0 retro ring-0 motion-reduce:data-open:zoom-in-100 motion-reduce:data-closed:zoom-out-100',
       className
     )}
     {...props}
