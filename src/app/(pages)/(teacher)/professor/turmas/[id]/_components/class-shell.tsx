@@ -10,6 +10,7 @@ type ClassShellProps = {
   schoolClass: { id: string; name: string; description: string | null }
   pendingRequests: number
   pendingOrders: number
+  pendingSubmissions: number
   children: ReactNode
 }
 
@@ -18,6 +19,7 @@ export const ClassShell = ({
   schoolClass,
   pendingRequests,
   pendingOrders,
+  pendingSubmissions,
   children
 }: ClassShellProps) => (
   <>
@@ -69,6 +71,14 @@ export const ClassShell = ({
           className={linkButtonVariants({ variant: 'outline' })}
         >
           Missões
+        </Link>
+        <Link
+          href={`/professor/turmas/${schoolClass.id}/missoes/entregas`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          {pendingSubmissions > 0
+            ? `Entregas de missões (${pendingSubmissions})`
+            : 'Entregas de missões'}
         </Link>
         <Link
           href={`/professor/turmas/${schoolClass.id}/recompensas`}

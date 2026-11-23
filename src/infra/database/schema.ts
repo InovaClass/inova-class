@@ -17,6 +17,7 @@ import {
 import {
   HP_MAX,
   LEDGER_ENTRY_TYPES,
+  OBJECTIVE_SUBMISSION_STATUSES,
   POWER_REQUEST_STATUSES,
   REWARD_ORDER_STATUSES
 } from '@/constants/game'
@@ -315,6 +316,50 @@ export const ledgerEntries = snakeCase.table(
     index().on(table.enrollmentId, table.createdAt),
     index().on(table.parentEntryId),
     index().on(table.batchId)
+  ]
+)
+
+// One row per submission, so a returned one stays next to the one that replaced it. A row without
+// `text` is an objective the teacher completed without a submission. `ledgerEntryId` is the
+// `quest_reward` entry of the approval, kept when its reversal returns the submission (#95)
+export const objectiveSubmissions = snakeCase.table(
+  'objective_submissions',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    enrollmentId: uuid()
+      .notNull()
+      .references(() => enrollments.id, { onDelete: 'cascade' }),
+    objectiveId: uuid()
+      .notNull()
+      .references(() => objectives.id, { onDelete: 'cascade' }),
+    text: text(),
+    link: text(),
+    status: text({ enum: OBJECTIVE_SUBMISSION_STATUSES })
+      .notNull()
+      .default('pending'),
+    teacherComment: text(),
+    ledgerEntryId: uuid().references(() => ledgerEntries.id, {
+      onDelete: 'cascade'
+    }),
+    decidedById: uuid().references(() => users.id, { onDelete: 'set null' }),
+    decidedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    index().on(table.enrollmentId, table.objectiveId),
+    index().on(table.objectiveId),
+    // A second click never sends the same objective twice, nor pays it twice
+    uniqueIndex('objective_submissions_open_unique')
+      .on(table.enrollmentId, table.objectiveId)
+      .where(sql`${table.status} in ('pending', 'approved')`),
+    check(
+      'objective_submissions_text_check',
+      sql`${table.status} <> 'pending' or ${table.text} is not null`
+    ),
+    check(
+      'objective_submissions_ledger_entry_check',
+      sql`${table.status} <> 'approved' or ${table.ledgerEntryId} is not null`
+    )
   ]
 )
 

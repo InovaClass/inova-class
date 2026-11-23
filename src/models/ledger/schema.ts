@@ -5,8 +5,9 @@ import { LEDGER_ENTRY_TYPES } from '@/constants/game'
 export const ledgerEntrySchema = z
   .object({
     enrollmentId: z.uuid(),
-    // A level bonus only comes from the entry that crossed the level
-    type: z.enum(LEDGER_ENTRY_TYPES).exclude(['level_bonus']),
+    // A level bonus only comes from the entry that crossed the level, and a late penalty from the
+    // reward of the objective
+    type: z.enum(LEDGER_ENTRY_TYPES).exclude(['level_bonus', 'quest_penalty']),
     xpDelta: z.int(),
     hpDelta: z.int(),
     coinDelta: z.int(),

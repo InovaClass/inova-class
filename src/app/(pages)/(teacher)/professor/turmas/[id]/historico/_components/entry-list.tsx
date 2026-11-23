@@ -11,7 +11,7 @@ export type HistoryEntry = {
   id: string
   title: string
   values: string
-  bonus?: string
+  derived: string[]
   date: string
   authorName: string | null
   studentId: string
@@ -65,7 +65,9 @@ export const EntryList = ({
                 </Link>
               )}
               <p>{entry.values}</p>
-              {entry.bonus && <p>{entry.bonus}</p>}
+              {entry.derived.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
               <p className="wrap-anywhere text-muted-foreground">
                 {entry.date}
                 {entry.authorName && `, por ${entry.authorName}`}

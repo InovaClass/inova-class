@@ -3,6 +3,7 @@ import { behaviorModel } from '@/models/behavior/model'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
 import { missionModel } from '@/models/mission/model'
+import { objectiveSubmissionModel } from '@/models/objective-submission/model'
 import { powerRequestModel } from '@/models/power-request/model'
 import { rewardOrderModel } from '@/models/reward-order/model'
 
@@ -108,18 +109,65 @@ const createMission = async (
     name,
     description: 'Uma aventura em várias etapas.'
   })
+  const objectiveIds: string[] = []
   for (const objective of SEED_OBJECTIVES.slice(0, objectives)) {
-    await missionModel.createObjective(
+    const { id } = await missionModel.createObjective(
       teacher.id,
       schoolClass.id,
       mission.id,
       objective
     )
+    objectiveIds.push(id)
   }
   if (publish) {
     await missionModel.publish(teacher.id, schoolClass.id, mission.id)
   }
-  return name
+  return { name, id: mission.id, objectiveIds }
+}
+
+const submitObjective = async (
+  student: SeedUser,
+  schoolClass: SeedClass,
+  objectiveId: string
+) =>
+  objectiveSubmissionModel.submit(student.id, schoolClass.id, objectiveId, {
+    text: 'Pesquisei na biblioteca e anotei o caminho no caderno.',
+    link: 'https://example.com/trabalho'
+  })
+
+// One student per state of a submission, so the teacher's list and the history have one of each
+const submitMissionWork = async (
+  teacher: SeedUser,
+  schoolClass: SeedClass,
+  mission: { id: string; objectiveIds: string[] },
+  [pendingFirst, approvedFirst, returnedFirst, completedFirst]: SeedUser[]
+) => {
+  const [first, second] = mission.objectiveIds as [string, string]
+  await submitObjective(pendingFirst!, schoolClass, first)
+
+  const approved = await submitObjective(approvedFirst!, schoolClass, first)
+  await objectiveSubmissionModel.approve(
+    teacher.id,
+    schoolClass.id,
+    approved.id
+  )
+  await submitObjective(approvedFirst!, schoolClass, second)
+
+  const returned = await submitObjective(returnedFirst!, schoolClass, first)
+  await objectiveSubmissionModel.returnSubmission(
+    teacher.id,
+    schoolClass.id,
+    returned.id,
+    { comment: 'Faltou dizer para onde o mapa leva.' }
+  )
+
+  await objectiveSubmissionModel.complete(
+    teacher.id,
+    schoolClass.id,
+    mission.id,
+    first,
+    { studentIds: [completedFirst!.id] }
+  )
 }
 
 await runOnLocalDatabase(async () => {
@@ -169,6 +217,13 @@ await runOnLocalDatabase(async () => {
     objectives: 1,
     publish: false
   })
+  const missionStudents = students.slice(2, 6) as SeedUser[]
+  await submitMissionWork(
+    firstTeacher,
+    fullClass,
+    publishedMission,
+    missionStudents
+  )
 
   const second = await createClass(firstTeacher)
   await enroll(second, students.slice(8, 10))
@@ -253,15 +308,31 @@ await runOnLocalDatabase(async () => {
           ],
           [fallen!.username!, `Sem HP em ${fullClass.name}`],
           [withoutCharacter!.username!, `Sem personagem em ${fullClass.name}`],
-          [removed!.username!, `Removido de ${fullClass.name}`]
+          [removed!.username!, `Removido de ${fullClass.name}`],
+          [
+            missionStudents[0]!.username!,
+            `Enviou o 1º objetivo de ${publishedMission.name}, à espera da aprovação`
+          ],
+          [
+            missionStudents[1]!.username!,
+            `Teve o 1º objetivo de ${publishedMission.name} aprovado e enviou o 2º`
+          ],
+          [
+            missionStudents[2]!.username!,
+            `Teve o 1º objetivo de ${publishedMission.name} devolvido com comentário`
+          ],
+          [
+            missionStudents[3]!.username!,
+            `Teve o 1º objetivo de ${publishedMission.name} concluído pelo professor`
+          ]
         ]
       },
       {
         title: 'Missões',
         header: ['Missão', 'Turma', 'Situação'],
         rows: [
-          [publishedMission, fullClass.name, 'Publicada, com 3 objetivos'],
-          [draftMission, fullClass.name, 'Rascunho, com 1 objetivo']
+          [publishedMission.name, fullClass.name, 'Publicada, com 3 objetivos'],
+          [draftMission.name, fullClass.name, 'Rascunho, com 1 objetivo']
         ]
       },
       {

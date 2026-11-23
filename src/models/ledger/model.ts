@@ -9,10 +9,12 @@ import { isItemId, ITEM_CATALOG } from '@/models/item/constants'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 import {
   type Balances,
+  type EntryPlan,
   ledgerRepo,
   type RecordedEntry,
   type Transaction
 } from '@/repositories/ledger-repo'
+import { objectiveSubmissionRepo } from '@/repositories/objective-submission-repo'
 
 import { applyDeltas, applyReversals } from './balance'
 import { HISTORY_PAGE_SIZE } from './constants'
@@ -41,9 +43,14 @@ const isId = (id: string) => z.uuid().safeParse(id).success
 const announce = (classId: string) => classEventModel.publish(classId, 'ledger')
 
 // A purchase, a power or an HP restore has a flow of its own (#17, #20, #21, #32), and a level
-// bonus only leaves together with its entry
+// bonus or a late penalty only leaves together with its entry
+const REVERSIBLE_TYPES: Set<LedgerEntryType> = new Set([
+  'behavior',
+  'quest_reward'
+])
+
 const canReverse = (type: LedgerEntryType, enrollmentEndedAt: Date | null) =>
-  type === 'behavior' && !enrollmentEndedAt
+  REVERSIBLE_TYPES.has(type) && !enrollmentEndedAt
 
 const planEntry =
   ({ requireCoins, ...entry }: ParsedEntry) =>
@@ -250,6 +257,86 @@ const refundReward = async (
   await announce(recorded.classId)
 }
 
+type QuestPayment = {
+  objectiveId: string
+  xp: number
+  coins: number
+  createdById: string
+}
+
+// The penalty is an entry derived from the reward, after its level bonuses, so reversing the reward
+// also gives the penalty back (#95). It goes through the same limits, so it only takes what there is
+const planQuest = (
+  { objectiveId, xp, coins, createdById }: QuestPayment,
+  penalty?: { coins: number; hp: number }
+) => {
+  // The values come from the objective, which its own schema and check constraints keep valid
+  const entry: ParsedEntry = {
+    type: 'quest_reward',
+    xpDelta: xp,
+    hpDelta: 0,
+    coinDelta: coins,
+    sourceId: objectiveId,
+    createdById,
+    requireCoins: false
+  }
+  const plan = planEntry(entry)
+  return (balances: Balances): EntryPlan => {
+    const rewarded = plan(balances)
+    if (!penalty) return rewarded
+    const { applied, balances: next } = applyDeltas(rewarded.balances, {
+      xpDelta: 0,
+      hpDelta: -penalty.hp,
+      coinDelta: -penalty.coins
+    })
+    return {
+      ...rewarded,
+      derivedEntries: [
+        ...rewarded.derivedEntries,
+        { type: 'quest_penalty', ...applied, createdById }
+      ],
+      balances: next
+    }
+  }
+}
+
+// `confirm` runs in the same transaction, so the entry and the approval of the submission go together
+const payQuest = async (
+  enrollmentId: string,
+  payment: QuestPayment,
+  penalty: { coins: number; hp: number } | undefined,
+  confirm: (transaction: Transaction, entryId: string) => Promise<void>
+) => {
+  const recorded = await ledgerRepo.record(
+    enrollmentId,
+    planQuest(payment, penalty),
+    confirm
+  )
+  if (!recorded) throw studentNotInClass()
+  await announce(recorded.classId)
+  return recorded.classId
+}
+
+// One batch for every student, so the teacher's completion reaches all of them or none. `confirm`
+// runs under the lock of each enrollment
+const payQuestBatch = async (
+  enrollmentIds: string[],
+  payment: QuestPayment,
+  confirm: (
+    transaction: Transaction,
+    enrollmentId: string,
+    entryId: string
+  ) => Promise<void>
+) => {
+  const plan = planQuest(payment)
+  const recorded = await ledgerRepo.recordBatch(
+    new Map(enrollmentIds.map((id) => [id, plan])),
+    confirm
+  )
+  if (!recorded) throw studentNotInClass()
+  await Promise.all(recorded.classIds.map((classId) => announce(classId)))
+}
+
 const planReversals =
   (createdById: string) => (balances: Balances, entries: RecordedEntry[]) => {
     const { applied, balances: next } = applyReversals(balances, entries)
@@ -270,10 +357,22 @@ const reverseBatch = async (
   batchId: string,
   createdById: string
 ) => {
+  const plan = planReversals(createdById)
   const result = await ledgerRepo.reverseBatch(
     classId,
     batchId,
-    planReversals(createdById)
+    (balances, entries) => {
+      // Only an award is undone as a batch: a completed objective is reversed per student from the
+      // history, which also returns the submission
+      if (
+        entries.some(
+          ({ type }) => type !== 'behavior' && type !== 'level_bonus'
+        )
+      ) {
+        throw batchNotFound()
+      }
+      return plan(balances, entries)
+    }
   )
   if (result === 'not_found') throw batchNotFound()
   if (result === 'already_reversed') throw batchAlreadyReversed()
@@ -290,6 +389,7 @@ const reverseEntry = async (
   if (!isId(entryId)) throw entryNotFound()
 
   const plan = planReversals(teacherId)
+  let reversedType: LedgerEntryType | undefined
   const result = await ledgerRepo.reverseEntry(
     schoolClass.id,
     entryId,
@@ -298,12 +398,21 @@ const reverseEntry = async (
       if (!target || !canReverse(target.type, endedAt)) {
         throw entryNotReversible()
       }
+      reversedType = target.type
       return plan(balances, entries)
+    },
+    // The objective goes back to the student, who can send it again
+    async (transaction) => {
+      if (reversedType !== 'quest_reward') return
+      await objectiveSubmissionRepo.returnPaid(transaction, entryId, teacherId)
     }
   )
   if (result === 'not_found') throw entryNotFound()
   if (result === 'already_reversed') throw entryAlreadyReversed()
   await announce(schoolClass.id)
+  if (reversedType === 'quest_reward') {
+    await classEventModel.publish(schoolClass.id, 'mission')
+  }
 }
 
 const listPage = async (
@@ -399,6 +508,7 @@ const listStudentHistory = async (
       powerName: entry.powerName,
       rewardName: entry.rewardName,
       itemName: entry.itemName,
+      objectiveName: entry.objectiveName,
       derivedEntries: entry.derivedEntries,
       reversals: entry.reversals
     }))
@@ -413,6 +523,8 @@ export const ledgerModel = {
   spendOnReward,
   spendOnItem,
   refundReward,
+  payQuest,
+  payQuestBatch,
   reverseBatch,
   reverseEntry,
   listHistory,

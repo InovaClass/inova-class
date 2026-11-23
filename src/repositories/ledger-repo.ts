@@ -8,6 +8,7 @@ import {
   consequences,
   enrollments,
   ledgerEntries,
+  objectives,
   ownedItems,
   powers,
   rewards,
@@ -128,9 +129,15 @@ const record = async (
     return { ...recorded, classId: locked.classId }
   })
 
-// All or nothing: a batch never reaches only part of the students
+// All or nothing: a batch never reaches only part of the students. `afterWrite` runs under the lock
+// of each enrollment and may throw to cancel the whole batch
 const recordBatch = async (
-  plans: Map<string, (balances: Balances) => EntryPlan>
+  plans: Map<string, (balances: Balances) => EntryPlan>,
+  afterWrite?: (
+    transaction: Transaction,
+    enrollmentId: string,
+    entryId: string
+  ) => Promise<void>
 ) =>
   database.transaction(async (transaction) => {
     const locked = await lockBalances(transaction, plans.keys().toArray())
@@ -138,12 +145,13 @@ const recordBatch = async (
 
     const batchId = crypto.randomUUID()
     for (const row of locked) {
-      await writePlan(
+      const recorded = await writePlan(
         transaction,
         row.id,
         plans.get(row.id)!(balancesOf(row)),
         batchId
       )
+      await afterWrite?.(transaction, row.id, recorded.entry.id)
     }
     return {
       batchId,
@@ -229,7 +237,7 @@ const reverseBatch = async (
     return 'reversed' as const
   })
 
-// `plan` may throw to cancel the transaction
+// `plan` and `afterWrite` may throw to cancel the transaction
 const reverseEntry = async (
   classId: string,
   entryId: string,
@@ -237,7 +245,8 @@ const reverseEntry = async (
     balances: Balances,
     entries: RecordedEntry[],
     enrollment: { endedAt: Date | null }
-  ) => ReversalPlan
+  ) => ReversalPlan,
+  afterWrite?: (transaction: Transaction) => Promise<void>
 ) =>
   database.transaction(async (transaction) => {
     const entryAndDerived = or(
@@ -273,6 +282,7 @@ const reverseEntry = async (
       enrollmentId,
       plan(balances, entries, { endedAt })
     )
+    await afterWrite?.(transaction)
     return 'reversed' as const
   })
 
@@ -310,6 +320,7 @@ const listHistory = async (
       powerName: powers.name,
       rewardName: rewards.name,
       itemId: ownedItems.itemId,
+      objectiveName: objectives.name,
       authorName: entryAuthors.name
     })
     .from(ledgerEntries)
@@ -348,6 +359,13 @@ const listHistory = async (
       and(
         eq(ownedItems.id, ledgerEntries.sourceId),
         eq(ledgerEntries.type, 'item_purchase')
+      )
+    )
+    .leftJoin(
+      objectives,
+      and(
+        eq(objectives.id, ledgerEntries.sourceId),
+        eq(ledgerEntries.type, 'quest_reward')
       )
     )
     .leftJoin(entryAuthors, eq(entryAuthors.id, ledgerEntries.createdById))

@@ -26,7 +26,7 @@ The screens of a class update by themselves when XP, HP, coins, a power request 
 
 To skip signing up by hand, the seed scripts create verified accounts and write their credentials to `seed-credentials.md` at the root of the repository (git-ignored). Every account shares the password shown in the file, and a student signs in with the username too. They only run against the local database:
 
-- `pnpm db:seed`: two teachers and their classes, with students who already have a character, a behavior history, a student who leveled up and is in two classes, one without HP, one without a character, one removed, a pending invite (its link is in the file) and an archived class.
+- `pnpm db:seed`: two teachers and their classes, with students who already have a character, a behavior history, a student who leveled up and is in two classes, one without HP, one without a character, one removed, a pending invite (its link is in the file), an archived class and a published mission with a submission in each state (pending, approved, returned and completed by the teacher).
 - `pnpm db:seed:users 1 4`: one teacher and four students, without classes (1 and 1 without arguments).
 - `pnpm db:seed:class <teacher-email> 5`: a new class for that teacher with five new students, each with a character.
 - `pnpm db:seed:awards <class-id> 10`: ten random behaviors awarded in the class (the class id is in the file and in the URL of the class page).
@@ -138,6 +138,9 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 44. **A:** create a second objective. Click "Subir" on it: it becomes the first one, and the focus stays on its "Descer". Edit an objective and save: the list shows the new values, in the same place.
 45. **A:** click "Publicar missão": it shows "Missão publicada. Os alunos já podem vê-la." and the button is gone. Remove one objective; removing the last one shows that a published mission needs an objective.
 46. **A:** click "Voltar às missões": the mission is under "Publicadas" with its count of objectives. Edit its name, then remove it and confirm: it shows "Missão removida." and the mission is gone.
+47. **A:** create and publish a mission with an objective. On the mission page, "Concluir" appears next to each objective (a draft has none). Click it: the page lists the students of the class. Click "Concluir" without selecting anyone: it says to select a student. Select B and submit: it shows "...: concluído para 1 aluno." and B leaves the list. "Histórico" lists "Objetivo: ..." with the reward. Click "Reverter" on it and confirm: the "Concluir" page lists B again.
+48. **A:** the student's form to send an objective comes with #96, so use the class of `pnpm db:seed` for the next steps. On its class page, "Entregas de missões" shows the count of pending submissions. Click it: each submission shows the objective, the mission, the student, the text, the link (which opens in a new tab), the date and the reward.
+49. **A:** click "Devolver" on one, submit without a comment (it asks for one), write a comment and submit: it shows "Entrega devolvida ao aluno com o seu comentário." and the row leaves. Click "Aprovar" on another: it shows "Entrega aprovada. A recompensa foi lançada.", the row leaves and the class page shows the new XP of the student. A submission sent after the due date shows "Atrasada" with the penalty, and its approval also lists "Multa por atraso: ..." under the entry in "Histórico". Reversing that entry gives the penalty back.
 
 ## 10. Progress, history and ranking
 

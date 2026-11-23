@@ -14,6 +14,7 @@ import {
 import { CardContent, CardTitle } from '@/app/components/ui/shadcn/card'
 import {
   describeDeltas,
+  describeDerivedEntries,
   entryTitle,
   sumDeltas
 } from '@/app/helpers/ledger-entry'
@@ -90,11 +91,10 @@ const StudentHistoryPage = async ({
                   >
                     <p className="wrap-anywhere">{entryTitle(entry)}</p>
                     <p>{describeDeltas(entry)}</p>
-                    {entry.derivedEntries.length > 0 && (
-                      <p>
-                        Bônus de nível:{' '}
-                        {describeDeltas(sumDeltas(entry.derivedEntries))}
-                      </p>
+                    {describeDerivedEntries(entry.derivedEntries).map(
+                      (line) => (
+                        <p key={line}>{line}</p>
+                      )
                     )}
                     <p className="text-muted-foreground">
                       {dateFormat.format(entry.createdAt)}
