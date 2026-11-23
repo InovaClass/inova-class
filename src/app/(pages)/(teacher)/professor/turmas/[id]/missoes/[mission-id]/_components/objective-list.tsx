@@ -36,6 +36,8 @@ type Objective = {
 
 type ObjectiveListProps = {
   objectivesPath: string
+  // Only a published mission's objectives can be completed, since a draft is hidden from the students
+  published: boolean
   objectives: Objective[]
   moveAction: (
     objectiveId: string,
@@ -55,6 +57,7 @@ const MOVE_LABELS: Record<MoveDirection, string> = {
 
 export const ObjectiveList = ({
   objectivesPath,
+  published,
   objectives,
   moveAction,
   removeAction
@@ -174,6 +177,15 @@ export const ObjectiveList = ({
                           <span className="sr-only"> {objective.name}</span>
                         </ActionButton>
                       ))}
+                      {published && (
+                        <Link
+                          href={`${objectivesPath}/${objective.id}/concluir`}
+                          className={linkButtonVariants({ variant: 'outline' })}
+                        >
+                          Concluir
+                          <span className="sr-only"> {objective.name}</span>
+                        </Link>
+                      )}
                       <Link
                         href={`${objectivesPath}/${objective.id}/editar`}
                         className={linkButtonVariants({ variant: 'outline' })}

@@ -27,7 +27,7 @@ test('a teacher builds a mission, orders its objectives and publishes it', async
   await signUpTeacher(page)
   await createClass(page)
 
-  await page.getByRole('link', { name: 'Missões' }).click()
+  await page.getByRole('link', { name: 'Missões', exact: true }).click()
   await page.getByRole('link', { name: 'Nova missão' }).click()
   await page.getByLabel('Nome').fill('A floresta sombria')
   await page.getByRole('button', { name: 'Criar missão' }).click()

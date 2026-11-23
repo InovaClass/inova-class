@@ -65,6 +65,7 @@ const MissionPage = async ({
       />
       <ObjectiveList
         objectivesPath={objectivesPath}
+        published={mission.published}
         objectives={objectives}
         moveAction={moveObjective.bind(null, classId, missionId)}
         removeAction={removeObjective.bind(null, classId, missionId)}

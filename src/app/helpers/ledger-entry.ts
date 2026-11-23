@@ -10,6 +10,8 @@ const ENTRY_TITLES: Record<LedgerEntryType, string> = {
   item_purchase: 'Compra de item',
   power: 'Poder',
   hp_restore: 'HP restaurado',
+  quest_reward: 'Objetivo',
+  quest_penalty: 'Multa por atraso',
   reversal: 'Reversão'
 }
 
@@ -20,6 +22,7 @@ export const entryTitle = (entry: {
   powerName: string | null
   rewardName: string | null
   itemName: string | null
+  objectiveName: string | null
 }) => {
   if (entry.consequenceName) return `Consequência: ${entry.consequenceName}`
   if (entry.powerName) return `Poder: ${entry.powerName}`
@@ -27,6 +30,7 @@ export const entryTitle = (entry: {
     return `${ENTRY_TITLES[entry.type]}: ${entry.rewardName}`
   }
   if (entry.itemName) return `${ENTRY_TITLES[entry.type]}: ${entry.itemName}`
+  if (entry.objectiveName) return `Objetivo: ${entry.objectiveName}`
   return entry.behaviorName ?? ENTRY_TITLES[entry.type]
 }
 
@@ -45,3 +49,12 @@ export const sumDeltas = (entries: Deltas[]) => {
   }
   return total
 }
+
+// One line per kind of derived entry, since a reward may bring both level bonuses and a late penalty
+export const describeDerivedEntries = (
+  entries: (Deltas & { type: LedgerEntryType })[]
+) =>
+  [...new Set(entries.map(({ type }) => type))].map(
+    (type) =>
+      `${ENTRY_TITLES[type]}: ${describeDeltas(sumDeltas(entries.filter((entry) => entry.type === type)))}`
+  )

@@ -8,6 +8,8 @@ export const LEDGER_ENTRY_TYPES = [
   'item_purchase',
   'power',
   'hp_restore',
+  'quest_reward',
+  'quest_penalty',
   'reversal'
 ] as const
 
@@ -29,3 +31,12 @@ export const REWARD_ORDER_STATUSES = [
 ] as const
 
 export type RewardOrderStatus = (typeof REWARD_ORDER_STATUSES)[number]
+
+export const OBJECTIVE_SUBMISSION_STATUSES = [
+  'pending',
+  'approved',
+  'returned'
+] as const
+
+export type ObjectiveSubmissionStatus =
+  (typeof OBJECTIVE_SUBMISSION_STATUSES)[number]
