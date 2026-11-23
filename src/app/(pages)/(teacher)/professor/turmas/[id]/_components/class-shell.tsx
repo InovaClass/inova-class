@@ -65,6 +65,12 @@ export const ClassShell = ({
           {pendingRequests > 0 ? `Pedidos (${pendingRequests})` : 'Pedidos'}
         </Link>
         <Link
+          href={`/professor/turmas/${schoolClass.id}/missoes`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Missões
+        </Link>
+        <Link
           href={`/professor/turmas/${schoolClass.id}/recompensas`}
           className={linkButtonVariants({ variant: 'outline' })}
         >

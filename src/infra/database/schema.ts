@@ -3,6 +3,7 @@ import {
   type AnyPgColumn,
   boolean,
   check,
+  date,
   index,
   integer,
   snakeCase,
@@ -223,6 +224,62 @@ export const powers = snakeCase.table(
     index().on(table.classId, table.characterClass),
     check('powers_cost_check', sql`${table.cost} > 0`),
     check('powers_min_level_check', sql`${table.minLevel} >= 1`)
+  ]
+)
+
+// Only the objectives have an order: missions are listed drafts first, then by creation (#94).
+// Removing one sets `removedAt`, since ledger entries will point to its objectives (#95)
+export const missions = snakeCase.table(
+  'missions',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    classId: uuid()
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    description: text(),
+    publishedAt: timestamp({ withTimezone: true }),
+    removedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [index().on(table.classId)]
+)
+
+// `position` isn't unique: a swap would break the index halfway, and a removed objective keeps its
+// own. The writes that change the order lock the mission row instead. `dueOn` is a day, since the
+// teacher picks one: a submission is late when its date in `America/Sao_Paulo` is after it (#95)
+export const objectives = snakeCase.table(
+  'objectives',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    missionId: uuid()
+      .notNull()
+      .references(() => missions.id, { onDelete: 'cascade' }),
+    position: integer().notNull(),
+    name: text().notNull(),
+    story: text().notNull(),
+    dueOn: date({ mode: 'string' }),
+    xpReward: integer().notNull(),
+    coinReward: integer().notNull(),
+    latePenaltyCoins: integer().notNull(),
+    latePenaltyHp: integer().notNull(),
+    removedAt: timestamp({ withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    index().on(table.missionId, table.position),
+    check(
+      'objectives_reward_check',
+      sql`${table.xpReward} >= 0 and ${table.coinReward} >= 0 and ${table.xpReward} + ${table.coinReward} > 0`
+    ),
+    check(
+      'objectives_late_penalty_check',
+      sql`${table.latePenaltyCoins} >= 0 and ${table.latePenaltyHp} between 0 and ${sql.raw(String(HP_MAX))}`
+    ),
+    check(
+      'objectives_due_on_check',
+      sql`${table.dueOn} is not null or (${table.latePenaltyCoins} = 0 and ${table.latePenaltyHp} = 0)`
+    )
   ]
 )
 

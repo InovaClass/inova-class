@@ -26,6 +26,7 @@ esbenp
 esbuild
 esnext
 evenodd
+Firestore
 frontmatter
 gamificada
 gamified
@@ -39,6 +40,7 @@ jsfxr
 LGPD
 longsleeve
 mailpit
+missoes
 mousedown
 nvmrc
 oklch
