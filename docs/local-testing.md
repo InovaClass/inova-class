@@ -90,7 +90,7 @@ To go through sign-up itself:
 
 To see the error of a failed restore, open `/professor/turmas/arquivadas` in two tabs of browser A and restore the class in the first one. In the second, click "Restaurar" too: it shows "Não encontramos essa turma."
 
-## 9. Behaviors, consequences, powers, rewards and items
+## 9. Behaviors, consequences, powers, rewards, items and missions
 
 1. **A:** on the class page, click "Comportamentos". The default behaviors are listed under "Positivos" and "Negativos", each with what it gives or takes (e.g. "+10 XP, +5 moedas").
 2. **A:** click "Novo comportamento", fill in "Nome", type `10` in "XP" and `-5` in "HP", and submit. "HP" shows that the values must be all positive or all negative. Clear "HP" and submit: the behavior shows up under "Positivos".
@@ -132,6 +132,12 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 38. **B:** join a second class of A and choose a character there. "Itens" shows the bandana as "Comprado", without a price, ready to equip.
 39. **A:** with B a mage wearing "Chapéu de mago", click "Trocar classe" on the roster and pick another class. **B:** reload: the hat left the character and shows "Só para Mago", and the other equipped items stay.
 40. **A:** on "Recompensas", click "Fechar loja de itens": it reads "Fechada" and the button turns into "Abrir loja de itens". **B:** reload: "Itens" says the shop is closed, lists only the items B owns and still puts them on and takes them off. The second class keeps its shop open.
+41. **A:** on the class page, click "Missões". "Rascunhos" and "Publicadas" are empty. Click "Nova missão", fill in "Nome" and submit: the mission page opens, saying it's a draft.
+42. **A:** click "Publicar missão": it shows "A missão ainda não tem objetivos.".
+43. **A:** click "Novo objetivo", fill in "Nome", "História" and `20` in "XP da recompensa", type `5` in "HP tirado no atraso" and submit. "HP tirado no atraso" says to set the due date. Pick a date in "Prazo (opcional)" and submit: the objective is listed with the date, "Recompensa: +20 XP" and "Atraso: -5 HP".
+44. **A:** create a second objective. Click "Subir" on it: it becomes the first one, and the focus stays on its "Descer". Edit an objective and save: the list shows the new values, in the same place.
+45. **A:** click "Publicar missão": it shows "Missão publicada. Os alunos já podem vê-la." and the button is gone. Remove one objective; removing the last one shows that a published mission needs an objective.
+46. **A:** click "Voltar às missões": the mission is under "Publicadas" with its count of objectives. Edit its name, then remove it and confirm: it shows "Missão removida." and the mission is gone.
 
 ## 10. Progress, history and ranking
 

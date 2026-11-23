@@ -5,10 +5,12 @@ import { type SubmitEvent, useState, useTransition } from 'react'
 import {
   type DefaultValues,
   type FieldError,
+  type FieldErrors,
   type FieldValues,
   get,
   type Path,
   type Resolver,
+  type ResolverOptions,
   useForm
 } from 'react-hook-form'
 import type { z } from 'zod'
@@ -49,6 +51,31 @@ const firstMessageOf = (errors: object): string | undefined => {
   }
 }
 
+// A date typed only in part reports a blank value, which the schema would take as no date at all
+const INCOMPLETE_DATE_MESSAGE = 'Complete a data ou apague o que foi digitado.'
+
+const withIncompleteDates =
+  <TValues extends FieldValues>(
+    resolver: Resolver<TValues>
+  ): Resolver<TValues> =>
+  async (values, context, options: ResolverOptions<TValues>) => {
+    const incomplete = Object.values(options.fields).filter(
+      ({ ref }) =>
+        ref instanceof HTMLInputElement &&
+        ref.type === 'date' &&
+        ref.validity.badInput
+    )
+    const result = await resolver(values, context, options)
+    if (incomplete.length === 0) return result
+    const errors = { ...result.errors } as FieldErrors<TValues>
+    for (const { name } of incomplete) {
+      Object.assign(errors, {
+        [name]: { type: 'badInput', message: INCOMPLETE_DATE_MESSAGE }
+      })
+    }
+    return { values: {}, errors }
+  }
+
 export const useFormAction = <
   TValues extends FieldValues,
   TState extends FormState<TValues> = FormState<TValues>
@@ -66,9 +93,11 @@ export const useFormAction = <
 
   const form = useForm<TValues>({
     // `raw` hands the action the input as typed: the model parses it again
-    resolver: zodResolver(schema, undefined, {
-      raw: true
-    }) as unknown as Resolver<TValues>,
+    resolver: withIncompleteDates(
+      zodResolver(schema, undefined, {
+        raw: true
+      }) as unknown as Resolver<TValues>
+    ),
     defaultValues,
     mode: 'onTouched'
   })

@@ -2,6 +2,7 @@ import { HP_MAX } from '@/constants/game'
 import { behaviorModel } from '@/models/behavior/model'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
+import { missionModel } from '@/models/mission/model'
 import { powerRequestModel } from '@/models/power-request/model'
 import { rewardOrderModel } from '@/models/reward-order/model'
 
@@ -63,6 +64,64 @@ const buyFirstReward = async (schoolClass: SeedClass, student: SeedUser) => {
   return reward
 }
 
+const SEED_OBJECTIVES = [
+  {
+    name: 'O mapa rasgado',
+    story:
+      'Um mercador deixou metade de um mapa na taverna. Descubra para onde ele leva.',
+    dueOn: '',
+    xpReward: '20',
+    coinReward: '5',
+    latePenaltyCoins: '',
+    latePenaltyHp: ''
+  },
+  {
+    name: 'A ponte do rio',
+    story: 'A ponte caiu na última tempestade. Planeje como atravessar o rio.',
+    dueOn: '2026-12-15',
+    xpReward: '30',
+    coinReward: '',
+    latePenaltyCoins: '5',
+    latePenaltyHp: '5'
+  },
+  {
+    name: 'O guardião da torre',
+    story: 'O guardião só abre o portão para quem responder ao seu enigma.',
+    dueOn: '',
+    xpReward: '50',
+    coinReward: '10',
+    latePenaltyCoins: '',
+    latePenaltyHp: ''
+  }
+]
+
+const createMission = async (
+  teacher: SeedUser,
+  schoolClass: SeedClass,
+  {
+    name,
+    objectives,
+    publish
+  }: { name: string; objectives: number; publish: boolean }
+) => {
+  const mission = await missionModel.create(teacher.id, schoolClass.id, {
+    name,
+    description: 'Uma aventura em várias etapas.'
+  })
+  for (const objective of SEED_OBJECTIVES.slice(0, objectives)) {
+    await missionModel.createObjective(
+      teacher.id,
+      schoolClass.id,
+      mission.id,
+      objective
+    )
+  }
+  if (publish) {
+    await missionModel.publish(teacher.id, schoolClass.id, mission.id)
+  }
+  return name
+}
+
 await runOnLocalDatabase(async () => {
   const [firstTeacher, secondTeacher] = (await createUsers('teacher', 2)) as [
     SeedUser,
@@ -100,6 +159,16 @@ await runOnLocalDatabase(async () => {
   const boughtReward = await buyFirstReward(fullClass, leveledUp!)
   await enrollmentModel.remove(firstTeacher.id, fullClass.id, removed!.id)
   const pending = await invitePendingStudent(firstTeacher, fullClass)
+  const publishedMission = await createMission(firstTeacher, fullClass, {
+    name: 'A torre perdida',
+    objectives: 3,
+    publish: true
+  })
+  const draftMission = await createMission(firstTeacher, fullClass, {
+    name: 'O vale das sombras',
+    objectives: 1,
+    publish: false
+  })
 
   const second = await createClass(firstTeacher)
   await enroll(second, students.slice(8, 10))
@@ -185,6 +254,14 @@ await runOnLocalDatabase(async () => {
           [fallen!.username!, `Sem HP em ${fullClass.name}`],
           [withoutCharacter!.username!, `Sem personagem em ${fullClass.name}`],
           [removed!.username!, `Removido de ${fullClass.name}`]
+        ]
+      },
+      {
+        title: 'Missões',
+        header: ['Missão', 'Turma', 'Situação'],
+        rows: [
+          [publishedMission, fullClass.name, 'Publicada, com 3 objetivos'],
+          [draftMission, fullClass.name, 'Rascunho, com 1 objetivo']
         ]
       },
       {
