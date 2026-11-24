@@ -17,7 +17,13 @@ import {
   studentAlreadySubmitted,
   submissionNotFound
 } from './errors'
-import { isAvailable, isLate, latePenaltyOf } from './rules'
+import {
+  currentObjectiveIndex,
+  isAvailable,
+  isLate,
+  latePenaltyOf,
+  objectiveStatesOf
+} from './rules'
 import {
   type CompleteObjectiveInput,
   completeObjectiveSchema,
@@ -240,6 +246,82 @@ const complete = async (
   return { objectiveName: objective.name, studentCount: enrollmentIds.length }
 }
 
+type StudentMissionRows = NonNullable<
+  Awaited<ReturnType<typeof objectiveSubmissionRepo.listMissionsOfStudent>>
+>
+
+// A locked objective gives only its name: the story is the next part of the adventure
+const missionsOf = ({ rows, latestSubmissions }: StudentMissionRows) => {
+  const latest = new Map(
+    latestSubmissions.map((submission) => [submission.objectiveId, submission])
+  )
+  const rowsByMission = Map.groupBy(rows, ({ mission }) => mission.id)
+  return rowsByMission
+    .values()
+    .map((missionRows) => {
+      const { mission } = missionRows[0]!
+      const states = objectiveStatesOf(
+        missionRows.map(({ objective }) => objective.id),
+        new Map(
+          missionRows.flatMap(({ objective }) => {
+            const submission = latest.get(objective.id)
+            return submission
+              ? [[objective.id, submission.status] as const]
+              : []
+          })
+        )
+      )
+      const objectives = missionRows.map(({ objective }, index) => {
+        const state = states[index]!
+        if (state === 'locked') {
+          return { id: objective.id, name: objective.name, state }
+        }
+        const submission = latest.get(objective.id)
+        return {
+          ...objective,
+          state,
+          submission: submission && {
+            text: submission.text,
+            link: submission.link,
+            teacherComment: submission.teacherComment
+          }
+        }
+      })
+      return {
+        ...mission,
+        objectiveCount: objectives.length,
+        approvedCount: states.filter((state) => state === 'approved').length,
+        currentObjective: objectives[currentObjectiveIndex(states)],
+        objectives
+      }
+    })
+    .toArray()
+}
+
+const listMissionsForStudent = async (studentId: string, classId: string) => {
+  if (!isId(classId)) return
+  const found = await objectiveSubmissionRepo.listMissionsOfStudent(
+    studentId,
+    classId
+  )
+  return found && missionsOf(found)
+}
+
+// `undefined` for a draft, a removed mission and one of another class alike
+const findMissionForStudent = async (
+  studentId: string,
+  classId: string,
+  missionId: string
+) => {
+  if (!isId(classId) || !isId(missionId)) return
+  const found = await objectiveSubmissionRepo.listMissionsOfStudent(
+    studentId,
+    classId,
+    missionId
+  )
+  return found && missionsOf(found)[0]
+}
+
 export const objectiveSubmissionModel = {
   submit,
   approve,
@@ -247,5 +329,7 @@ export const objectiveSubmissionModel = {
   listPending,
   countPending,
   listCompletable,
-  complete
+  complete,
+  listMissionsForStudent,
+  findMissionForStudent
 }
