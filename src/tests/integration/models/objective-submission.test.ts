@@ -55,7 +55,8 @@ const newScenario = async (
   )
   const { id: missionId } = await missionModel.create(teacherId, classId, {
     name: 'A floresta',
-    description: ''
+    description: '',
+    map: 'forest'
   })
   const objectiveIds: string[] = []
   for (const fields of objectives) {
@@ -191,7 +192,8 @@ describe('objectiveSubmissionModel', () => {
       const { teacherId, classId, studentId } = await newScenario()
       const { id: draftId } = await missionModel.create(teacherId, classId, {
         name: 'Rascunho',
-        description: ''
+        description: '',
+        map: 'forest'
       })
       const { id: objectiveId } = await missionModel.createObjective(
         teacherId,
@@ -546,7 +548,8 @@ describe('objectiveSubmissionModel', () => {
       const other = await newScenario()
       const { id: draftId } = await missionModel.create(teacherId, classId, {
         name: 'Rascunho',
-        description: ''
+        description: '',
+        map: 'forest'
       })
       await missionModel.createObjective(
         teacherId,

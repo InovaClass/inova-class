@@ -1,0 +1,1 @@
+ALTER TABLE "missions" ADD COLUMN "map" text DEFAULT 'forest' NOT NULL;

@@ -21,7 +21,7 @@
     "db:seed:class": "tsx --env-file=.env.development src/tests/seed/class.ts",
     "db:seed:awards": "tsx --env-file=.env.development src/tests/seed/awards.ts",
     "db:reset": "tsx --env-file=.env.development src/tests/seed/reset.ts",
-    "sprites:import": "node src/infra/scripts/import-lpc-sprites.ts",
+    "sprites:import": "node src/infra/scripts/import-lpc-sprites.ts && node src/infra/scripts/import-lpc-maps.ts",
     "sounds:generate": "node src/infra/scripts/generate-sounds.ts",
     "test": "vitest --run --project unit",
     "test:watch": "vitest --project unit",

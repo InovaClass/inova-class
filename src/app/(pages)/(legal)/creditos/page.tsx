@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { CharacterAvatar } from '@/app/components/ui/custom/character-avatar'
 import type { AvatarLook } from '@/models/avatar/layers'
 import { AVATAR_MANIFEST } from '@/models/avatar/manifest'
+import { MAP_MANIFEST } from '@/models/mission/map-manifest'
 
 export const metadata: Metadata = { title: 'Créditos' }
 
@@ -42,6 +43,32 @@ const linkClassName = 'underline underline-offset-4'
 // Paths and URLs have no spaces to break at on a phone
 const longTokenClassName = 'wrap-anywhere'
 
+type Credit = {
+  name: string
+  file: string
+  notes?: string
+  authors: readonly string[]
+  licenses: readonly string[]
+  urls: readonly string[]
+}
+
+const CreditEntry = ({ credit }: { credit: Credit }) => (
+  <section className="flex flex-col gap-1">
+    <h3>{credit.name}</h3>
+    <p className={cn(longTokenClassName, 'text-muted-foreground')}>
+      {credit.file}
+    </p>
+    {credit.notes && <p className={longTokenClassName}>{credit.notes}</p>}
+    <p>Autores: {credit.authors.join(', ')}</p>
+    <p>Licenças: {credit.licenses.join(', ')}</p>
+    {credit.urls.map((url) => (
+      <a key={url} href={url} className={cn(linkClassName, longTokenClassName)}>
+        {url}
+      </a>
+    ))}
+  </section>
+)
+
 const CreditsPage = () => (
   <>
     <h1>Créditos</h1>
@@ -66,26 +93,24 @@ const CreditsPage = () => (
       </p>
 
       {AVATAR_MANIFEST.credits.map((credit) => (
-        <section key={credit.file} className="flex flex-col gap-1">
-          <h3>{credit.name}</h3>
-          <p className={cn(longTokenClassName, 'text-muted-foreground')}>
-            {credit.file}
-          </p>
-          {'notes' in credit && (
-            <p className={longTokenClassName}>{credit.notes}</p>
-          )}
-          <p>Autores: {credit.authors.join(', ')}</p>
-          <p>Licenças: {credit.licenses.join(', ')}</p>
-          {credit.urls.map((url) => (
-            <a
-              key={url}
-              href={url}
-              className={cn(linkClassName, longTokenClassName)}
-            >
-              {url}
-            </a>
-          ))}
-        </section>
+        <CreditEntry key={credit.file} credit={credit} />
+      ))}
+    </section>
+
+    <section className="flex flex-col gap-6">
+      <h2>Mapas</h2>
+
+      <p>
+        Os mapas das missões são montados com tiles do Liberated Pixel Cup
+        (LPC), reunidos no{' '}
+        <a href={MAP_MANIFEST.upstream.repository} className={linkClassName}>
+          LPC Starter Kit para RPG Maker MZ
+        </a>
+        . Cada peça mantém a licença original, listada abaixo com os autores.
+      </p>
+
+      {MAP_MANIFEST.credits.map((credit) => (
+        <CreditEntry key={credit.name} credit={credit} />
       ))}
     </section>
 

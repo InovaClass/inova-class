@@ -1,5 +1,8 @@
 export const HP_MAX = 50
 
+// A map of the catalog in `src/models/mission/maps.ts`, here since the database default uses it too
+export const DEFAULT_MISSION_MAP = 'forest'
+
 export const LEDGER_ENTRY_TYPES = [
   'behavior',
   'level_bonus',

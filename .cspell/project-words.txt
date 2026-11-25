@@ -21,6 +21,7 @@ diasjoaovitor
 diasjoaovitors
 dramp
 dtos
+Eddeland
 elia
 esbenp
 esbuild
@@ -37,11 +38,14 @@ historico
 inovaclass
 joao
 jsfxr
+Lanea
 LGPD
 longsleeve
 mailpit
+MINSTD
 missoes
 mousedown
+Nushio
 nvmrc
 oklch
 openssl
@@ -54,10 +58,14 @@ retint
 sfxr
 shadcn
 shadcn's
+Sharm
 spellcast
 spritesheet
 spritesheets
 tailwindcss
+Thompsonj
+tileset
+tilesets
 timestamptz
 ulpc
 unequip

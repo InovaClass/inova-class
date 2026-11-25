@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { MissionMap } from '@/app/(pages)/(student)/_components/mission-map'
 import { StudentStats } from '@/app/(pages)/(student)/_components/student-stats'
 import { describeMissionProgress } from '@/app/(pages)/(student)/mission-links'
 import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
@@ -55,6 +56,14 @@ const StudentMissionPage = async ({
         progress={enrollment.progress}
         hp={enrollment.hp}
         coins={enrollment.coins}
+      />
+      <MissionMap
+        map={mission.map}
+        states={mission.objectives.map(({ state }) => state)}
+        currentIndex={mission.objectives.findIndex(
+          ({ id }) => id === mission.currentObjective?.id
+        )}
+        look={enrollment.look}
       />
       <ObjectiveList
         objectives={mission.objectives}

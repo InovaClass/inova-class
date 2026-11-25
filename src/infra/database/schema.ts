@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core'
 
 import {
+  DEFAULT_MISSION_MAP,
   HP_MAX,
   LEDGER_ENTRY_TYPES,
   OBJECTIVE_SUBMISSION_STATUSES,
@@ -239,6 +240,9 @@ export const missions = snakeCase.table(
       .references(() => classes.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     description: text(),
+    // Not listed in the database, since an import can change the catalog: the schema validates it.
+    // The default only fills the missions created before #97
+    map: text().notNull().default(DEFAULT_MISSION_MAP),
     publishedAt: timestamp({ withTimezone: true }),
     removedAt: timestamp({ withTimezone: true }),
     ...timestamps

@@ -2,6 +2,7 @@ import { HP_MAX } from '@/constants/game'
 import { behaviorModel } from '@/models/behavior/model'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
+import type { MissionMapId } from '@/models/mission/maps'
 import { missionModel } from '@/models/mission/model'
 import { objectiveSubmissionModel } from '@/models/objective-submission/model'
 import { powerRequestModel } from '@/models/power-request/model'
@@ -101,13 +102,15 @@ const createMission = async (
   schoolClass: SeedClass,
   {
     name,
+    map,
     objectives,
     publish
-  }: { name: string; objectives: number; publish: boolean }
+  }: { name: string; map: MissionMapId; objectives: number; publish: boolean }
 ) => {
   const mission = await missionModel.create(teacher.id, schoolClass.id, {
     name,
-    description: 'Uma aventura em várias etapas.'
+    description: 'Uma aventura em várias etapas.',
+    map
   })
   const objectiveIds: string[] = []
   for (const objective of SEED_OBJECTIVES.slice(0, objectives)) {
@@ -209,11 +212,13 @@ await runOnLocalDatabase(async () => {
   const pending = await invitePendingStudent(firstTeacher, fullClass)
   const publishedMission = await createMission(firstTeacher, fullClass, {
     name: 'A torre perdida',
+    map: 'forest',
     objectives: 3,
     publish: true
   })
   const draftMission = await createMission(firstTeacher, fullClass, {
     name: 'O vale das sombras',
+    map: 'snow',
     objectives: 1,
     publish: false
   })

@@ -75,7 +75,7 @@ Google doesn't accept wildcard redirect URIs, so Preview deployments sign in thr
 | `pnpm db:seed:awards <class-id> [n]`        | Award n random behaviors in a class (10)                   |
 | `pnpm db:reset`                             | Empty every table of the local database                    |
 | `pnpm shadcn:add <name>`                    | Add a shadcn/ui component                                  |
-| `pnpm sprites:import`                       | Import the LPC avatar sprites and regenerate the manifest  |
+| `pnpm sprites:import`                       | Import the LPC sprites and maps, regenerate the manifests  |
 | `pnpm sounds:generate`                      | Synthesize the sound effects and regenerate their manifest |
 
 ## Project conventions
@@ -155,6 +155,7 @@ The full conventions live in [`AGENTS.md`](./AGENTS.md), and the step-by-step fl
 - **8-bit components** in `src/app/components/ui/8bit/` are hand-ported from [8bitcn](https://github.com/theorcdev/8bitcn-ui) (MIT) onto Base UI, with a credit comment in each file, and are what pages build on. A port wraps our shadcn component only when the upstream one wraps shadcn. 8bitcn is built on Radix, so it's never installed through the shadcn CLI. Ports avoid `'use client'` unless they can't work without it.
 - **8bitcn blocks first:** before building a page or section, check the [8bitcn blocks](https://www.8bitcn.com/docs/blocks) and port the matching one (source at `https://8bitcn.com/r/<block>.json`) onto our components and conventions, keeping its structure and spacing.
 - **Avatar:** LPC pixel art imported by `pnpm sprites:import` into `public/sprites/lpc/`, recolored at import time, with the generated manifest in `src/models/avatar/manifest.ts`, and stacked and animated with CSS by `CharacterAvatar`. Every asset is credited at `/creditos`.
+- **Mission maps:** backgrounds composed from LPC terrain tiles by the same `pnpm sprites:import` into `public/sprites/maps/`, with the generated manifest in `src/models/mission/map-manifest.ts`, also credited at `/creditos`.
 - **Gameplay animations** with [Motion](https://motion.dev): the class screens compare the stats of each render with the ones before (`useStatChanges`) and animate the avatar, the floating numbers, the level-up and the draw roulette, all of them reduced under `prefers-reduced-motion`.
 - **Sound effects:** chiptune sounds synthesized with jsfxr by `pnpm sounds:generate` into `public/sounds/` (CC0, credited at `/creditos`), played on XP, HP, level and coin changes and on the draw result, and muted per browser from the header.
 - **Dark mode** follows the system preference (`prefers-color-scheme`).
@@ -219,4 +220,4 @@ Never put the key in `.mcp.json` or in `.claude/settings.json`, since both are c
 
 ## License
 
-[MIT](./LICENSE). The avatar sprites in `public/sprites/lpc/` keep their own licenses (CC-BY-SA, GPL or OGA-BY per piece), listed with their authors at `/creditos`.
+[MIT](./LICENSE). The avatar sprites in `public/sprites/lpc/` and the mission maps in `public/sprites/maps/` keep their own licenses (CC-BY-SA, GPL or OGA-BY per piece), listed with their authors at `/creditos`.

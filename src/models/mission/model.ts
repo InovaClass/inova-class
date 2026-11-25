@@ -11,6 +11,7 @@ import {
   missionWithoutObjectives,
   objectiveNotFound
 } from './errors'
+import { mapIdOf } from './maps'
 import { moveItem } from './order'
 import {
   type MissionInput,
@@ -27,8 +28,9 @@ type MissionRow = NonNullable<
   Awaited<ReturnType<typeof missionRepo.findActive>>
 >
 
-const missionOf = ({ publishedAt, ...mission }: MissionRow) => ({
+const missionOf = ({ publishedAt, map, ...mission }: MissionRow) => ({
   ...mission,
+  map: mapIdOf(map),
   published: publishedAt !== null
 })
 

@@ -10,6 +10,7 @@ import {
   OBJECTIVE_STORY_MAX_LENGTH,
   OBJECTIVE_XP_MAX
 } from './constants'
+import { MISSION_MAP_IDS } from './maps'
 import { MOVE_DIRECTIONS } from './order'
 
 // Imported by the client forms too, so it must not import anything server-only
@@ -30,7 +31,8 @@ export const missionSchema = z.object({
       MISSION_DESCRIPTION_MAX_LENGTH,
       `A descrição pode ter no máximo ${MISSION_DESCRIPTION_MAX_LENGTH} caracteres.`
     )
-    .transform((description) => description || null)
+    .transform((description) => description || null),
+  map: z.enum(MISSION_MAP_IDS, { error: 'Escolha um mapa.' })
 })
 export type MissionInput = z.input<typeof missionSchema>
 
