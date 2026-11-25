@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest'
 
-import { isAvailable, isLate, latePenaltyOf } from './rules'
+import {
+  currentObjectiveIndex,
+  isAvailable,
+  isLate,
+  latePenaltyOf,
+  objectiveStatesOf
+} from './rules'
 
 describe('isLate', () => {
   test('is on time until the end of the due date in São Paulo', () => {
@@ -67,5 +73,69 @@ describe('isAvailable', () => {
     expect(isAvailable(objectiveIds, new Set(objectiveIds), 'other')).toBe(
       false
     )
+  })
+})
+
+describe('objectiveStatesOf', () => {
+  const objectiveIds = ['first', 'second', 'third']
+
+  test('opens only the first objective before any submission', () => {
+    expect(objectiveStatesOf(objectiveIds, new Map())).toEqual([
+      'available',
+      'locked',
+      'locked'
+    ])
+  })
+
+  test('takes the state of the latest submission and opens the next objective', () => {
+    expect(
+      objectiveStatesOf(
+        objectiveIds,
+        new Map([
+          ['first', 'approved'],
+          ['second', 'pending']
+        ])
+      )
+    ).toEqual(['approved', 'pending', 'available'])
+  })
+
+  test('opens the next objective after a returned one', () => {
+    expect(
+      objectiveStatesOf(objectiveIds, new Map([['first', 'returned']]))
+    ).toEqual(['returned', 'available', 'locked'])
+  })
+
+  test('locks a returned objective whose previous one has no submission', () => {
+    expect(
+      objectiveStatesOf(objectiveIds, new Map([['second', 'returned']]))
+    ).toEqual(['available', 'locked', 'available'])
+  })
+
+  test('keeps a pending or approved objective even when the previous one has no submission', () => {
+    expect(
+      objectiveStatesOf(
+        objectiveIds,
+        new Map([
+          ['second', 'approved'],
+          ['third', 'pending']
+        ])
+      )
+    ).toEqual(['available', 'approved', 'pending'])
+  })
+})
+
+describe('currentObjectiveIndex', () => {
+  test('points to the first objective the student can send', () => {
+    expect(
+      currentObjectiveIndex(['approved', 'pending', 'returned', 'locked'])
+    ).toBe(2)
+  })
+
+  test('points to the first pending objective when there is nothing to send', () => {
+    expect(currentObjectiveIndex(['approved', 'pending', 'pending'])).toBe(1)
+  })
+
+  test('is -1 once every objective is approved', () => {
+    expect(currentObjectiveIndex(['approved', 'approved'])).toBe(-1)
   })
 })

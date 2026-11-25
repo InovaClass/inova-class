@@ -3,6 +3,7 @@ import {
   type AnyColumn,
   asc,
   count,
+  desc,
   eq,
   exists,
   inArray,
@@ -23,6 +24,7 @@ import {
   users
 } from '@/infra/database/schema'
 
+import { activeEnrollmentOf } from './character-repo'
 import type { Transaction } from './ledger-repo'
 
 export type SubmissionState = {
@@ -327,6 +329,77 @@ const listCompletable = async (classId: string, objectiveId: string) => {
     .orderBy(asc(users.name), asc(users.id))
 }
 
+// The latest submission is enough: each send is a new row, and only the last one decides the
+// objective's state
+const listMissionsOfStudent = async (
+  studentId: string,
+  classId: string,
+  missionId?: string
+) => {
+  const [enrollment] = await database
+    .select({ id: enrollments.id })
+    .from(enrollments)
+    .where(activeEnrollmentOf(studentId, classId))
+  if (!enrollment) return
+
+  const rows = await database
+    .select({
+      mission: {
+        id: missions.id,
+        name: missions.name,
+        description: missions.description
+      },
+      objective: {
+        id: objectives.id,
+        name: objectives.name,
+        story: objectives.story,
+        dueOn: objectives.dueOn,
+        xpReward: objectives.xpReward,
+        coinReward: objectives.coinReward,
+        latePenaltyCoins: objectives.latePenaltyCoins,
+        latePenaltyHp: objectives.latePenaltyHp
+      }
+    })
+    .from(objectives)
+    .innerJoin(missions, eq(missions.id, objectives.missionId))
+    .where(
+      and(
+        activeObjectiveOfClass(classId),
+        missionId === undefined ? undefined : eq(missions.id, missionId)
+      )
+    )
+    .orderBy(
+      asc(missions.createdAt),
+      asc(missions.id),
+      asc(objectives.position),
+      asc(objectives.id)
+    )
+  if (rows.length === 0) return { rows, latestSubmissions: [] }
+  const objectiveIds = rows.map(({ objective }) => objective.id)
+
+  const latestSubmissions = await database
+    .selectDistinctOn([objectiveSubmissions.objectiveId], {
+      objectiveId: objectiveSubmissions.objectiveId,
+      status: objectiveSubmissions.status,
+      text: objectiveSubmissions.text,
+      link: objectiveSubmissions.link,
+      teacherComment: objectiveSubmissions.teacherComment
+    })
+    .from(objectiveSubmissions)
+    .where(
+      and(
+        eq(objectiveSubmissions.enrollmentId, enrollment.id),
+        inArray(objectiveSubmissions.objectiveId, objectiveIds)
+      )
+    )
+    .orderBy(
+      objectiveSubmissions.objectiveId,
+      desc(objectiveSubmissions.createdAt),
+      desc(objectiveSubmissions.id)
+    )
+  return { rows, latestSubmissions }
+}
+
 export const objectiveSubmissionRepo = {
   submit,
   findPending,
@@ -335,5 +408,6 @@ export const objectiveSubmissionRepo = {
   returnPaid,
   listPendingOfClass,
   countPendingOfOwnedClass,
-  listCompletable
+  listCompletable,
+  listMissionsOfStudent
 }

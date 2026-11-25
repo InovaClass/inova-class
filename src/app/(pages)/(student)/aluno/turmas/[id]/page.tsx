@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { MissionSummaryList } from '@/app/(pages)/(student)/_components/mission-summary-list'
+import { StudentStats } from '@/app/(pages)/(student)/_components/student-stats'
 import { ClassEventsRefresh } from '@/app/components/blocks/class/class-events-refresh'
 import { Leaderboard } from '@/app/components/blocks/class/leaderboard'
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
@@ -15,6 +17,7 @@ import type { CharacterInput } from '@/models/character/schema'
 import { enrollmentModel } from '@/models/enrollment/model'
 import { itemModel } from '@/models/item/model'
 import { equipItem } from '@/models/item/rules'
+import { objectiveSubmissionModel } from '@/models/objective-submission/model'
 import { powerRequestModel } from '@/models/power-request/model'
 import { rewardOrderModel } from '@/models/reward-order/model'
 
@@ -31,7 +34,6 @@ import { CharacterForm } from './_components/character-form'
 import { ItemShop } from './_components/item-shop'
 import { PowerList } from './_components/power-list'
 import { RewardShop } from './_components/reward-shop'
-import { StudentStats } from './_components/student-stats'
 
 export const metadata: Metadata = { title: 'Turma' }
 
@@ -58,7 +60,8 @@ const StudentClassPage = async ({
   const enrollment = await enrollmentModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
   const { className, rankingVisible, look, progress, hp, coins } = enrollment
-  const [powers, items, shop, ranking] = await Promise.all([
+  const [missions, powers, items, shop, ranking] = await Promise.all([
+    objectiveSubmissionModel.listMissionsForStudent(user.id, classId),
     look ? powerRequestModel.listForStudent(user.id, classId) : undefined,
     look ? itemModel.listForStudent(user.id, classId) : undefined,
     rewardOrderModel.listForStudent(user.id, classId),
@@ -71,7 +74,7 @@ const StudentClassPage = async ({
     <>
       <ClassEventsRefresh
         classId={classId}
-        events={['ledger', 'power-request', 'reward-order']}
+        events={['ledger', 'power-request', 'reward-order', 'mission']}
       />
       <Link
         href="/aluno"
@@ -90,6 +93,31 @@ const StudentClassPage = async ({
           Ver histórico
         </Link>
       </div>
+      {missions && (
+        <MissionSummaryList
+          classId={classId}
+          title="Missões"
+          // A finished mission stays on the missions page, so this only shows what's left to do
+          missions={missions.filter((mission) => mission.currentObjective)}
+          empty={{
+            title: 'Nenhuma missão em andamento',
+            description:
+              missions.length > 0
+                ? 'Você concluiu todas as missões publicadas.'
+                : 'As missões que o professor publicar aparecem aqui.'
+          }}
+        >
+          {/* The frame is drawn outside the link, so it needs room for it */}
+          <div className="p-1.5">
+            <Link
+              href={`/aluno/turmas/${classId}/missoes`}
+              className={linkButtonVariants({ variant: 'outline' })}
+            >
+              Ver todas as missões
+            </Link>
+          </div>
+        </MissionSummaryList>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>

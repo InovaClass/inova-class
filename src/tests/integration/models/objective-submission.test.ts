@@ -471,4 +471,139 @@ describe('objectiveSubmissionModel', () => {
       await objectiveSubmissionModel.countPending(teacherId, classId)
     ).toBe(1)
   })
+
+  describe('findMissionForStudent', () => {
+    test('gives each objective the state of its latest submission and hides the story of a locked one', async () => {
+      const { teacherId, classId, missionId, objectiveIds, studentId } =
+        await newScenario([{}, {}, {}])
+      const [first, second] = objectiveIds as [string, string, string]
+      const { id: returnedId } = await objectiveSubmissionModel.submit(
+        studentId,
+        classId,
+        first,
+        SUBMISSION
+      )
+      await objectiveSubmissionModel.returnSubmission(
+        teacherId,
+        classId,
+        returnedId,
+        { comment: 'Falta a fonte.' }
+      )
+      await objectiveSubmissionModel.submit(studentId, classId, first, {
+        text: 'Agora com a fonte.',
+        link: 'https://example.com'
+      })
+
+      const mission = await objectiveSubmissionModel.findMissionForStudent(
+        studentId,
+        classId,
+        missionId
+      )
+
+      expect(mission).toMatchObject({
+        approvedCount: 0,
+        objectiveCount: 3,
+        currentObjective: { id: second }
+      })
+      expect(mission!.objectives).toMatchObject([
+        {
+          state: 'pending',
+          submission: {
+            text: 'Agora com a fonte.',
+            link: 'https://example.com',
+            teacherComment: null
+          }
+        },
+        { id: second, state: 'available' },
+        { state: 'locked' }
+      ])
+      expect(mission!.objectives[2]).not.toHaveProperty('story')
+    })
+
+    test('leaves out a removed objective', async () => {
+      const { teacherId, classId, missionId, objectiveIds, studentId } =
+        await newScenario([{}, {}])
+      await missionModel.removeObjective(
+        teacherId,
+        classId,
+        missionId,
+        objectiveIds[0]!
+      )
+
+      const mission = await objectiveSubmissionModel.findMissionForStudent(
+        studentId,
+        classId,
+        missionId
+      )
+
+      expect(mission!.objectives).toMatchObject([
+        { id: objectiveIds[1], state: 'available' }
+      ])
+    })
+
+    test('finds neither a draft nor a mission of another class', async () => {
+      const { teacherId, classId, studentId } = await newScenario()
+      const other = await newScenario()
+      const { id: draftId } = await missionModel.create(teacherId, classId, {
+        name: 'Rascunho',
+        description: ''
+      })
+      await missionModel.createObjective(
+        teacherId,
+        classId,
+        draftId,
+        newObjective()
+      )
+
+      expect(
+        await objectiveSubmissionModel.findMissionForStudent(
+          studentId,
+          classId,
+          draftId
+        )
+      ).toBeUndefined()
+      expect(
+        await objectiveSubmissionModel.findMissionForStudent(
+          studentId,
+          classId,
+          other.missionId
+        )
+      ).toBeUndefined()
+    })
+  })
+
+  describe('listMissionsForStudent', () => {
+    test('counts the approved objectives and leaves the current one out once all are approved', async () => {
+      const { teacherId, classId, missionId, objectiveIds, studentId } =
+        await newScenario()
+      await objectiveSubmissionModel.complete(
+        teacherId,
+        classId,
+        missionId,
+        objectiveIds[0]!,
+        { studentIds: [studentId] }
+      )
+
+      expect(
+        await objectiveSubmissionModel.listMissionsForStudent(
+          studentId,
+          classId
+        )
+      ).toMatchObject([
+        { id: missionId, approvedCount: 1, currentObjective: undefined }
+      ])
+    })
+
+    test('gives nothing to a student who left the class', async () => {
+      const { teacherId, classId, studentId } = await newScenario()
+      await enrollmentModel.remove(teacherId, classId, studentId)
+
+      expect(
+        await objectiveSubmissionModel.listMissionsForStudent(
+          studentId,
+          classId
+        )
+      ).toBeUndefined()
+    })
+  })
 })
