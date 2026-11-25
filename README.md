@@ -220,4 +220,4 @@ Never put the key in `.mcp.json` or in `.claude/settings.json`, since both are c
 
 ## License
 
-[MIT](./LICENSE). The avatar sprites in `public/sprites/lpc/` and the mission maps in `public/sprites/maps/` keep their own licenses (CC-BY-SA, GPL or OGA-BY per piece), listed with their authors at `/creditos`.
+[MIT](./LICENSE). The avatar sprites in `public/sprites/lpc/` and the mission maps in `public/sprites/maps/` keep their own licenses (CC-BY, CC-BY-SA, GPL or OGA-BY per piece), listed with their authors at `/creditos`.

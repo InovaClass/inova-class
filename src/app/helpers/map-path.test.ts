@@ -9,7 +9,7 @@ const L_PATH: MapPoint[] = [
 ]
 
 describe('pointsAlong', () => {
-  test('spreads the points evenly by length, from the first end to the last', () => {
+  test('spreads the points evenly by length, from one end of the path to the other', () => {
     expect(pointsAlong(L_PATH, 5)).toEqual([
       [0, 0],
       [10, 0],
@@ -23,7 +23,7 @@ describe('pointsAlong', () => {
     expect(pointsAlong(L_PATH, 1)).toEqual([[0, 0]])
   })
 
-  test('gives no point for no objective', () => {
+  test('gives no point for a count of zero', () => {
     expect(pointsAlong(L_PATH, 0)).toEqual([])
   })
 })

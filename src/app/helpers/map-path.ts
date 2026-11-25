@@ -14,12 +14,11 @@ const interpolate = (from: MapPoint, to: MapPoint, t: number): MapPoint => [
   from[1] + (to[1] - from[1]) * t
 ]
 
-// The rest of the path from `distance`, measured along it
 export const pathFrom = (
   path: readonly MapPoint[],
-  distance: number
+  distanceAlong: number
 ): MapPoint[] => {
-  let left = Math.max(0, distance)
+  let left = Math.max(0, distanceAlong)
   const segments = segmentsOf(path)
   for (const [index, { from, to, length }] of segments.entries()) {
     if (left < length || (left === length && index === segments.length - 1)) {

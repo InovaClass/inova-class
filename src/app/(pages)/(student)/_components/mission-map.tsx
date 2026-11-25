@@ -27,8 +27,7 @@ const MARKER_CLASS_NAMES: Record<ObjectiveState, string> = {
 // The fog starts a little past the current point, so its marker stays clear
 const FOG_GAP = 24
 
-// How far the avatar's feet sit from the top of its frame
-const AVATAR_FEET = 56
+const AVATAR_FEET_Y = 56
 
 const FOG_FILTER_ID = 'mission-map-fog'
 
@@ -107,7 +106,7 @@ export const MissionMap = ({
               className="absolute"
               style={{
                 left: avatarPoint[0] - AVATAR_MANIFEST.frameSize / 2,
-                top: avatarPoint[1] - AVATAR_FEET
+                top: avatarPoint[1] - AVATAR_FEET_Y
               }}
             />
           )}

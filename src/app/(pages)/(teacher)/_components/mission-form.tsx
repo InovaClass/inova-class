@@ -6,13 +6,10 @@ import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { FormRadioGroup } from '@/app/components/ui/custom/form-radio-group'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
 import { useFormAction } from '@/app/hooks/use-form-action'
+import { DEFAULT_MISSION_MAP } from '@/constants/game'
 import type { FormState } from '@/entry/form-action'
 import { MAP_MANIFEST } from '@/models/mission/map-manifest'
-import {
-  DEFAULT_MAP,
-  MISSION_MAP_IDS,
-  MISSION_MAP_NAMES
-} from '@/models/mission/maps'
+import { MISSION_MAP_IDS, MISSION_MAP_NAMES } from '@/models/mission/maps'
 import { type MissionInput, missionSchema } from '@/models/mission/schema'
 
 const MAP_OPTIONS = MISSION_MAP_IDS.map((id) => ({
@@ -34,7 +31,7 @@ type MissionFormProps = {
 }
 
 export const MissionForm = ({
-  defaultValues = { name: '', description: '', map: DEFAULT_MAP },
+  defaultValues = { name: '', description: '', map: DEFAULT_MISSION_MAP },
   action,
   submitLabel
 }: MissionFormProps) => {
