@@ -37,8 +37,7 @@ const missionColumns = {
   objectiveCount: count(objectives.id)
 }
 
-const objectiveColumns = {
-  id: objectives.id,
+const objectiveFieldColumns = {
   name: objectives.name,
   story: objectives.story,
   dueOn: objectives.dueOn,
@@ -47,6 +46,8 @@ const objectiveColumns = {
   latePenaltyCoins: objectives.latePenaltyCoins,
   latePenaltyHp: objectives.latePenaltyHp
 }
+
+const objectiveColumns = { id: objectives.id, ...objectiveFieldColumns }
 
 const activeClassOf = (teacherId: string, classId: string) => {
   const ownedClass = and(
@@ -178,6 +179,62 @@ const publish = async (transaction: Transaction, missionId: string) => {
     .where(eq(missions.id, missionId))
 }
 
+// Locked for share, so the class isn't archived while a copy goes into it
+const lockActiveClass = async (
+  transaction: Transaction,
+  teacherId: string,
+  classId: string
+) => {
+  const [schoolClass] = await transaction
+    .select({ id: classes.id })
+    .from(classes)
+    .where(
+      and(
+        eq(classes.id, classId),
+        eq(classes.teacherId, teacherId),
+        isNull(classes.archivedAt)
+      )
+    )
+    .for('share')
+  return schoolClass
+}
+
+// A copy, not a shared row, and without the submissions, so the edits and submissions of one class
+// never touch the other (#98)
+const copy = async (
+  transaction: Transaction,
+  missionId: string,
+  targetClassId: string
+) => {
+  const [source] = await transaction
+    .select({
+      name: missions.name,
+      description: missions.description,
+      map: missions.map
+    })
+    .from(missions)
+    .where(eq(missions.id, missionId))
+  const [mission] = await transaction
+    .insert(missions)
+    .values({ classId: targetClassId, ...source! })
+    .returning({ id: missions.id })
+  const sourceObjectives = await transaction
+    .select(objectiveFieldColumns)
+    .from(objectives)
+    .where(activeObjectivesOf(missionId))
+    .orderBy(asc(objectives.position))
+  if (sourceObjectives.length > 0) {
+    await transaction.insert(objectives).values(
+      sourceObjectives.map((fields, position) => ({
+        missionId: mission!.id,
+        position,
+        ...fields
+      }))
+    )
+  }
+  return mission!
+}
+
 const listObjectives = async (
   teacherId: string,
   classId: string,
@@ -287,6 +344,8 @@ export const missionRepo = {
   removeActive,
   withLocked,
   publish,
+  lockActiveClass,
+  copy,
   listObjectives,
   listObjectiveIds,
   findObjective,

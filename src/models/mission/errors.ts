@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { NotFoundError, ValidationError } from '@/infra/errors'
 
 // Same answer for a mission of another teacher's class and a removed one, so the id reveals nothing
@@ -30,3 +32,15 @@ export const lastObjectiveOfPublishedMission = () =>
     message: 'Uma missão publicada precisa de pelo menos um objetivo.',
     action: 'Crie outro objetivo antes de remover este.'
   })
+
+// Same answer for another teacher's class, an archived one and the class of the mission itself, so
+// the id reveals nothing
+export const targetClassNotFound = () =>
+  new z.ZodError([
+    {
+      code: 'custom',
+      path: ['targetClassId'],
+      message: 'Escolha outra das suas turmas ativas.',
+      input: undefined
+    }
+  ])
