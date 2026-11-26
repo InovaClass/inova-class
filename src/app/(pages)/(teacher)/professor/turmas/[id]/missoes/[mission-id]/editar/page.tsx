@@ -36,7 +36,8 @@ const EditMissionPage = async ({
         <MissionForm
           defaultValues={{
             name: mission.name,
-            description: mission.description ?? ''
+            description: mission.description ?? '',
+            map: mission.map
           }}
           action={updateMission.bind(null, classId, missionId)}
           submitLabel="Salvar"

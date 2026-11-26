@@ -6,6 +6,7 @@ import { classEventModel } from '@/models/class-event/model'
 import { studentNotInClass } from '@/models/enrollment/errors'
 import { ledgerModel } from '@/models/ledger/model'
 import { objectiveNotFound } from '@/models/mission/errors'
+import { mapIdOf } from '@/models/mission/maps'
 import { missionModel } from '@/models/mission/model'
 import { enrollmentRepo } from '@/repositories/enrollment-repo'
 import { objectiveSubmissionRepo } from '@/repositories/objective-submission-repo'
@@ -289,6 +290,7 @@ const missionsOf = ({ rows, latestSubmissions }: StudentMissionRows) => {
       })
       return {
         ...mission,
+        map: mapIdOf(mission.map),
         objectiveCount: objectives.length,
         approvedCount: states.filter((state) => state === 'approved').length,
         currentObjective: objectives[currentObjectiveIndex(states)],

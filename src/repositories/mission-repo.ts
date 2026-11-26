@@ -7,7 +7,7 @@ import type { Transaction } from './ledger-repo'
 
 export type MissionFields = Pick<
   typeof missions.$inferInsert,
-  'name' | 'description'
+  'name' | 'description' | 'map'
 >
 
 export type ObjectiveFields = Pick<
@@ -32,6 +32,7 @@ const missionColumns = {
   id: missions.id,
   name: missions.name,
   description: missions.description,
+  map: missions.map,
   publishedAt: missions.publishedAt,
   objectiveCount: count(objectives.id)
 }

@@ -40,7 +40,8 @@ const newScenario = async () => {
   )
   const { id: missionId } = await missionModel.create(teacherId, classId, {
     name: 'A floresta',
-    description: ''
+    description: '',
+    map: 'forest'
   })
   return { teacherId, classId, missionId }
 }
@@ -83,7 +84,8 @@ describe('missionModel', () => {
     await missionModel.publish(teacherId, classId, missionId)
     const { id: draftId } = await missionModel.create(teacherId, classId, {
       name: 'O castelo',
-      description: 'Rascunho'
+      description: 'Rascunho',
+      map: 'forest'
     })
 
     const listed = await missionModel.list(teacherId, classId)
@@ -232,6 +234,31 @@ describe('missionModel', () => {
     ).toMatchObject({ dueOn: '2026-12-01', latePenaltyHp: 5 })
   })
 
+  test('stores the map chosen on creation and on each edit', async () => {
+    const { teacherId, classId } = await newScenario()
+    const { id: missionId } = await missionModel.create(teacherId, classId, {
+      name: 'A floresta',
+      description: '',
+      map: 'snow'
+    })
+    const mapOf = async () => {
+      const mission = await missionModel.findOwned(
+        teacherId,
+        classId,
+        missionId
+      )
+      return mission?.map
+    }
+
+    expect(await mapOf()).toBe('snow')
+    await missionModel.update(teacherId, classId, missionId, {
+      name: 'A floresta',
+      description: '',
+      map: 'desert'
+    })
+    expect(await mapOf()).toBe('desert')
+  })
+
   test('a removed mission leaves the list and keeps its row', async () => {
     const { teacherId, classId, missionId } = await newScenario()
 
@@ -272,7 +299,8 @@ describe('missionModel', () => {
       await expect(
         missionModel.update(id, classId, missionId, {
           name: 'Outra',
-          description: ''
+          description: '',
+          map: 'forest'
         })
       ).rejects.toBeInstanceOf(NotFoundError)
       await expect(

@@ -30,10 +30,15 @@ test('a teacher builds a mission, orders its objectives and publishes it', async
   await page.getByRole('link', { name: 'Missões', exact: true }).click()
   await page.getByRole('link', { name: 'Nova missão' }).click()
   await page.getByLabel('Nome').fill('A floresta sombria')
+  await page.getByRole('radio', { name: 'Deserto' }).click()
   await page.getByRole('button', { name: 'Criar missão' }).click()
   await expect(
     page.getByRole('heading', { name: 'A floresta sombria' })
   ).toBeVisible()
+  const missionUrl = page.url()
+  await page.goto(`${missionUrl}/editar`)
+  await expect(page.getByRole('radio', { name: 'Deserto' })).toBeChecked()
+  await page.goto(missionUrl)
 
   await page.getByRole('button', { name: 'Publicar missão' }).click()
   await expect(

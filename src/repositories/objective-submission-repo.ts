@@ -347,7 +347,8 @@ const listMissionsOfStudent = async (
       mission: {
         id: missions.id,
         name: missions.name,
-        description: missions.description
+        description: missions.description,
+        map: missions.map
       },
       objective: {
         id: objectives.id,

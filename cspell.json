@@ -19,7 +19,8 @@
     "pnpm-lock.yaml",
     "skills-lock.json",
     "src/infra/database/migrations",
-    "src/models/avatar/manifest.ts"
+    "src/models/avatar/manifest.ts",
+    "src/models/mission/map-manifest.ts"
   ],
   "dictionaryDefinitions": [
     {
