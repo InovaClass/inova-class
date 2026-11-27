@@ -1,13 +1,20 @@
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { describe, expect, test } from 'vitest'
 import { ZodError } from 'zod'
 
 import { database } from '@/infra/database/client'
-import { missions, objectives, users } from '@/infra/database/schema'
+import {
+  enrollments,
+  missions,
+  objectives,
+  objectiveSubmissions,
+  users
+} from '@/infra/database/schema'
 import { NotFoundError, ValidationError } from '@/infra/errors'
 import { classModel } from '@/models/class/model'
 import { missionModel } from '@/models/mission/model'
 import type { ObjectiveInput } from '@/models/mission/schema'
+import { objectiveSubmissionModel } from '@/models/objective-submission/model'
 import { orchestrator } from '@/tests/orchestrator'
 
 const newObjective = (
@@ -23,14 +30,16 @@ const newObjective = (
   ...fields
 })
 
-const newTeacherId = async () => {
+const newUserId = async (role: 'teacher' | 'student') => {
   const { name, email } = orchestrator.newUser()
   const [user] = await database
     .insert(users)
-    .values({ name, email, role: 'teacher' })
+    .values({ name, email, role })
     .returning()
   return user!.id
 }
+
+const newTeacherId = () => newUserId('teacher')
 
 const newScenario = async () => {
   const teacherId = await newTeacherId()
@@ -74,6 +83,11 @@ const objectiveNames = async ({
     missionId
   )
   return listed.map(({ name }) => name)
+}
+
+const newTargetClassId = async (teacherId: string) => {
+  const { id } = await classModel.create(teacherId, orchestrator.newClass())
+  return id
 }
 
 describe('missionModel', () => {
@@ -330,5 +344,164 @@ describe('missionModel', () => {
     await expect(
       missionModel.moveObjective(teacherId, classId, 'abc', 'abc', 'up')
     ).rejects.toBeInstanceOf(NotFoundError)
+  })
+
+  describe('copy', () => {
+    test('copies the mission as a draft with its active objectives in order and none of the submissions', async () => {
+      const scenario = await newScenario()
+      const { teacherId, classId, missionId } = scenario
+      await missionModel.update(teacherId, classId, missionId, {
+        name: 'A floresta',
+        description: 'Uma trilha escura.',
+        map: 'desert'
+      })
+      const [first, removed] = await addObjectives(scenario, ['A', 'B'])
+      const { id: last } = await missionModel.createObjective(
+        teacherId,
+        classId,
+        missionId,
+        newObjective({
+          name: 'C',
+          story: 'O dragão acordou.',
+          dueOn: '2026-12-01',
+          xpReward: '30',
+          coinReward: '5',
+          latePenaltyCoins: '2',
+          latePenaltyHp: '3'
+        })
+      )
+      await missionModel.removeObjective(
+        teacherId,
+        classId,
+        missionId,
+        removed!
+      )
+      await missionModel.moveObjective(
+        teacherId,
+        classId,
+        missionId,
+        first!,
+        'down'
+      )
+      await missionModel.publish(teacherId, classId, missionId)
+      const studentId = await newUserId('student')
+      await database.insert(enrollments).values({ studentId, classId })
+      await objectiveSubmissionModel.submit(studentId, classId, last, {
+        text: 'Fiz a pesquisa.',
+        link: ''
+      })
+      const targetClassId = await newTargetClassId(teacherId)
+
+      const { id: copyId } = await missionModel.copy(
+        teacherId,
+        classId,
+        missionId,
+        { targetClassId }
+      )
+
+      expect(
+        await missionModel.findOwned(teacherId, targetClassId, copyId)
+      ).toMatchObject({
+        name: 'A floresta',
+        description: 'Uma trilha escura.',
+        map: 'desert',
+        published: false,
+        objectiveCount: 2
+      })
+      const original = await missionModel.listObjectives(
+        teacherId,
+        classId,
+        missionId
+      )
+      const copied = await missionModel.listObjectives(
+        teacherId,
+        targetClassId,
+        copyId
+      )
+      expect(copied).toEqual(
+        original.map((objective) => ({ ...objective, id: expect.any(String) }))
+      )
+      expect(copied.map(({ name }) => name)).toEqual(['C', 'A'])
+      const positions = await database
+        .select({ position: objectives.position })
+        .from(objectives)
+        .where(eq(objectives.missionId, copyId))
+        .orderBy(objectives.position)
+      expect(positions.map(({ position }) => position)).toEqual([0, 1])
+      const copiedSubmissions = await database
+        .select()
+        .from(objectiveSubmissions)
+        .where(
+          inArray(
+            objectiveSubmissions.objectiveId,
+            copied.map(({ id }) => id)
+          )
+        )
+      expect(copiedSubmissions).toEqual([])
+      expect(
+        await missionModel.findOwned(teacherId, classId, missionId)
+      ).toMatchObject({ published: true, objectiveCount: 2 })
+    })
+
+    test('copies a mission without objectives', async () => {
+      const { teacherId, classId, missionId } = await newScenario()
+      const targetClassId = await newTargetClassId(teacherId)
+
+      const { id: copyId } = await missionModel.copy(
+        teacherId,
+        classId,
+        missionId,
+        { targetClassId }
+      )
+
+      expect(
+        await missionModel.findOwned(teacherId, targetClassId, copyId)
+      ).toMatchObject({ objectiveCount: 0, published: false })
+    })
+
+    test("rejects the class of the mission, another teacher's class, an archived one and a malformed id on the field", async () => {
+      const { teacherId, classId, missionId } = await newScenario()
+      const otherTeacherClassId = await newTargetClassId(await newTeacherId())
+      const archivedClassId = await newTargetClassId(teacherId)
+      await classModel.archive(teacherId, archivedClassId)
+
+      for (const targetClassId of [
+        classId,
+        otherTeacherClassId,
+        archivedClassId,
+        'abc'
+      ]) {
+        const copy = missionModel.copy(teacherId, classId, missionId, {
+          targetClassId
+        })
+        await expect(copy).rejects.toBeInstanceOf(ZodError)
+        await expect(copy).rejects.toMatchObject({
+          issues: [{ path: ['targetClassId'] }]
+        })
+      }
+      const missionsOfOtherClasses = await database
+        .select()
+        .from(missions)
+        .where(
+          inArray(missions.classId, [otherTeacherClassId, archivedClassId])
+        )
+      expect(missionsOfOtherClasses).toEqual([])
+    })
+
+    test("another teacher can't copy a mission, even into their own class", async () => {
+      const { classId, missionId } = await newScenario()
+      const otherTeacherId = await newTeacherId()
+      const targetClassId = await newTargetClassId(otherTeacherId)
+
+      await expect(
+        missionModel.copy(otherTeacherId, classId, missionId, { targetClassId })
+      ).rejects.toBeInstanceOf(NotFoundError)
+      expect(
+        await database
+          .select()
+          .from(missions)
+          .where(eq(missions.classId, targetClassId))
+      ).toEqual([])
+    })
   })
 })

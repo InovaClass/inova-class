@@ -49,13 +49,19 @@ const MissionPage = async ({
             </p>
           )}
         </div>
-        {/* The frame is drawn outside the link, so it needs room for it */}
-        <div className="p-1.5">
+        {/* The frame is drawn outside the links, so they need room for it */}
+        <div className="flex flex-wrap gap-6 p-1.5">
           <Link
             href={`${objectivesPath}/novo`}
             className={linkButtonVariants({ variant: 'outline' })}
           >
             Novo objetivo
+          </Link>
+          <Link
+            href={`/professor/turmas/${classId}/missoes/${missionId}/copiar`}
+            className={linkButtonVariants({ variant: 'outline' })}
+          >
+            Copiar missão
           </Link>
         </div>
       </header>

@@ -9,11 +9,14 @@ import {
   missionAlreadyPublished,
   missionNotFound,
   missionWithoutObjectives,
-  objectiveNotFound
+  objectiveNotFound,
+  targetClassNotFound
 } from './errors'
 import { mapIdOf } from './maps'
 import { moveItem } from './order'
 import {
+  type CopyMissionInput,
+  copyMissionSchema,
   type MissionInput,
   missionSchema,
   moveDirectionSchema,
@@ -131,6 +134,34 @@ const publish = async (teacherId: string, classId: string, missionId: string) =>
     }
   )
 
+// Under the lock of the mission, so a move or removal of an objective never lands halfway through
+// the copy
+const copy = async (
+  teacherId: string,
+  classId: string,
+  missionId: string,
+  input: CopyMissionInput
+) => {
+  const { targetClassId } = copyMissionSchema.parse(input)
+  return withLockedMission(
+    teacherId,
+    classId,
+    missionId,
+    async (transaction, mission) => {
+      if (targetClassId === classId || !isId(targetClassId)) {
+        throw targetClassNotFound()
+      }
+      const target = await missionRepo.lockActiveClass(
+        transaction,
+        teacherId,
+        targetClassId
+      )
+      if (!target) throw targetClassNotFound()
+      return missionRepo.copy(transaction, mission.id, target.id)
+    }
+  )
+}
+
 const listObjectives = async (
   teacherId: string,
   classId: string,
@@ -247,6 +278,7 @@ export const missionModel = {
   update,
   remove,
   publish,
+  copy,
   listObjectives,
   findObjective,
   createObjective,

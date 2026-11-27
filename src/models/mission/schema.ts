@@ -87,3 +87,8 @@ export const objectiveSchema = z
 export type ObjectiveInput = z.input<typeof objectiveSchema>
 
 export const moveDirectionSchema = z.enum(MOVE_DIRECTIONS)
+
+export const copyMissionSchema = z.object({
+  targetClassId: z.string().min(1, 'Escolha a turma.')
+})
+export type CopyMissionInput = z.input<typeof copyMissionSchema>
