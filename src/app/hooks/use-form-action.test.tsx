@@ -30,7 +30,9 @@ const TestForm = ({ action }: { action: Action }) => {
       <FormField label="Nome" {...field('name')} />
       <FormField label="E-mail" {...field('email')} />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Enviar</SubmitButton>
+      <SubmitButton pendingLabel="Enviando" pending={pending}>
+        Enviar
+      </SubmitButton>
     </form>
   )
 }
@@ -236,7 +238,9 @@ const ListForm = ({ action }: { action: ListAction }) => {
       <FormField label="Primeiro link" {...field('links.0.url')} />
       <FormField label="Segundo link" {...field('links.1.url')} />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Salvar</SubmitButton>
+      <SubmitButton pendingLabel="Salvando" pending={pending}>
+        Salvar
+      </SubmitButton>
     </form>
   )
 }

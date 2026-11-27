@@ -112,6 +112,7 @@ export const SubmissionList = ({
                 <div className="flex flex-wrap gap-6 p-1.5">
                   {/* Not confirmed, since the reward is reversed from the history */}
                   <ActionButton
+                    pendingLabel="Aprovando"
                     variant="outline"
                     action={() => approveAction(submission.id)}
                     onResult={setFeedback}

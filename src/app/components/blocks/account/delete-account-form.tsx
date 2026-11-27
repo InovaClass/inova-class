@@ -26,6 +26,7 @@ export const DeleteAccountForm = () => {
       />
       <FormMessage state={state} announcement={announcement} />
       <SubmitButton
+        pendingLabel="Excluindo"
         pending={pending}
         variant="destructive"
         // Same as ConfirmActionDialog: `text-destructive` on the tinted background stays under the

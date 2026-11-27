@@ -12,12 +12,14 @@ type ClassFormProps = {
   defaultValues?: ClassInput
   action: (input: ClassInput) => Promise<FormState<ClassInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 export const ClassForm = ({
   defaultValues = { name: '', description: '' },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: ClassFormProps) => {
   const { field, state, pending, announcement, formProps } = useFormAction({
     schema: classSchema,
@@ -36,7 +38,9 @@ export const ClassForm = ({
         )}
       </FieldFrame>
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

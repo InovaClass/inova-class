@@ -36,6 +36,7 @@ const NewConsequencePage = async ({
         <ConsequenceForm
           action={createConsequence.bind(null, classId)}
           submitLabel="Criar consequência"
+          submitPendingLabel="Criando"
         />
       </FormCard>
     </div>

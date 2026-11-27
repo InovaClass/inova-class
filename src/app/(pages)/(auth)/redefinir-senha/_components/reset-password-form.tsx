@@ -32,7 +32,9 @@ export const ResetPasswordForm = ({ token }: { token: string }) => {
         {...field('passwordConfirmation')}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Salvar senha</SubmitButton>
+      <SubmitButton pendingLabel="Salvando" pending={pending}>
+        Salvar senha
+      </SubmitButton>
     </form>
   )
 }

@@ -105,7 +105,7 @@ export const AwardBehaviorDialog = ({
           <FormMessage state={state} />
           {/* Not every screen reader voices aria-disabled on the focused button */}
           <p role="status" className="sr-only">
-            {pending ? 'Aplicando comportamento…' : ''}
+            {pending ? 'Aplicando comportamento...' : ''}
           </p>
           {behaviors.length === 0 && (
             <Empty className="p-0 md:p-0">

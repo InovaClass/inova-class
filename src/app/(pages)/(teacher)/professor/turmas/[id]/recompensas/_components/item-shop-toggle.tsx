@@ -45,6 +45,7 @@ export const ItemShopToggle = ({
           {/* The frame is drawn outside the button, so it needs room for it */}
           <div className="p-1.5">
             <ActionButton
+              pendingLabel={enabled ? 'Fechando loja' : 'Abrindo loja'}
               variant="outline"
               action={toggleAction}
               onResult={setResult}

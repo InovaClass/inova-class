@@ -110,6 +110,7 @@ export const RewardList = ({
                       title="Remover recompensa?"
                       description={`${reward.name} sairá da loja da turma. Os pedidos pendentes continuam em Entregas.`}
                       confirmLabel="Remover"
+                      confirmPendingLabel="Removendo"
                       action={async () => {
                         const result = await removeAction(reward.id)
                         // The reward stays listed, so the message of an earlier removal would mislead

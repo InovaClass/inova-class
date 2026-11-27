@@ -26,7 +26,11 @@ export const GoogleSignInForm = ({ action, notice }: GoogleSignInFormProps) => {
   return (
     <form action={dispatch} className="flex flex-col gap-6">
       <FormMessage state={state} />
-      <SubmitButton pending={pending} variant="outline">
+      <SubmitButton
+        pendingLabel="Abrindo o Google"
+        pending={pending}
+        variant="outline"
+      >
         Continuar com o Google
       </SubmitButton>
     </form>

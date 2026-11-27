@@ -57,6 +57,7 @@ const EditObjectivePage = async ({
           }}
           action={updateObjective.bind(null, classId, missionId, objectiveId)}
           submitLabel="Salvar"
+          submitPendingLabel="Salvando"
         />
       </FormCard>
     </div>

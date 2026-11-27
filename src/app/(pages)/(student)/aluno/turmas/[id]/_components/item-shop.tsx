@@ -63,6 +63,7 @@ const ItemAction = ({
     return (
       // One button for both, so the focus stays on it when the label changes
       <ActionButton
+        pendingLabel={item.equipped ? 'Desequipando' : 'Equipando'}
         variant="outline"
         action={() => equipAction(item.id, !item.equipped)}
         onResult={onEquip}
@@ -85,6 +86,7 @@ const ItemAction = ({
       title="Comprar item?"
       description={`Você vai gastar ${item.price} ${item.price === 1 ? 'moeda' : 'moedas'} em ${item.name}. O item fica com você em todas as turmas, e as moedas não voltam.`}
       confirmLabel="Comprar"
+      confirmPendingLabel="Comprando"
       confirmVariant="default"
       action={async () => {
         const result = await purchaseAction(item.id)

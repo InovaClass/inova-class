@@ -26,7 +26,9 @@ export const JoinClassForm = () => {
         {...field('code')}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Entrar na turma</SubmitButton>
+      <SubmitButton pendingLabel="Entrando" pending={pending}>
+        Entrar na turma
+      </SubmitButton>
     </form>
   )
 }

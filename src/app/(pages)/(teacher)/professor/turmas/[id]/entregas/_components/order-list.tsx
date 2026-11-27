@@ -76,6 +76,7 @@ export const OrderList = ({
               {/* The frame is drawn outside the buttons, so the row needs room for it */}
               <div className="flex flex-wrap gap-6 p-1.5">
                 <ActionButton
+                  pendingLabel="Entregando"
                   variant="outline"
                   action={() => deliverAction(order.id)}
                   onResult={setFeedback}
@@ -99,6 +100,7 @@ export const OrderList = ({
                   title="Cancelar pedido?"
                   description={`${order.studentLabel} recebe de volta ${order.price === 1 ? 'a moeda paga' : `as ${order.price} moedas pagas`} por ${order.rewardName}.`}
                   confirmLabel="Cancelar pedido"
+                  confirmPendingLabel="Cancelando"
                   dismissLabel="Voltar"
                   action={async () => {
                     const result = await cancelAction(order.id)

@@ -80,7 +80,7 @@ export const ResendVerificationButton = ({
         className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
       >
         {pending && <Spinner aria-hidden className="size-4" />}
-        Reenviar e-mail
+        {pending ? 'Reenviando...' : 'Reenviar e-mail'}
         {!pending && secondsLeft > 0 && (
           // Two digits keep the label from shifting when the countdown drops one
           <span aria-hidden>({String(secondsLeft).padStart(2, '0')}s)</span>
@@ -95,7 +95,7 @@ export const ResendVerificationButton = ({
         role="status"
         className={cn('text-xs leading-relaxed', !showsMessage && 'sr-only')}
       >
-        {pending && <span>Enviando…</span>}
+        {pending && <span>Reenviando...</span>}
         {showsMessage && (
           <p
             className={cn(

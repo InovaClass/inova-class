@@ -102,6 +102,7 @@ export const BehaviorList = ({
                         title="Remover comportamento?"
                         description={`${behavior.name} sairá da lista da turma. Os pontos já dados por ele continuam valendo.`}
                         confirmLabel="Remover"
+                        confirmPendingLabel="Removendo"
                         action={async () => {
                           const result = await removeAction(behavior.id)
                           // The behavior stays listed, so the message of an earlier removal would mislead

@@ -28,12 +28,14 @@ type MissionFormProps = {
   defaultValues?: MissionInput
   action: (input: MissionInput) => Promise<FormState<MissionInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 export const MissionForm = ({
   defaultValues = { name: '', description: '', map: DEFAULT_MISSION_MAP },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: MissionFormProps) => {
   const { field, control, state, pending, announcement, formProps } =
     useFormAction({ schema: missionSchema, defaultValues, action })
@@ -55,7 +57,9 @@ export const MissionForm = ({
         options={MAP_OPTIONS}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

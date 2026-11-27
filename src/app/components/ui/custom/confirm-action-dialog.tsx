@@ -26,6 +26,7 @@ type ConfirmActionDialogProps = {
   title: string
   description: string
   confirmLabel: string
+  confirmPendingLabel: string
   // For a confirm that is itself a cancellation, where a second "Cancelar" would be ambiguous
   dismissLabel?: string
   // An action that loses nothing, such as an approval, doesn't need the warning of the default
@@ -41,6 +42,7 @@ export const ConfirmActionDialog = ({
   title,
   description,
   confirmLabel,
+  confirmPendingLabel,
   dismissLabel = 'Cancelar',
   confirmVariant = 'destructive',
   action,
@@ -104,6 +106,7 @@ export const ConfirmActionDialog = ({
             </AlertDialogCancel>
             <SubmitButton
               pending={pending}
+              pendingLabel={confirmPendingLabel}
               variant={confirmVariant}
               // `text-destructive` on the variant's tinted background stays under the 4.5:1 of WCAG
               // 1.4.3, so the frame carries the warning

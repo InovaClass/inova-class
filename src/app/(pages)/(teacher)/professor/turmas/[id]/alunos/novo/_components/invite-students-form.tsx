@@ -40,7 +40,9 @@ export const InviteStudentsForm = ({ classId }: { classId: string }) => {
         )}
       </FieldFrame>
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Enviar convites</SubmitButton>
+      <SubmitButton pendingLabel="Enviando" pending={pending}>
+        Enviar convites
+      </SubmitButton>
     </form>
   )
 }

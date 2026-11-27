@@ -41,6 +41,7 @@ const EditConsequencePage = async ({
           defaultValues={{ name: consequence.name }}
           action={updateConsequence.bind(null, classId, consequenceId)}
           submitLabel="Salvar"
+          submitPendingLabel="Salvando"
         />
       </FormCard>
     </div>

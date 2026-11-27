@@ -64,6 +64,7 @@ export const DeleteAccountSection = ({
               title="Excluir conta?"
               description={`${consequences} Não é possível desfazer.`}
               confirmLabel="Excluir conta"
+              confirmPendingLabel="Excluindo"
               action={deleteAccountWithoutPassword}
             />
           </div>

@@ -15,7 +15,12 @@ export const SignOutForm = () => {
   return (
     <form action={dispatch} className="flex flex-wrap justify-end gap-4">
       <FormMessage state={state} />
-      <SubmitButton pending={pending} variant="outline" size="sm">
+      <SubmitButton
+        pendingLabel="Saindo"
+        pending={pending}
+        variant="outline"
+        size="sm"
+      >
         Sair
       </SubmitButton>
     </form>

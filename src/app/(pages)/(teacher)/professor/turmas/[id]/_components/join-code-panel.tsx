@@ -74,11 +74,16 @@ export const JoinCodePanel = ({
             title="Gerar novo código?"
             description="O código atual deixará de funcionar. Quem já entrou continua na turma."
             confirmLabel="Gerar código"
+            confirmPendingLabel="Gerando código"
             action={regenerateAction}
             onSuccess={setFeedback}
           />
           <form action={dispatch}>
-            <SubmitButton pending={pending} variant="outline">
+            <SubmitButton
+              pendingLabel={enabled ? 'Desativando' : 'Ativando'}
+              pending={pending}
+              variant="outline"
+            >
               {enabled ? 'Desativar' : 'Ativar'}
             </SubmitButton>
           </form>

@@ -87,7 +87,9 @@ export const StudentSignUpForm = ({
           label={termsLabel}
         />
         <FormMessage state={state} announcement={announcement} />
-        <SubmitButton pending={pending}>Criar conta</SubmitButton>
+        <SubmitButton pendingLabel="Criando conta" pending={pending}>
+          Criar conta
+        </SubmitButton>
       </form>
       {children}
     </div>

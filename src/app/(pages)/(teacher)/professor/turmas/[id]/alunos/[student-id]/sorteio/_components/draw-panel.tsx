@@ -171,7 +171,9 @@ export const DrawPanel = ({
         </p>
         <FormMessage state={state} />
         <div className="p-1.5">
-          <SubmitButton pending={pending}>Sortear</SubmitButton>
+          <SubmitButton pendingLabel="Sorteando" pending={pending}>
+            Sortear
+          </SubmitButton>
         </div>
       </form>
     )

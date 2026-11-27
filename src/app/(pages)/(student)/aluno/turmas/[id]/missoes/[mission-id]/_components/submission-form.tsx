@@ -65,7 +65,7 @@ export const SubmissionForm = ({
       <FormMessage state={state} announcement={announcement} />
       {/* The frame is drawn outside the button, so it needs room for it */}
       <div className="p-1.5">
-        <SubmitButton pending={pending}>
+        <SubmitButton pendingLabel="Enviando" pending={pending}>
           Enviar
           <span className="sr-only"> {objectiveName}</span>
         </SubmitButton>

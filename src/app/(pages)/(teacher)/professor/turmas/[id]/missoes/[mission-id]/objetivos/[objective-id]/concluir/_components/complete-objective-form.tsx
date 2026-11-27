@@ -69,7 +69,9 @@ export const CompleteObjectiveForm = ({
       <FormMessage state={state} announcement={announcement} />
       {/* The frame is drawn outside the button, so it needs room for it */}
       <div className="p-1.5">
-        <SubmitButton pending={pending}>Concluir</SubmitButton>
+        <SubmitButton pendingLabel="Concluindo" pending={pending}>
+          Concluir
+        </SubmitButton>
       </div>
     </form>
   )

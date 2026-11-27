@@ -53,7 +53,9 @@ export const SignInForm = ({ notice }: { notice?: SignInState }) => {
           {...field('password')}
         />
         <FormMessage state={state} announcement={announcement} />
-        <SubmitButton pending={pending}>Entrar</SubmitButton>
+        <SubmitButton pendingLabel="Entrando" pending={pending}>
+          Entrar
+        </SubmitButton>
       </form>
       {/* Keyed by the result, so each new link restarts the cooldown */}
       {resendTo && (

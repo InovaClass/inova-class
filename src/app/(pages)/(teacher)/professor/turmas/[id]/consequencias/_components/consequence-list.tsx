@@ -84,6 +84,7 @@ export const ConsequenceList = ({
                       title="Remover consequência?"
                       description={`${name} sairá da lista da turma. Os sorteios já feitos continuam no histórico.`}
                       confirmLabel="Remover"
+                      confirmPendingLabel="Removendo"
                       action={async () => {
                         const result = await removeAction(id)
                         // The consequence stays listed, so the message of an earlier removal would mislead
