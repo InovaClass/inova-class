@@ -36,6 +36,7 @@ const NewPowerPage = async ({
         <PowerForm
           action={createPower.bind(null, classId)}
           submitLabel="Criar poder"
+          submitPendingLabel="Criando"
         />
       </FormCard>
     </div>

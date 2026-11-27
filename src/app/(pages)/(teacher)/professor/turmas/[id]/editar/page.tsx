@@ -40,6 +40,7 @@ const EditClassPage = async ({
           }}
           action={updateClass.bind(null, classId)}
           submitLabel="Salvar"
+          submitPendingLabel="Salvando"
         />
       </FormCard>
     </div>

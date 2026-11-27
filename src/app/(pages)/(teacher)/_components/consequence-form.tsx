@@ -14,12 +14,14 @@ type ConsequenceFormProps = {
   defaultValues?: ConsequenceInput
   action: (input: ConsequenceInput) => Promise<FormState<ConsequenceInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 export const ConsequenceForm = ({
   defaultValues = { name: '' },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: ConsequenceFormProps) => {
   const { field, state, pending, announcement, formProps } = useFormAction({
     schema: consequenceSchema,
@@ -31,7 +33,9 @@ export const ConsequenceForm = ({
     <form {...formProps} className="flex flex-col gap-6">
       <FormField label="Consequência" autoComplete="off" {...field('name')} />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

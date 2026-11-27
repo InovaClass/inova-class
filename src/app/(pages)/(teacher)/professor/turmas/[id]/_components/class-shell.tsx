@@ -115,6 +115,7 @@ export const ClassShell = ({
           title="Arquivar turma?"
           description={`${schoolClass.name} sairá do seu painel. Os dados da turma serão mantidos.`}
           confirmLabel="Arquivar"
+          confirmPendingLabel="Arquivando"
           action={archiveClass.bind(null, schoolClass.id)}
         />
       </div>

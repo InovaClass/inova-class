@@ -43,6 +43,7 @@ const EditPowerPage = async ({
           }}
           action={updatePower.bind(null, classId, powerId)}
           submitLabel="Salvar"
+          submitPendingLabel="Salvando"
         />
       </FormCard>
     </div>

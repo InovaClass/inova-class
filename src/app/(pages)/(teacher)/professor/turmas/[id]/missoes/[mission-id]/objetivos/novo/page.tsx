@@ -36,6 +36,7 @@ const NewObjectivePage = async ({
         <ObjectiveForm
           action={createObjective.bind(null, classId, missionId)}
           submitLabel="Criar objetivo"
+          submitPendingLabel="Criando"
         />
       </FormCard>
     </div>

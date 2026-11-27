@@ -61,7 +61,9 @@ export const AcceptInviteForm = ({
       />
       <FormCheckbox control={control} name="acceptedTerms" label={termsLabel} />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Criar senha</SubmitButton>
+      <SubmitButton pendingLabel="Criando senha" pending={pending}>
+        Criar senha
+      </SubmitButton>
     </form>
   )
 }

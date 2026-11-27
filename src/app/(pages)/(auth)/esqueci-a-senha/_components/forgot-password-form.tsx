@@ -26,7 +26,9 @@ export const ForgotPasswordForm = () => {
         {...field('email')}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Enviar link</SubmitButton>
+      <SubmitButton pendingLabel="Enviando link" pending={pending}>
+        Enviar link
+      </SubmitButton>
     </form>
   )
 }

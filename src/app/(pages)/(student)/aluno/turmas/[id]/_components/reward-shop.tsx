@@ -140,6 +140,7 @@ export const RewardShop = ({
                         title="Comprar recompensa?"
                         description={`Você vai gastar ${reward.price} ${reward.price === 1 ? 'moeda' : 'moedas'} em ${reward.name}. Só o professor pode cancelar o pedido e devolver as moedas.`}
                         confirmLabel="Comprar"
+                        confirmPendingLabel="Comprando"
                         confirmVariant="default"
                         action={async () => {
                           const result = await purchaseAction(reward.id)

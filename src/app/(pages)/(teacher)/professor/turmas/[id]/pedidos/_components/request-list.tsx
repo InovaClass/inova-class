@@ -85,6 +85,7 @@ export const RequestList = ({
                   title="Aprovar pedido?"
                   description={`${request.studentLabel} vai gastar ${request.cost} ${request.cost === 1 ? 'moeda' : 'moedas'} em ${request.powerName}. Não é possível reverter.`}
                   confirmLabel="Aprovar"
+                  confirmPendingLabel="Aprovando"
                   confirmVariant="default"
                   action={async () => {
                     const result = await approveAction(request.id)
@@ -95,6 +96,7 @@ export const RequestList = ({
                   onSuccess={setFeedback}
                 />
                 <ActionButton
+                  pendingLabel="Recusando"
                   variant="outline"
                   action={() => refuseAction(request.id)}
                   onResult={setFeedback}

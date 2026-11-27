@@ -16,6 +16,7 @@ type PowerFormProps = {
   defaultValues?: PowerInput
   action: (input: PowerInput) => Promise<FormState<PowerInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 const CHARACTER_CLASS_OPTIONS = CHARACTER_CLASSES.map((characterClass) => ({
@@ -35,7 +36,8 @@ export const PowerForm = ({
     minLevel: '1'
   },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: PowerFormProps) => {
   const { field, control, state, pending, announcement, formProps } =
     useFormAction({ schema: powerSchema, defaultValues, action })
@@ -69,7 +71,9 @@ export const PowerForm = ({
         {...field('minLevel')}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

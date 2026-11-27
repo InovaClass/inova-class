@@ -127,6 +127,9 @@ export const PowerList = ({
                           <span className="sr-only"> {power.name}</span>
                         </Link>
                         <ActionButton
+                          pendingLabel={
+                            power.disabled ? 'Reativando' : 'Desativando'
+                          }
                           variant="outline"
                           action={() =>
                             setEnabledAction(power.id, power.disabled)
@@ -146,6 +149,7 @@ export const PowerList = ({
                           title="Remover poder?"
                           description={`${power.name} sairá da lista da turma. Para só esconder dos alunos, desative o poder.`}
                           confirmLabel="Remover"
+                          confirmPendingLabel="Removendo"
                           action={async () => {
                             const result = await removeAction(power.id)
                             // The power stays listed, so the message of an earlier removal would mislead

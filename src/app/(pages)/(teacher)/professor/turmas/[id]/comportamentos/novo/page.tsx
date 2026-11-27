@@ -36,6 +36,7 @@ const NewBehaviorPage = async ({
         <BehaviorForm
           action={createBehavior.bind(null, classId)}
           submitLabel="Criar comportamento"
+          submitPendingLabel="Criando"
         />
       </FormCard>
     </div>

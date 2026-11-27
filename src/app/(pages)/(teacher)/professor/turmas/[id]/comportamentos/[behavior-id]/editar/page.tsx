@@ -46,6 +46,7 @@ const EditBehaviorPage = async ({
           }}
           action={updateBehavior.bind(null, classId, behaviorId)}
           submitLabel="Salvar"
+          submitPendingLabel="Salvando"
         />
       </FormCard>
     </div>

@@ -142,6 +142,7 @@ export const MissionList = ({
                               : `${mission.name} sairá da lista da turma, com os objetivos.`
                           }
                           confirmLabel="Remover"
+                          confirmPendingLabel="Removendo"
                           action={async () => {
                             const result = await removeAction(mission.id)
                             // The mission stays listed, so the message of an earlier removal would mislead

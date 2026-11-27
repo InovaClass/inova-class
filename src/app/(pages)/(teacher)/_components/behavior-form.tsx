@@ -16,6 +16,7 @@ type BehaviorFormProps = {
   defaultValues?: BehaviorInput
   action: (input: BehaviorInput) => Promise<FormState<BehaviorInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 // Text rather than a number input, which reports a value it can't parse (e.g. `5-`) as blank, and
@@ -25,7 +26,8 @@ const POINTS_INPUT = { placeholder: '0', autoComplete: 'off' }
 export const BehaviorForm = ({
   defaultValues = { name: '', xp: '', hp: '', coins: '' },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: BehaviorFormProps) => {
   const { field, state, pending, announcement, formProps } = useFormAction({
     schema: behaviorSchema,
@@ -56,7 +58,9 @@ export const BehaviorForm = ({
         {...field('coins', { revalidates: ['xp', 'hp'] })}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

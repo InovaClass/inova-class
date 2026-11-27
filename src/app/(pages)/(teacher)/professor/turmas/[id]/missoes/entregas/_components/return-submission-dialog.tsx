@@ -76,7 +76,9 @@ const ReturnSubmissionForm = ({
         >
           Cancelar
         </DialogClose>
-        <SubmitButton pending={pending}>Devolver</SubmitButton>
+        <SubmitButton pendingLabel="Devolvendo" pending={pending}>
+          Devolver
+        </SubmitButton>
       </DialogFooter>
     </form>
   )

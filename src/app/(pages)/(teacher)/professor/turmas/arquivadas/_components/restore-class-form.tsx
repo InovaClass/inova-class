@@ -21,7 +21,11 @@ export const RestoreClassForm = ({ name, action }: RestoreClassFormProps) => {
       <FormMessage state={state} />
       {/* The frame is drawn outside the button, so it needs room for it */}
       <div className="p-1.5">
-        <SubmitButton pending={pending} variant="outline">
+        <SubmitButton
+          pendingLabel="Restaurando"
+          pending={pending}
+          variant="outline"
+        >
           Restaurar
           <span className="sr-only"> {name}</span>
         </SubmitButton>

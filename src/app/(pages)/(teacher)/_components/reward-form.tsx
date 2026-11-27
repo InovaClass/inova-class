@@ -13,6 +13,7 @@ type RewardFormProps = {
   defaultValues?: RewardInput
   action: (input: RewardInput) => Promise<FormState<RewardInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 // Text rather than a number input, which reports a value it can't parse as blank
@@ -21,7 +22,8 @@ const NUMBER_INPUT = { autoComplete: 'off', inputMode: 'numeric' } as const
 export const RewardForm = ({
   defaultValues = { name: '', description: '', price: '', stock: '' },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: RewardFormProps) => {
   const { field, state, pending, announcement, formProps } = useFormAction({
     schema: rewardSchema,
@@ -52,7 +54,9 @@ export const RewardForm = ({
         {...field('stock')}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

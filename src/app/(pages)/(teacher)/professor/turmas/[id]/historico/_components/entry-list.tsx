@@ -94,6 +94,7 @@ export const EntryList = ({
                   title="Reverter lançamento?"
                   description={`O lançamento "${entry.title}" será desfeito para ${entry.studentLabel}, junto com os bônus de nível que ele gerou. Moedas já gastas não são retiradas.`}
                   confirmLabel="Reverter"
+                  confirmPendingLabel="Revertendo"
                   action={async () => {
                     const result = await reverseAction(entry.id)
                     // The message of an earlier reversal would mislead next to this error

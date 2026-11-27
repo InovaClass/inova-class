@@ -31,7 +31,9 @@ export const CopyMissionForm = ({ classes, action }: CopyMissionFormProps) => {
         options={classes.map(({ id, name }) => ({ value: id, label: name }))}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>Copiar</SubmitButton>
+      <SubmitButton pendingLabel="Copiando" pending={pending}>
+        Copiar
+      </SubmitButton>
     </form>
   )
 }

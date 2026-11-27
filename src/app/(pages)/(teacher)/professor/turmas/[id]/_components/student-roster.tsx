@@ -326,6 +326,7 @@ export const StudentRoster = ({
                           title="Remover aluno?"
                           description={`${identifyStudent(name, email ?? username)} sairá desta turma. A conta será mantida, e é possível voltar com um novo convite ou com o código da turma.`}
                           confirmLabel="Remover"
+                          confirmPendingLabel="Removendo"
                           action={async () => {
                             const result = await removeAction(id)
                             // The student stays listed, so the message of an earlier removal would mislead
@@ -349,6 +350,7 @@ export const StudentRoster = ({
                             title="Excluir conta do aluno?"
                             description={`A conta de ${identifyStudent(name, email ?? username)} será apagada para sempre, com todo o progresso nas turmas. Não é possível desfazer.`}
                             confirmLabel="Excluir conta"
+                            confirmPendingLabel="Excluindo"
                             action={async () => {
                               const result = await deleteAccountAction(id)
                               if (result.status === 'error')

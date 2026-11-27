@@ -162,7 +162,11 @@ export const CharacterForm = ({
           )}
         />
         <FormMessage state={state} announcement={announcement} />
-        <SubmitButton pending={pending} className="self-start">
+        <SubmitButton
+          pendingLabel={chosenCharacterClass ? 'Salvando' : 'Confirmando'}
+          pending={pending}
+          className="self-start"
+        >
           {chosenCharacterClass ? 'Salvar aparência' : 'Confirmar personagem'}
         </SubmitButton>
       </div>

@@ -36,6 +36,7 @@ const NewRewardPage = async ({
         <RewardForm
           action={createReward.bind(null, classId)}
           submitLabel="Criar recompensa"
+          submitPendingLabel="Criando"
         />
       </FormCard>
     </div>

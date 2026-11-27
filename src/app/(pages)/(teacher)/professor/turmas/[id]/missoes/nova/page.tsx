@@ -36,6 +36,7 @@ const NewMissionPage = async ({
         <MissionForm
           action={createMission.bind(null, classId)}
           submitLabel="Criar missão"
+          submitPendingLabel="Criando"
         />
       </FormCard>
     </div>

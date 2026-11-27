@@ -23,7 +23,11 @@ const NewClassPage = async () => {
           </Link>
         }
       >
-        <ClassForm action={createClass} submitLabel="Criar turma" />
+        <ClassForm
+          action={createClass}
+          submitLabel="Criar turma"
+          submitPendingLabel="Criando"
+        />
       </FormCard>
     </div>
   )

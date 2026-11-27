@@ -42,6 +42,7 @@ const EditRewardPage = async ({
           }}
           action={updateReward.bind(null, classId, rewardId)}
           submitLabel="Salvar"
+          submitPendingLabel="Salvando"
         />
       </FormCard>
     </div>

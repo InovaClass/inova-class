@@ -68,7 +68,7 @@ export const ChangeCharacterClassDialog = ({
         <FormMessage state={state} />
         {/* Not every screen reader voices aria-disabled on the focused button */}
         <p role="status" className="sr-only">
-          {pending ? 'Trocando classe…' : ''}
+          {pending ? 'Trocando classe...' : ''}
         </p>
         {/* Tailwind's `list-style: none` makes Safari drop the list semantics */}
         <ul role="list" className="flex flex-col gap-4 p-1.5">

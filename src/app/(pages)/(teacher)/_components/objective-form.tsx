@@ -17,6 +17,7 @@ type ObjectiveFormProps = {
   defaultValues?: ObjectiveInput
   action: (input: ObjectiveInput) => Promise<FormState<ObjectiveInput>>
   submitLabel: string
+  submitPendingLabel: string
 }
 
 // Text rather than a number input, which reports a value it can't parse as blank, and blank counts
@@ -38,7 +39,8 @@ export const ObjectiveForm = ({
     latePenaltyHp: ''
   },
   action,
-  submitLabel
+  submitLabel,
+  submitPendingLabel
 }: ObjectiveFormProps) => {
   const { field, state, pending, announcement, formProps } = useFormAction({
     schema: objectiveSchema,
@@ -92,7 +94,9 @@ export const ObjectiveForm = ({
         {...field('latePenaltyHp')}
       />
       <FormMessage state={state} announcement={announcement} />
-      <SubmitButton pending={pending}>{submitLabel}</SubmitButton>
+      <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>
+        {submitLabel}
+      </SubmitButton>
     </form>
   )
 }

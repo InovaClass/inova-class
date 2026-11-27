@@ -6,13 +6,20 @@ import type { ComponentProps } from 'react'
 import { Button } from '@/app/components/ui/8bit/button'
 import { Spinner } from '@/app/components/ui/8bit/spinner'
 
+// Three periods, not `…` (U+2026): Press Start 2P only covers Latin-1, so the ellipsis would fall back
+// to Arial
+const pendingText = (pendingLabel: string) => `${pendingLabel}...`
+
 export const SubmitButton = ({
   pending,
+  pendingLabel,
   className,
   children,
   ...props
 }: Omit<ComponentProps<typeof Button>, 'type' | 'disabled'> & {
   pending: boolean
+  // In the gerund (e.g. "Salvando"), so the button says what is happening while the action runs
+  pendingLabel: string
 }) => (
   <>
     <Button
@@ -31,13 +38,19 @@ export const SubmitButton = ({
       )}
       {...props}
     >
-      {pending && <Spinner aria-hidden className="size-4" />}
-      {children}
+      {pending ? (
+        <>
+          <Spinner aria-hidden className="size-4" />
+          {pendingText(pendingLabel)}
+        </>
+      ) : (
+        children
+      )}
     </Button>
     {/* Not every screen reader voices aria-disabled on the focused button, so the pending state is
     announced by a live region that stays mounted */}
     <span role="status" className="sr-only">
-      {pending ? 'Enviando…' : ''}
+      {pending ? pendingText(pendingLabel) : ''}
     </span>
   </>
 )

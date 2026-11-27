@@ -55,6 +55,11 @@ const MOVE_LABELS: Record<MoveDirection, string> = {
   down: 'Descer'
 }
 
+const MOVE_PENDING_LABELS: Record<MoveDirection, string> = {
+  up: 'Subindo',
+  down: 'Descendo'
+}
+
 export const ObjectiveList = ({
   objectivesPath,
   published,
@@ -163,6 +168,7 @@ export const ObjectiveList = ({
                     <div className="flex flex-wrap gap-6 p-1.5">
                       {directions.map((direction) => (
                         <ActionButton
+                          pendingLabel={MOVE_PENDING_LABELS[direction]}
                           key={direction}
                           variant="outline"
                           data-objective={objective.id}
@@ -203,6 +209,7 @@ export const ObjectiveList = ({
                         title="Remover objetivo?"
                         description={`${objective.name} sairá da missão.`}
                         confirmLabel="Remover"
+                        confirmPendingLabel="Removendo"
                         action={async () => {
                           const result = await removeAction(objective.id)
                           // The objective stays listed, so the message of an earlier removal would mislead

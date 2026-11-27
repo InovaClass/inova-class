@@ -33,7 +33,11 @@ export const PublishMission = ({
         {!published && (
           // The frame is drawn outside the button, so it needs room for it
           <div className="p-1.5">
-            <ActionButton action={publishAction} onResult={setResult}>
+            <ActionButton
+              pendingLabel="Publicando"
+              action={publishAction}
+              onResult={setResult}
+            >
               Publicar missão
             </ActionButton>
           </div>

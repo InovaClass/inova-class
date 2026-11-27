@@ -37,6 +37,7 @@ export const RankingVisibility = ({
         {/* The frame is drawn outside the button, so it needs room for it */}
         <div className="p-1.5">
           <ActionButton
+            pendingLabel={visible ? 'Ocultando' : 'Mostrando'}
             variant="outline"
             action={toggleAction}
             onResult={setResult}
