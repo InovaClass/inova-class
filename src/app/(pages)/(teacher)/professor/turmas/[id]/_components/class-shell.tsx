@@ -99,6 +99,12 @@ export const ClassShell = ({
           Ranking
         </Link>
         <Link
+          href={`/professor/turmas/${schoolClass.id}/mural`}
+          className={linkButtonVariants({ variant: 'outline' })}
+        >
+          Mural
+        </Link>
+        <Link
           href={`/professor/turmas/${schoolClass.id}/historico`}
           className={linkButtonVariants({ variant: 'outline' })}
         >

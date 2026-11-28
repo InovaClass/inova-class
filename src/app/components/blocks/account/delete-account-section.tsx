@@ -8,7 +8,12 @@ import { DeleteAccountForm } from './delete-account-form'
 
 type DeleteAccountSectionProps = {
   role: UserRole
-  summary: { hasPassword: boolean; classCount: number; studentCount?: number }
+  summary: {
+    hasPassword: boolean
+    classCount: number
+    studentCount?: number
+    messageCount: number
+  }
 }
 
 const plural = (count: number, singular: string, plural: string) =>
@@ -24,18 +29,39 @@ const teacherConsequences = (classCount: number, studentCount: number) =>
       : `Sua conta e ${teacherClassesOf(classCount)}, com o progresso de ${plural(studentCount, 'aluno', 'alunos')}, serão apagadas para sempre.`
   } Os alunos que você convidou e que ainda não ativaram a conta também serão excluídos.`
 
-const studentConsequences = (classCount: number) =>
-  classCount === 0
-    ? 'Sua conta e seus itens serão apagados para sempre.'
-    : `Sua conta, seu progresso em ${plural(classCount, 'turma', 'turmas')} e seus itens serão apagados para sempre.`
+const listOf = (parts: string[]) =>
+  parts.length === 1
+    ? parts[0]!
+    : `${parts.slice(0, -1).join(', ')} e ${parts.at(-1)!}`
+
+// A teacher's messages are on the boards of their own classes, which already go with the account
+const studentConsequences = (classCount: number, messageCount: number) =>
+  `${listOf([
+    'Sua conta',
+    ...(classCount > 0
+      ? [`seu progresso em ${plural(classCount, 'turma', 'turmas')}`]
+      : []),
+    ...(messageCount > 0
+      ? [
+          messageCount === 1
+            ? 'sua mensagem no mural'
+            : `suas ${messageCount} mensagens nos murais`
+        ]
+      : []),
+    'seus itens'
+  ])} serão apagados para sempre.`
 
 const consequencesOf = (
   role: UserRole,
-  { classCount, studentCount = 0 }: DeleteAccountSectionProps['summary']
+  {
+    classCount,
+    studentCount = 0,
+    messageCount
+  }: DeleteAccountSectionProps['summary']
 ) =>
   role === 'teacher'
     ? teacherConsequences(classCount, studentCount)
-    : studentConsequences(classCount)
+    : studentConsequences(classCount, messageCount)
 
 export const DeleteAccountSection = ({
   role,

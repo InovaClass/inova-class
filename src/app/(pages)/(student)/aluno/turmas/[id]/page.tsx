@@ -59,7 +59,8 @@ const StudentClassPage = async ({
   const { user } = await requireRole('student')
   const enrollment = await enrollmentModel.findOfStudent(user.id, classId)
   if (!enrollment) notFound()
-  const { className, rankingVisible, look, progress, hp, coins } = enrollment
+  const { className, rankingVisible, chatEnabled, look, progress, hp, coins } =
+    enrollment
   const [missions, powers, items, shop, ranking] = await Promise.all([
     objectiveSubmissionModel.listMissionsForStudent(user.id, classId),
     look ? powerRequestModel.listForStudent(user.id, classId) : undefined,
@@ -84,14 +85,22 @@ const StudentClassPage = async ({
       </Link>
       <h1 className="text-sm leading-relaxed wrap-anywhere">{className}</h1>
       <StudentStats look={look} progress={progress} hp={hp} coins={coins} />
-      {/* The frame is drawn outside the link, so it needs room for it */}
-      <div className="p-1.5">
+      {/* The frame is drawn outside the links, so the row needs room for it */}
+      <div className="flex flex-wrap gap-6 p-1.5">
         <Link
           href={`/aluno/turmas/${classId}/historico`}
           className={linkButtonVariants({ variant: 'outline' })}
         >
           Ver histórico
         </Link>
+        {chatEnabled && (
+          <Link
+            href={`/aluno/turmas/${classId}/mural`}
+            className={linkButtonVariants({ variant: 'outline' })}
+          >
+            Mural
+          </Link>
+        )}
       </div>
       {missions && (
         <MissionSummaryList

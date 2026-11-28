@@ -348,6 +348,7 @@ describe('enrollmentModel', () => {
         pending: false,
         email: undefined,
         deletable: false,
+        muted: false,
         hp: HP_MAX,
         coins: 0,
         progress: { level: 1, current: 0, max: 100 },
@@ -400,6 +401,8 @@ describe('enrollmentModel', () => {
       expect(found).toEqual({
         className: schoolClass.name,
         rankingVisible: false,
+        chatEnabled: false,
+        chatMuted: false,
         hp: HP_MAX,
         coins: 0,
         progress: { level: 2, current: 50, max: 200 },

@@ -49,6 +49,8 @@ const findOfStudent = async (studentId: string, classId: string) => {
     .select({
       className: classes.name,
       rankingVisible: classes.rankingVisible,
+      chatEnabled: classes.chatEnabled,
+      chatMutedAt: enrollments.chatMutedAt,
       xp: enrollments.xp,
       hp: enrollments.hp,
       coins: enrollments.coins,
@@ -71,6 +73,7 @@ const listEnrolledStudents = async (classId: string) =>
       xp: enrollments.xp,
       hp: enrollments.hp,
       coins: enrollments.coins,
+      chatMutedAt: enrollments.chatMutedAt,
       ...characterColumns,
       pending: sql<boolean>`${accounts.id} is null`
     })

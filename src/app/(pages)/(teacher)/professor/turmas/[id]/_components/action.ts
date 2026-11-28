@@ -12,6 +12,7 @@ import { characterModel } from '@/models/character/model'
 import type { CharacterClassInput } from '@/models/character/schema'
 import { classModel } from '@/models/class/model'
 import { enrollmentModel } from '@/models/enrollment/model'
+import { messageModel } from '@/models/message/model'
 
 export const archiveClass = async (classId: string): Promise<FormState> =>
   formAction({}, async () => {
@@ -113,4 +114,18 @@ export const undoAward = async (
     await behaviorModel.undoAward(user.id, classId, batchId)
     revalidatePath('/professor', 'layout')
     return formSuccess('Aplicação desfeita.')
+  })
+
+export const setStudentMuted = async (
+  classId: string,
+  studentId: string,
+  muted: boolean
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('teacher')
+    await messageModel.setMuted(user.id, classId, studentId, muted)
+    revalidatePath('/professor', 'layout')
+    return formSuccess(
+      muted ? 'Aluno silenciado no mural.' : 'Aluno reativado no mural.'
+    )
   })
