@@ -161,6 +161,8 @@ export const useFormAction = <
     field,
     control: form.control,
     setValue: form.setValue,
+    // Only for a form that stays to be filled again, as a message composer
+    reset: form.reset,
     state,
     pending,
     announcement,

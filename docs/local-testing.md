@@ -20,7 +20,7 @@ Nothing leaves your machine: Mailpit catches every email, so any address works (
 
 Use two browsers, or a browser and its private window, because each one keeps its own session. This guide calls them **browser A** (teacher) and **browser B** (student).
 
-The screens of a class update by themselves when XP, HP, coins, a power request or a reward order change, so the steps below only reload where something else changed (e.g. a new reward, a disabled power).
+The screens of a class update by themselves when XP, HP, coins, a power request, a reward order or a message on the board change, so the steps below only reload where something else changed (e.g. a new reward, a disabled power).
 
 ## 2. Create the accounts
 
@@ -157,7 +157,18 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 8. **A:** click the speaker button next to "Sair": the icon shows it muted, and no sound plays. Reload: it stays muted. Click it again to turn the sound back on. **B:** the student's header has the same button, with its own choice per browser.
 9. Turn on "Reduce motion" in the system (or emulate `prefers-reduced-motion: reduce` in the browser's DevTools) and repeat the award and a draw: the numbers and the banner fade in and out without moving, the avatar stands still and the draw shows the result straight away.
 
-## 11. Invite a student by email
+## 11. Class message board
+
+1. **A:** on the class page, click "Mural". It reads "Fechado: só você vê o mural." **B:** the class page has no "Mural", and `/aluno/turmas/<id>/mural` shows "Página não encontrada".
+2. **A:** click "Abrir mural": the text turns into "Aberto: ..." and the button into "Fechar mural". Click "Enviar" without text (it asks for the message), then post one: the field clears and the message shows on top with "Professor" and the date. A text with line breaks keeps them, and HTML or a link shows as plain text.
+3. **B:** reload the class page and click "Mural": A's message is there. Post one: it shows on the right with "Você". **A:** without reloading, B's message shows up with B's avatar and name.
+4. **B:** post several messages in a row: the sixth within a minute shows "Você enviou muitas mensagens seguidas." Wait a minute and it goes through again.
+5. **A:** click "Silenciar" on one of B's messages: it turns into "Reativar". **B:** without reloading, the composer gives way to "O professor silenciou você neste mural.", and the messages stay listed. **A:** "Silenciar no mural" on B's row of the class page reads "Reativar no mural" too; click it. **B:** the composer comes back.
+6. **B:** click "Remover" on one of B's own messages and confirm: it leaves the board, and A's messages have no "Remover". **A:** without reloading, the message stays, faded, with "Removida por ... em .... Os alunos não a veem mais." Remove another of B's messages: **B:** without reloading, it leaves B's board.
+7. With more than 30 messages (`pnpm db:seed:awards` doesn't post any, so post them or insert them in the database), "Carregar anteriores" shows under the list and adds the older ones below without jumping to the top. Once there's nothing older, the link gives way to "Não há mensagens anteriores.".
+8. **A:** click "Fechar mural". **B:** reload: the class page has no "Mural" again. **A:** the board and its messages are still there.
+
+## 12. Invite a student by email
 
 Use a new private window for the invited student, since the invite signs them in.
 
@@ -167,7 +178,7 @@ Use a new private window for the invited student, since the invite signs them in
 4. **Private window:** the page shows the generated username. Set a password, accept the terms and click "Criar senha".
 5. **A:** reload the class page. Ana is now listed with the username.
 
-## 12. Sign-in and password
+## 13. Sign-in and password
 
 - **Sign-in:** sign out and go to `/entrar`. A student signs in with either the email or the username, and a teacher with the email. A wrong password shows the same message as an unknown account.
 - **Unverified email:** sign up without opening the link and try to sign in. It's rejected, Mailpit gets a new link and "Reenviar e-mail" appears below the form.
@@ -175,7 +186,7 @@ Use a new private window for the invited student, since the invite signs them in
 - **Password reset:** go to `/esqueci-a-senha`, click "Enviar link", open the link in Mailpit and set a new password.
 - **Pending student:** request a password reset for a student who hasn't accepted their invite. Mailpit gets a new invite instead of a reset link.
 
-## 13. Role areas
+## 14. Role areas
 
 - **B:** open `/professor`. You're sent back to `/aluno`.
 - **A:** open `/aluno`. You're sent back to `/professor`.
@@ -185,20 +196,20 @@ Use a new private window for the invited student, since the invite signs them in
 - Signed out, open `/professor` or `/aluno`. You're sent to `/entrar`.
 - Signed out, open `/`. The landing page shows how XP, HP and coins work and the three character classes, each with its color under the name; "Sou professor" and "Sou aluno" lead to their sign-up pages, "Entrar" to `/entrar`, and the footer links to the terms, the privacy policy and the credits. Signed in, `/` sends you to your dashboard.
 
-## 14. Delete an account
+## 15. Delete an account
 
 Do this last, or with accounts created only for it (`pnpm db:seed:users 1 1`), since nothing comes back.
 
 - **A:** on a class page, invite a new email. "Excluir conta" shows up next to that student only, not next to a student who joined by code. Click it and confirm: the student leaves the list, and the invite link from Mailpit no longer works.
-- **B:** buy a reward with a limited stock, then click "Minha conta" in the header. The text says how many classes lose the progress. Type a wrong password and click "Excluir conta": "Senha incorreta." shows under the field. Type the right one: you land on `/entrar` with "Sua conta foi excluída.", and the email and username no longer sign in. **A:** the reward got its unit back, and the order is gone from "Entregas".
+- **B:** buy a reward with a limited stock, then click "Minha conta" in the header. The text says how many classes lose the progress and, if B posted on a board, how many messages go too. Type a wrong password and click "Excluir conta": "Senha incorreta." shows under the field. Type the right one: you land on `/entrar` with "Sua conta foi excluída.", and the email and username no longer sign in. **A:** the reward got its unit back, and the order is gone from "Entregas".
 - **A:** click "Minha conta". The text counts the classes (archived ones too) and the students in them. Confirming with the password deletes the classes, and every student who joined them keeps the account, without those classes. A student A invited who never accepted the invite, and who isn't in another teacher's class, is deleted too.
 - With Google sign-in on, an account created with Google has no password: "Excluir conta" opens a confirmation instead. More than 24 hours after signing in, it asks to sign in again.
 
-## 15. Credits
+## 16. Credits
 
 - Open `/creditos` (also linked from the "Arte" section of `/termos`). Under "Personagens", three characters, a warrior, a mage and a healer, stand still in their first idle frame, and every LPC asset is listed below them with its authors, licenses and links. "Efeitos sonoros" credits jsfxr and the CC0 license of the sounds.
 - Turn on reduced motion in the system (or emulate `prefers-reduced-motion` in the browser's dev tools) and reload. The three characters stand still.
 
-## 16. Stop
+## 17. Stop
 
 Press `Ctrl+C` in the terminal to stop the app. The containers keep running; `pnpm services:stop` stops them and keeps the data, so the same accounts work next time.

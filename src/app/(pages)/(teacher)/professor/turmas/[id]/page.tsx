@@ -20,6 +20,7 @@ import {
   regenerateJoinCode,
   removeStudent,
   setJoinCodeEnabled,
+  setStudentMuted,
   undoAward
 } from './_components/action'
 import { ClassShell } from './_components/class-shell'
@@ -56,7 +57,13 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
     >
       <ClassEventsRefresh
         classId={classId}
-        events={['ledger', 'power-request', 'reward-order', 'mission']}
+        events={[
+          'ledger',
+          'power-request',
+          'reward-order',
+          'mission',
+          'message'
+        ]}
       />
       <ToastProvider>
         <StudentRoster
@@ -68,6 +75,7 @@ const ClassPage = async ({ params }: PageProps<'/professor/turmas/[id]'>) => {
           removeAction={removeStudent.bind(null, classId)}
           deleteAccountAction={deleteStudentAccount.bind(null, classId)}
           changeCharacterClassAction={changeCharacterClass.bind(null, classId)}
+          muteAction={setStudentMuted.bind(null, classId)}
         />
       </ToastProvider>
       {/* The frame is drawn outside the link, so it needs room for it */}

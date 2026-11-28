@@ -7,6 +7,7 @@ import { classNotFound } from '@/models/class/errors'
 import { classModel } from '@/models/class/model'
 import { classEventModel } from '@/models/class-event/model'
 import { accountRepo } from '@/repositories/account-repo'
+import { messageRepo } from '@/repositories/message-repo'
 
 import { staleSession, studentNotDeletable, wrongPassword } from './errors'
 import { deleteAccountSchema } from './schema'
@@ -15,23 +16,25 @@ type RequestContext = { headers: Headers }
 
 const isId = (id: string) => z.uuid().safeParse(id).success
 
-// The roster, the requests, the orders and the ranking of each class lose the student
+// The roster, the requests, the orders, the ranking and the board of each class lose the student
 const announce = async (classIds: string[]) => {
   for (const classId of classIds) {
     await classEventModel.publish(classId, 'ledger')
     await classEventModel.publish(classId, 'power-request')
     await classEventModel.publish(classId, 'reward-order')
+    await classEventModel.publish(classId, 'message')
   }
 }
 
 const deletionSummary = async (user: { id: string; role: string }) => {
-  const [hasPassword, totals] = await Promise.all([
+  const [hasPassword, totals, messageCount] = await Promise.all([
     accountRepo.hasPassword(user.id),
     user.role === 'teacher'
       ? accountRepo.countClassesAndStudents(user.id)
-      : accountRepo.countStudentClasses(user.id)
+      : accountRepo.countStudentClasses(user.id),
+    messageRepo.countByAuthor(user.id)
   ])
-  return { hasPassword, ...totals }
+  return { hasPassword, ...totals, messageCount }
 }
 
 const verifyPassword = async (

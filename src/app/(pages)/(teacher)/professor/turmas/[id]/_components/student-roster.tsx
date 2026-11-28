@@ -18,6 +18,7 @@ import {
 import { HealthBar } from '@/app/components/ui/8bit/health-bar'
 import { useToast } from '@/app/components/ui/8bit/toast'
 import { XpBar } from '@/app/components/ui/8bit/xp-bar'
+import { ActionButton } from '@/app/components/ui/custom/action-button'
 import { CoinCounter } from '@/app/components/ui/custom/coin-counter'
 import { ConfirmActionDialog } from '@/app/components/ui/custom/confirm-action-dialog'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
@@ -43,6 +44,7 @@ type StudentRosterProps = {
     pending: boolean
     email?: string
     deletable: boolean
+    muted: boolean
     hp: number
     coins: number
     progress: { level: number; current: number; max: number }
@@ -60,6 +62,7 @@ type StudentRosterProps = {
     studentId: string,
     input: { characterClass: CharacterClass }
   ) => Promise<FormState>
+  muteAction: (studentId: string, muted: boolean) => Promise<FormState>
 }
 
 const IDLE_STATE: FormState = { status: 'idle' }
@@ -75,7 +78,8 @@ export const StudentRoster = ({
   undoAction,
   removeAction,
   deleteAccountAction,
-  changeCharacterClassAction
+  changeCharacterClassAction,
+  muteAction
 }: StudentRosterProps) => {
   // Out here because the dialog leaves with its row. This message also takes the focus, since the
   // trigger the dialog would return it to is gone
@@ -180,6 +184,7 @@ export const StudentRoster = ({
                     pending,
                     email,
                     deletable,
+                    muted,
                     hp,
                     coins,
                     progress,
@@ -312,6 +317,26 @@ export const StudentRoster = ({
                               return result
                             }}
                           />
+                        )}
+                        {/* A pending student can't sign in, so there's nothing to mute yet */}
+                        {!pending && (
+                          <ActionButton
+                            pendingLabel={muted ? 'Reativando' : 'Silenciando'}
+                            variant="outline"
+                            action={() => muteAction(id, !muted)}
+                            onResult={(result) => {
+                              // A toast, not the roster's message: the button keeps the focus
+                              if (result.status === 'success')
+                                toast.add({ title: result.message })
+                              else setFeedback(result)
+                            }}
+                          >
+                            {muted ? 'Reativar no mural' : 'Silenciar no mural'}
+                            <span className="sr-only">
+                              {' '}
+                              {identifyStudent(name, email ?? username)}
+                            </span>
+                          </ActionButton>
                         )}
                         <ConfirmActionDialog
                           triggerLabel={

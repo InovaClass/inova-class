@@ -34,6 +34,10 @@ const PrivacyPage = () => (
         Google, se você escolher entrar por ele: nome e e-mail da sua conta. Não
         guardamos sua foto.
       </li>
+      <li>
+        Mural da turma: as mensagens que você escreve, lidas pelo professor e
+        pelos colegas da turma. O professor vê também as mensagens removidas.
+      </li>
       <li>Sessão: endereço IP e identificação do navegador.</li>
       <li>
         Aceite: a data em que você aceitou os Termos de Uso e esta política.

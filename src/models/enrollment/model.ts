@@ -88,12 +88,14 @@ const listRoster = async (teacherId: string, classId: string) => {
           xp,
           hp,
           coins,
+          chatMutedAt,
           ...character
         }) => ({
           id,
           name,
           username,
           pending,
+          muted: chatMutedAt !== null,
           email: pending ? email : undefined,
           deletable: deletableIds.has(id),
           hp,
@@ -112,10 +114,21 @@ const findOfStudent = async (studentId: string, classId: string) => {
     ? await enrollmentRepo.findOfStudent(studentId, classId)
     : undefined
   if (!enrollment) return
-  const { className, rankingVisible, xp, hp, coins, ...character } = enrollment
+  const {
+    className,
+    rankingVisible,
+    chatEnabled,
+    chatMutedAt,
+    xp,
+    hp,
+    coins,
+    ...character
+  } = enrollment
   return {
     className,
     rankingVisible,
+    chatEnabled,
+    chatMuted: chatMutedAt !== null,
     hp,
     coins,
     progress: levelProgress(xp),

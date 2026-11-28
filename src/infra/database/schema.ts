@@ -114,6 +114,7 @@ export const classes = snakeCase.table(
     joinCodeEnabled: boolean().notNull().default(true),
     rankingVisible: boolean().notNull().default(false),
     itemShopEnabled: boolean().notNull().default(true),
+    chatEnabled: boolean().notNull().default(false),
     archivedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },
@@ -144,6 +145,8 @@ export const enrollments = snakeCase.table(
     hairColor: text(),
     outfitColor: text(),
     equippedItems: text().array().notNull().default([]),
+    // A muted student still reads the class board, but can't post to it (#99)
+    chatMutedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },
   (table) => [
@@ -477,6 +480,29 @@ export const ownedItems = snakeCase.table(
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
   },
   (table) => [unique().on(table.studentId, table.itemId)]
+)
+
+// The author is the account, not the enrollment, since the teacher posts too. Removing one sets
+// `removedAt`, so the teacher still sees what was removed and by whom (#99)
+export const classMessages = snakeCase.table(
+  'class_messages',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    classId: uuid()
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    authorId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    body: text().notNull(),
+    removedAt: timestamp({ withTimezone: true }),
+    removedById: uuid().references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    index().on(table.classId, table.createdAt),
+    index().on(table.authorId, table.createdAt)
+  ]
 )
 
 // One row per student instead of one per attempt, so the table doesn't grow with each attempt (#58)

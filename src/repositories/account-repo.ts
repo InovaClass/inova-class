@@ -16,6 +16,7 @@ import { database } from '@/infra/database/client'
 import {
   accounts,
   classes,
+  classMessages,
   enrollments,
   rewardOrders,
   rewards,
@@ -151,6 +152,12 @@ const deleteUsers = async (transaction: Transaction, userIds: string[]) => {
     .from(classes)
     .where(inArray(classes.teacherId, userIds))
 
+  // A student who left a class still has messages on its board
+  const boards = await transaction
+    .selectDistinct({ classId: classMessages.classId })
+    .from(classMessages)
+    .where(inArray(classMessages.authorId, userIds))
+
   const deleted = await transaction
     .delete(users)
     .where(inArray(users.id, userIds))
@@ -173,7 +180,8 @@ const deleteUsers = async (transaction: Transaction, userIds: string[]) => {
     classIds: [
       ...new Set([
         ...locked.flatMap(({ classId, endedAt }) => (endedAt ? [] : classId)),
-        ...ownedClasses.map(({ id }) => id)
+        ...ownedClasses.map(({ id }) => id),
+        ...boards.map(({ classId }) => classId)
       ])
     ]
   }
