@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { cn } from 'cn'
+import { type FocusEvent, useState } from 'react'
 
 import {
   Empty,
@@ -30,6 +31,13 @@ export type BoardMessage = {
 
 type MessageBoardProps = {
   messages: BoardMessage[]
+  // Each discussion of a mission page has its own list, so the names tell them apart
+  listLabel?: string
+  emptyDescription?: string
+  removeDescription?: string
+  emptyTitleClassName?: string
+  // Several discussions share a mission page, so a success stays only while the user works in its own
+  clearsSuccessOnLeave?: boolean
   removeAction: (messageId: string) => Promise<FormState>
   muteAction?: (studentId: string, muted: boolean) => Promise<FormState>
 }
@@ -38,6 +46,11 @@ const IDLE_STATE: FormState = { status: 'idle' }
 
 export const MessageBoard = ({
   messages,
+  listLabel = 'Mensagens',
+  emptyDescription = 'As mensagens da turma aparecem aqui.',
+  removeDescription = 'A mensagem sairá do mural da turma. Não é possível desfazer.',
+  emptyTitleClassName,
+  clearsSuccessOnLeave = false,
   removeAction,
   muteAction
 }: MessageBoardProps) => {
@@ -46,13 +59,23 @@ export const MessageBoard = ({
   // The mute button keeps the focus, so its success is only announced: FormMessage would take it
   const [muteResult, setMuteResult] = useState<FormState>(IDLE_STATE)
 
+  // A focus that drops to the body (a refresh removed its control) has no `relatedTarget` and keeps it
+  const clearSuccessOnLeave = (event: FocusEvent<HTMLDivElement>) => {
+    const next = event.relatedTarget
+    if (!next || event.currentTarget.contains(next)) return
+    if (feedback.status === 'success') setFeedback(IDLE_STATE)
+  }
+
   const showMuteResult = (result: FormState) => {
     setMuteResult(result)
     setFeedback(result.status === 'error' ? result : IDLE_STATE)
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div
+      className="flex flex-col gap-6"
+      onBlur={clearsSuccessOnLeave ? clearSuccessOnLeave : undefined}
+    >
       <FormMessage state={feedback} />
       <p aria-live="polite" className="sr-only">
         {muteResult.status === 'success' && (
@@ -62,17 +85,19 @@ export const MessageBoard = ({
       {messages.length === 0 ? (
         <Empty className="p-0 md:p-0">
           <EmptyHeader>
-            <EmptyTitle className="text-sm leading-relaxed">
+            <EmptyTitle
+              className={cn('text-sm leading-relaxed', emptyTitleClassName)}
+            >
               Nenhuma mensagem ainda
             </EmptyTitle>
             <EmptyDescription className="text-xs leading-relaxed">
-              As mensagens da turma aparecem aqui.
+              {emptyDescription}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
         // Tailwind's `list-style: none` makes Safari drop the list semantics
-        <ul role="list" aria-label="Mensagens" className="flex flex-col gap-8">
+        <ul role="list" aria-label={listLabel} className="flex flex-col gap-8">
           {messages.map((message) => {
             const messageLabel = message.isOwn
               ? 'sua mensagem'
@@ -96,7 +121,7 @@ export const MessageBoard = ({
                         </>
                       }
                       title="Remover mensagem?"
-                      description="A mensagem sairá do mural da turma. Não é possível desfazer."
+                      description={removeDescription}
                       confirmLabel="Remover"
                       confirmPendingLabel="Removendo"
                       action={async () => {

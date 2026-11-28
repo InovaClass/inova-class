@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
@@ -39,6 +39,8 @@ type ObjectiveListProps = {
   // Only a published mission's objectives can be completed, since a draft is hidden from the students
   published: boolean
   objectives: Objective[]
+  // Rendered by the page, so the discussions stay Server Components
+  threads: Partial<Record<string, ReactNode>>
   moveAction: (
     objectiveId: string,
     direction: MoveDirection
@@ -64,6 +66,7 @@ export const ObjectiveList = ({
   objectivesPath,
   published,
   objectives,
+  threads,
   moveAction,
   removeAction
 }: ObjectiveListProps) => {
@@ -131,7 +134,7 @@ export const ObjectiveList = ({
             </Empty>
           ) : (
             // Tailwind's `list-style: none` makes Safari drop the list semantics
-            <ol role="list" ref={listReference} className="flex flex-col gap-6">
+            <ol role="list" ref={listReference} className="flex flex-col gap-8">
               {objectives.map((objective, index) => {
                 const directions = (['up', 'down'] as const).filter(
                   (direction) =>
@@ -141,84 +144,87 @@ export const ObjectiveList = ({
                 )
                 const penalty = describeLatePenalty(objective)
                 return (
-                  <li
-                    key={objective.id}
-                    className="flex flex-wrap items-center justify-between gap-4"
-                  >
-                    <div className="flex min-w-0 flex-1 basis-48 flex-col gap-2">
-                      <p className="text-xs leading-relaxed wrap-anywhere">
-                        {index + 1}. {objective.name}
-                      </p>
-                      <p className="line-clamp-3 text-xs leading-relaxed wrap-anywhere whitespace-pre-line text-muted-foreground">
-                        {objective.story}
-                      </p>
-                      <p className="flex flex-wrap gap-x-4 gap-y-2 text-xs leading-relaxed text-muted-foreground">
-                        <span>
-                          {objective.dueOn
-                            ? `Prazo: ${formatDueOn(objective.dueOn)}`
-                            : 'Sem prazo'}
-                        </span>
-                        <span>
-                          Recompensa: {describeObjectiveReward(objective)}
-                        </span>
-                        {penalty && <span>Atraso: {penalty}</span>}
-                      </p>
-                    </div>
-                    {/* The frame is drawn outside the buttons, so the row needs room for it */}
-                    <div className="flex flex-wrap gap-6 p-1.5">
-                      {directions.map((direction) => (
-                        <ActionButton
-                          pendingLabel={MOVE_PENDING_LABELS[direction]}
-                          key={direction}
-                          variant="outline"
-                          data-objective={objective.id}
-                          data-direction={direction}
-                          action={() => moveAction(objective.id, direction)}
-                          onResult={handleMove({
-                            objectiveId: objective.id,
-                            direction
-                          })}
-                        >
-                          {MOVE_LABELS[direction]}
-                          <span className="sr-only"> {objective.name}</span>
-                        </ActionButton>
-                      ))}
-                      {published && (
+                  <li key={objective.id} className="flex flex-col gap-6">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex min-w-0 flex-1 basis-48 flex-col gap-2">
+                        <h3 className="text-xs leading-relaxed wrap-anywhere">
+                          {index + 1}. {objective.name}
+                        </h3>
+                        <p className="line-clamp-3 text-xs leading-relaxed wrap-anywhere whitespace-pre-line text-muted-foreground">
+                          {objective.story}
+                        </p>
+                        <p className="flex flex-wrap gap-x-4 gap-y-2 text-xs leading-relaxed text-muted-foreground">
+                          <span>
+                            {objective.dueOn
+                              ? `Prazo: ${formatDueOn(objective.dueOn)}`
+                              : 'Sem prazo'}
+                          </span>
+                          <span>
+                            Recompensa: {describeObjectiveReward(objective)}
+                          </span>
+                          {penalty && <span>Atraso: {penalty}</span>}
+                        </p>
+                      </div>
+                      {/* The frame is drawn outside the buttons, so the row needs room for it */}
+                      <div className="flex flex-wrap gap-6 p-1.5">
+                        {directions.map((direction) => (
+                          <ActionButton
+                            pendingLabel={MOVE_PENDING_LABELS[direction]}
+                            key={direction}
+                            variant="outline"
+                            data-objective={objective.id}
+                            data-direction={direction}
+                            action={() => moveAction(objective.id, direction)}
+                            onResult={handleMove({
+                              objectiveId: objective.id,
+                              direction
+                            })}
+                          >
+                            {MOVE_LABELS[direction]}
+                            <span className="sr-only"> {objective.name}</span>
+                          </ActionButton>
+                        ))}
+                        {published && (
+                          <Link
+                            href={`${objectivesPath}/${objective.id}/concluir`}
+                            className={linkButtonVariants({
+                              variant: 'outline'
+                            })}
+                          >
+                            Concluir
+                            <span className="sr-only"> {objective.name}</span>
+                          </Link>
+                        )}
                         <Link
-                          href={`${objectivesPath}/${objective.id}/concluir`}
+                          href={`${objectivesPath}/${objective.id}/editar`}
                           className={linkButtonVariants({ variant: 'outline' })}
                         >
-                          Concluir
+                          Editar
                           <span className="sr-only"> {objective.name}</span>
                         </Link>
-                      )}
-                      <Link
-                        href={`${objectivesPath}/${objective.id}/editar`}
-                        className={linkButtonVariants({ variant: 'outline' })}
-                      >
-                        Editar
-                        <span className="sr-only"> {objective.name}</span>
-                      </Link>
-                      <ConfirmActionDialog
-                        triggerLabel={
-                          <>
-                            Remover
-                            <span className="sr-only"> {objective.name}</span>
-                          </>
-                        }
-                        title="Remover objetivo?"
-                        description={`${objective.name} sairá da missão.`}
-                        confirmLabel="Remover"
-                        confirmPendingLabel="Removendo"
-                        action={async () => {
-                          const result = await removeAction(objective.id)
-                          // The objective stays listed, so the message of an earlier removal would mislead
-                          if (result.status === 'error') setFeedback(IDLE_STATE)
-                          return result
-                        }}
-                        onSuccess={setFeedback}
-                      />
+                        <ConfirmActionDialog
+                          triggerLabel={
+                            <>
+                              Remover
+                              <span className="sr-only"> {objective.name}</span>
+                            </>
+                          }
+                          title="Remover objetivo?"
+                          description={`${objective.name} sairá da missão.`}
+                          confirmLabel="Remover"
+                          confirmPendingLabel="Removendo"
+                          action={async () => {
+                            const result = await removeAction(objective.id)
+                            // The objective stays listed, so the message of an earlier removal would mislead
+                            if (result.status === 'error')
+                              setFeedback(IDLE_STATE)
+                            return result
+                          }}
+                          onSuccess={setFeedback}
+                        />
+                      </div>
                     </div>
+                    {threads[objective.id]}
                   </li>
                 )
               })}

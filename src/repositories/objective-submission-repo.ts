@@ -71,6 +71,56 @@ const hasOpenSubmission = async (
   return rows.length > 0
 }
 
+// What decides whether the student reached an objective of a published mission, read inside the
+// caller's transaction, so a post checks it under the lock of the enrollment
+const objectiveAccessOf = async (
+  transaction: Transaction,
+  enrollmentId: string,
+  classId: string,
+  objectiveId: string
+) => {
+  const [objective] = await transaction
+    .select({
+      missionId: objectives.missionId,
+      discussionEnabled: objectives.discussionEnabled
+    })
+    .from(objectives)
+    .innerJoin(missions, eq(missions.id, objectives.missionId))
+    .where(and(eq(objectives.id, objectiveId), activeObjectiveOfClass(classId)))
+  if (!objective) return
+
+  const missionObjectives = await transaction
+    .select({ id: objectives.id })
+    .from(objectives)
+    .where(
+      and(
+        eq(objectives.missionId, objective.missionId),
+        isNull(objectives.removedAt)
+      )
+    )
+    .orderBy(asc(objectives.position))
+  const objectiveIds = missionObjectives.map(({ id }) => id)
+  const submitted = await transaction
+    .selectDistinct({ objectiveId: objectiveSubmissions.objectiveId })
+    .from(objectiveSubmissions)
+    .where(
+      and(
+        eq(objectiveSubmissions.enrollmentId, enrollmentId),
+        inArray(objectiveSubmissions.objectiveId, objectiveIds)
+      )
+    )
+  return {
+    discussionEnabled: objective.discussionEnabled,
+    objectiveIds,
+    submittedObjectiveIds: new Set(submitted.map((row) => row.objectiveId)),
+    hasOpenSubmission: await hasOpenSubmission(
+      transaction,
+      enrollmentId,
+      objectiveId
+    )
+  }
+}
+
 // Under the lock the ledger takes on the enrollment, so a submission and the teacher's completion of
 // the same objective never both go through. `check` may throw to cancel the transaction
 const submit = async (
@@ -96,43 +146,18 @@ const submit = async (
       .for('update', { of: enrollments })
     if (!enrollment) return 'not_enrolled' as const
 
-    const [objective] = await transaction
-      .select({ missionId: objectives.missionId })
-      .from(objectives)
-      .innerJoin(missions, eq(missions.id, objectives.missionId))
-      .where(
-        and(eq(objectives.id, objectiveId), activeObjectiveOfClass(classId))
-      )
-    if (!objective) return 'objective_not_found' as const
-
-    const missionObjectives = await transaction
-      .select({ id: objectives.id })
-      .from(objectives)
-      .where(
-        and(
-          eq(objectives.missionId, objective.missionId),
-          isNull(objectives.removedAt)
-        )
-      )
-      .orderBy(asc(objectives.position))
-    const objectiveIds = missionObjectives.map(({ id }) => id)
-    const submitted = await transaction
-      .selectDistinct({ objectiveId: objectiveSubmissions.objectiveId })
-      .from(objectiveSubmissions)
-      .where(
-        and(
-          eq(objectiveSubmissions.enrollmentId, enrollment.id),
-          inArray(objectiveSubmissions.objectiveId, objectiveIds)
-        )
-      )
+    const access = await objectiveAccessOf(
+      transaction,
+      enrollment.id,
+      classId,
+      objectiveId
+    )
+    if (!access) return 'objective_not_found' as const
+    const { objectiveIds, submittedObjectiveIds } = access
     check({
       objectiveIds,
-      submittedObjectiveIds: new Set(submitted.map((row) => row.objectiveId)),
-      hasOpenSubmission: await hasOpenSubmission(
-        transaction,
-        enrollment.id,
-        objectiveId
-      )
+      submittedObjectiveIds,
+      hasOpenSubmission: access.hasOpenSubmission
     })
 
     const [created] = await transaction
@@ -358,7 +383,8 @@ const listMissionsOfStudent = async (
         xpReward: objectives.xpReward,
         coinReward: objectives.coinReward,
         latePenaltyCoins: objectives.latePenaltyCoins,
-        latePenaltyHp: objectives.latePenaltyHp
+        latePenaltyHp: objectives.latePenaltyHp,
+        discussionEnabled: objectives.discussionEnabled
       }
     })
     .from(objectives)
@@ -402,6 +428,7 @@ const listMissionsOfStudent = async (
 }
 
 export const objectiveSubmissionRepo = {
+  objectiveAccessOf,
   submit,
   findPending,
   settle,

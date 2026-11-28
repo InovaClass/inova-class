@@ -12,8 +12,14 @@ export const boardClosed = () =>
 
 export const studentMuted = () =>
   new ValidationError({
-    message: 'O professor silenciou você neste mural.',
-    action: 'Você ainda pode ler as mensagens da turma.'
+    message: 'O professor silenciou você nas mensagens da turma.',
+    action: 'Você ainda pode ler as mensagens.'
+  })
+
+export const discussionClosed = () =>
+  new ValidationError({
+    message: 'A discussão deste objetivo está fechada.',
+    action: 'As mensagens enviadas continuam visíveis.'
   })
 
 export const tooManyMessages = () =>
@@ -24,6 +30,6 @@ export const tooManyMessages = () =>
 
 export const messageNotFound = () =>
   new NotFoundError({
-    message: 'Essa mensagem não está mais no mural.',
+    message: 'Essa mensagem não está mais aqui.',
     action: 'Atualize a página para ver as mensagens.'
   })

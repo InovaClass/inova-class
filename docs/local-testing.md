@@ -163,10 +163,18 @@ To see the error of a failed restore, open `/professor/turmas/arquivadas` in two
 2. **A:** click "Abrir mural": the text turns into "Aberto: ..." and the button into "Fechar mural". Click "Enviar" without text (it asks for the message), then post one: the field clears and the message shows on top with "Professor" and the date. A text with line breaks keeps them, and HTML or a link shows as plain text.
 3. **B:** reload the class page and click "Mural": A's message is there. Post one: it shows on the right with "Você". **A:** without reloading, B's message shows up with B's avatar and name.
 4. **B:** post several messages in a row: the sixth within a minute shows "Você enviou muitas mensagens seguidas." Wait a minute and it goes through again.
-5. **A:** click "Silenciar" on one of B's messages: it turns into "Reativar". **B:** without reloading, the composer gives way to "O professor silenciou você neste mural.", and the messages stay listed. **A:** "Silenciar no mural" on B's row of the class page reads "Reativar no mural" too; click it. **B:** the composer comes back.
+5. **A:** click "Silenciar" on one of B's messages: it turns into "Reativar". **B:** without reloading, the composer gives way to "O professor silenciou você nas mensagens da turma. Você ainda pode ler o mural.", and the messages stay listed. **A:** "Silenciar no mural" on B's row of the class page reads "Reativar no mural" too; click it. **B:** the composer comes back.
 6. **B:** click "Remover" on one of B's own messages and confirm: it leaves the board, and A's messages have no "Remover". **A:** without reloading, the message stays, faded, with "Removida por ... em .... Os alunos não a veem mais." Remove another of B's messages: **B:** without reloading, it leaves B's board.
 7. With more than 30 messages (`pnpm db:seed:awards` doesn't post any, so post them or insert them in the database), "Carregar anteriores" shows under the list and adds the older ones below without jumping to the top. Once there's nothing older, the link gives way to "Não há mensagens anteriores.".
 8. **A:** click "Fechar mural". **B:** reload: the class page has no "Mural" again. **A:** the board and its messages are still there.
+
+The discussion of an objective works with the board closed:
+
+9. **A:** in a mission with at least two objectives, edit the first one, tick "Abrir a discussão aos alunos que chegarem a este objetivo" and save. The mission page shows "Discussão" under it; post a message there. It doesn't show on the class board.
+10. **B:** open the mission (published): the first objective shows the discussion with A's message, and B posts one. **A:** without reloading, B's message shows up, with "Silenciar" and "Remover" as on the board. The second objective has no discussion for B while it's locked, even if A opened its discussion.
+11. **A:** mute B from the board or the roster. **B:** without reloading, the discussion's composer gives way to "O professor silenciou você nas mensagens da turma. Você ainda pode ler a discussão." **A:** lift the mute.
+12. **A:** edit the objective and clear the discussion checkbox: the mission page reads "A discussão está fechada. ..." instead of the composer, with the messages still listed. **B:** reload: "O professor fechou a discussão. Você ainda pode ler as mensagens." An objective whose discussion was never opened shows none.
+13. With more than 30 messages in two discussions of the same mission, "Carregar anteriores" in one adds its older messages and takes the other back to its latest 30: only one discussion is expanded at a time.
 
 ## 12. Invite a student by email
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { Textarea } from '@/app/components/ui/8bit/textarea'
+import { FormCheckbox } from '@/app/components/ui/custom/form-checkbox'
 import { FieldFrame, FormField } from '@/app/components/ui/custom/form-field'
 import { FormMessage } from '@/app/components/ui/custom/form-message'
 import { SubmitButton } from '@/app/components/ui/custom/submit-button'
@@ -36,17 +37,19 @@ export const ObjectiveForm = ({
     xpReward: '',
     coinReward: '',
     latePenaltyCoins: '',
-    latePenaltyHp: ''
+    latePenaltyHp: '',
+    discussionEnabled: false
   },
   action,
   submitLabel,
   submitPendingLabel
 }: ObjectiveFormProps) => {
-  const { field, state, pending, announcement, formProps } = useFormAction({
-    schema: objectiveSchema,
-    defaultValues,
-    action
-  })
+  const { field, control, state, pending, announcement, formProps } =
+    useFormAction({
+      schema: objectiveSchema,
+      defaultValues,
+      action
+    })
   const { error: storyError, ...story } = field('story')
 
   return (
@@ -92,6 +95,11 @@ export const ObjectiveForm = ({
         hint={`De 0 a ${HP_MAX}. Vale para uma entrega depois do prazo.`}
         {...POINTS_INPUT}
         {...field('latePenaltyHp')}
+      />
+      <FormCheckbox
+        control={control}
+        name="discussionEnabled"
+        label="Abrir a discussão aos alunos que chegarem a este objetivo"
       />
       <FormMessage state={state} announcement={announcement} />
       <SubmitButton pending={pending} pendingLabel={submitPendingLabel}>

@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from 'cn'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 
 import { objectiveAnchorOf } from '@/app/(pages)/(student)/mission-links'
 import { Card, CardHeader } from '@/app/components/ui/8bit/card'
@@ -39,6 +39,8 @@ type Objective =
 
 type ObjectiveListProps = {
   objectives: Objective[]
+  // Rendered by the page, so the discussions stay Server Components
+  threads: Partial<Record<string, ReactNode>>
   submitAction: (
     objectiveId: string,
     input: SubmissionInput
@@ -57,6 +59,7 @@ const STATE_LABELS: Record<ObjectiveState, string> = {
 
 export const ObjectiveList = ({
   objectives,
+  threads,
   submitAction
 }: ObjectiveListProps) => {
   // Out here because the form leaves once the objective is sent. This message also takes the focus,
@@ -119,6 +122,7 @@ export const ObjectiveList = ({
                   }
                 />
               )}
+              {threads[objective.id]}
             </li>
           ))}
         </ol>

@@ -8,9 +8,15 @@ import { linkButtonVariants } from '@/app/components/ui/8bit/button'
 type LoadEarlierLinkProps = {
   href: string
   hasMore: boolean
+  // Read only by assistive technology, so the links of several discussions on a page tell apart
+  linkSuffix?: string
 }
 
-export const LoadEarlierLink = ({ href, hasMore }: LoadEarlierLinkProps) => {
+export const LoadEarlierLink = ({
+  href,
+  hasMore,
+  linkSuffix
+}: LoadEarlierLinkProps) => {
   const endOfBoard = useRef<HTMLParagraphElement>(null)
   const hadMore = useRef(hasMore)
 
@@ -36,6 +42,7 @@ export const LoadEarlierLink = ({ href, hasMore }: LoadEarlierLinkProps) => {
         className={linkButtonVariants({ variant: 'outline' })}
       >
         Carregar anteriores
+        {linkSuffix && <span className="sr-only">{linkSuffix}</span>}
       </Link>
     </div>
   ) : (

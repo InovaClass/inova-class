@@ -19,6 +19,7 @@ export type ObjectiveFields = Pick<
   | 'coinReward'
   | 'latePenaltyCoins'
   | 'latePenaltyHp'
+  | 'discussionEnabled'
 >
 
 const isActiveObjective = isNull(objectives.removedAt)
@@ -44,7 +45,8 @@ const objectiveFieldColumns = {
   xpReward: objectives.xpReward,
   coinReward: objectives.coinReward,
   latePenaltyCoins: objectives.latePenaltyCoins,
-  latePenaltyHp: objectives.latePenaltyHp
+  latePenaltyHp: objectives.latePenaltyHp,
+  discussionEnabled: objectives.discussionEnabled
 }
 
 const objectiveColumns = { id: objectives.id, ...objectiveFieldColumns }

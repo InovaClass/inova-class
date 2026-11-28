@@ -271,6 +271,7 @@ export const objectives = snakeCase.table(
     coinReward: integer().notNull(),
     latePenaltyCoins: integer().notNull(),
     latePenaltyHp: integer().notNull(),
+    discussionEnabled: boolean().notNull().default(false),
     removedAt: timestamp({ withTimezone: true }),
     ...timestamps
   },
@@ -494,6 +495,10 @@ export const classMessages = snakeCase.table(
     authorId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    // Set for the discussion of an objective, empty for the class board (#100)
+    objectiveId: uuid().references(() => objectives.id, {
+      onDelete: 'cascade'
+    }),
     body: text().notNull(),
     removedAt: timestamp({ withTimezone: true }),
     removedById: uuid().references(() => users.id, { onDelete: 'set null' }),
@@ -501,6 +506,7 @@ export const classMessages = snakeCase.table(
   },
   (table) => [
     index().on(table.classId, table.createdAt),
+    index().on(table.objectiveId, table.createdAt),
     index().on(table.authorId, table.createdAt)
   ]
 )
