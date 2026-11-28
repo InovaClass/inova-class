@@ -43,7 +43,7 @@ export const removeMessage = async (
     return formSuccess('Mensagem removida.')
   })
 
-// Also on the class page's actions, since a page imports only its own `_components/`
+// Also on the class page's and the mission page's actions, since a page imports only its own `_components/`
 export const setStudentMuted = async (
   classId: string,
   studentId: string,
@@ -54,6 +54,8 @@ export const setStudentMuted = async (
     await messageModel.setMuted(user.id, classId, studentId, muted)
     revalidatePath('/professor', 'layout')
     return formSuccess(
-      muted ? 'Aluno silenciado no mural.' : 'Aluno reativado no mural.'
+      muted
+        ? 'Aluno silenciado nas mensagens da turma.'
+        : 'Aluno reativado nas mensagens da turma.'
     )
   })

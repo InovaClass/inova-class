@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { formAction, type FormState, formSuccess } from '@/entry/form-action'
 import { requireRole } from '@/entry/session'
+import { messageModel } from '@/models/message/model'
+import type { MessageInput } from '@/models/message/schema'
 import { missionModel } from '@/models/mission/model'
 
 export const publishMission = async (
@@ -46,4 +48,49 @@ export const removeObjective = async (
     await missionModel.removeObjective(user.id, classId, missionId, objectiveId)
     revalidatePath('/professor', 'layout')
     return formSuccess('Objetivo removido.')
+  })
+
+export const postThreadMessage = async (
+  classId: string,
+  objectiveId: string,
+  input: MessageInput
+): Promise<FormState<MessageInput>> =>
+  formAction(input, async (values) => {
+    const { user } = await requireRole('teacher')
+    await messageModel.postToThreadAsTeacher(
+      user.id,
+      classId,
+      objectiveId,
+      values
+    )
+    revalidatePath('/professor', 'layout')
+    return formSuccess('Mensagem enviada.')
+  })
+
+export const removeThreadMessage = async (
+  classId: string,
+  messageId: string
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('teacher')
+    await messageModel.removeAsTeacher(user.id, classId, messageId)
+    revalidatePath('/professor', 'layout')
+    return formSuccess('Mensagem removida.')
+  })
+
+// Also on the board's and the class page's actions, since a page imports only its own `_components/`
+export const setStudentMuted = async (
+  classId: string,
+  studentId: string,
+  muted: boolean
+): Promise<FormState> =>
+  formAction({}, async () => {
+    const { user } = await requireRole('teacher')
+    await messageModel.setMuted(user.id, classId, studentId, muted)
+    revalidatePath('/professor', 'layout')
+    return formSuccess(
+      muted
+        ? 'Aluno silenciado nas mensagens da turma.'
+        : 'Aluno reativado nas mensagens da turma.'
+    )
   })

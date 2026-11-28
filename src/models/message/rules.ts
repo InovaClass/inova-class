@@ -3,7 +3,9 @@ import type { UserRole } from '@/constants/user'
 import { MESSAGE_RATE_LIMIT, MESSAGES_MAX_PAGES } from './constants'
 
 export type StudentPoster = {
-  chatEnabled: boolean
+  // The class board is open, or the discussion of the objective, which doesn't depend on the board
+  open: boolean
+  // One mute covers the board and every discussion of the class
   mutedAt: Date | null
   // The messages the student posted to this class within the rate window
   recentCount: number
@@ -12,11 +14,11 @@ export type StudentPoster = {
 export type PostBlock = 'closed' | 'muted' | 'rate-limited'
 
 export const postBlockOf = ({
-  chatEnabled,
+  open,
   mutedAt,
   recentCount
 }: StudentPoster): PostBlock | undefined => {
-  if (!chatEnabled) return 'closed'
+  if (!open) return 'closed'
   if (mutedAt) return 'muted'
   if (recentCount >= MESSAGE_RATE_LIMIT) return 'rate-limited'
 }
@@ -32,3 +34,12 @@ export const canRemove = (
 // The board grows by whole pages from the latest message, so a refresh keeps the older ones listed
 export const boardPagesOf = (pages: number) =>
   Math.min(Math.max(Math.trunc(pages) || 1, 1), MESSAGES_MAX_PAGES)
+
+// Turning a discussion off keeps what was said readable, so only an empty one leaves the page
+export const isThreadShown = ({
+  discussionEnabled,
+  messageCount
+}: {
+  discussionEnabled: boolean
+  messageCount: number
+}) => discussionEnabled || messageCount > 0

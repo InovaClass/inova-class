@@ -13,12 +13,18 @@ import { type MessageInput, messageSchema } from '@/models/message/schema'
 
 type MessageComposerProps = {
   hint: string
+  // Each discussion of a mission page has its own form, so the names tell them apart
+  label?: string
   action: (input: MessageInput) => Promise<FormState<MessageInput>>
 }
 
 const IDLE_STATE: FormState = { status: 'idle' }
 
-export const MessageComposer = ({ hint, action }: MessageComposerProps) => {
+export const MessageComposer = ({
+  hint,
+  label = 'Nova mensagem',
+  action
+}: MessageComposerProps) => {
   // The form stays for the next message, so a success is only announced: FormMessage would take the
   // focus away from it
   const [posted, setPosted] = useState<FormState>(IDLE_STATE)
@@ -37,11 +43,7 @@ export const MessageComposer = ({ hint, action }: MessageComposerProps) => {
   const { error: bodyError, ...body } = field('body')
 
   return (
-    <form
-      {...formProps}
-      aria-label="Nova mensagem"
-      className="flex flex-col gap-6"
-    >
+    <form {...formProps} aria-label={label} className="flex flex-col gap-6">
       <FieldFrame
         label="Mensagem"
         hint={`${hint} Até ${MESSAGE_MAX_LENGTH} caracteres.`}

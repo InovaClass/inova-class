@@ -53,7 +53,8 @@ const EditObjectivePage = async ({
             xpReward: blankIfZero(objective.xpReward),
             coinReward: blankIfZero(objective.coinReward),
             latePenaltyCoins: blankIfZero(objective.latePenaltyCoins),
-            latePenaltyHp: blankIfZero(objective.latePenaltyHp)
+            latePenaltyHp: blankIfZero(objective.latePenaltyHp),
+            discussionEnabled: objective.discussionEnabled
           }}
           action={updateObjective.bind(null, classId, missionId, objectiveId)}
           submitLabel="Salvar"

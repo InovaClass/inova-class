@@ -1,8 +1,9 @@
+import { eq } from 'drizzle-orm'
 import { describe, expect, test } from 'vitest'
 
 import type { UserRole } from '@/constants/user'
 import { database } from '@/infra/database/client'
-import { classMessages, users } from '@/infra/database/schema'
+import { classMessages, objectives, users } from '@/infra/database/schema'
 import {
   NotFoundError,
   TooManyRequestsError,
@@ -15,6 +16,8 @@ import {
   MESSAGE_RATE_WINDOW_IN_MS
 } from '@/models/message/constants'
 import { messageModel } from '@/models/message/model'
+import { missionModel } from '@/models/mission/model'
+import { objectiveSubmissionModel } from '@/models/objective-submission/model'
 import { orchestrator } from '@/tests/orchestrator'
 
 const newUserId = async (role: UserRole) => {
@@ -141,5 +144,259 @@ describe('messageModel.postAsStudent rate limit', () => {
 
     const board = await messageModel.listForTeacher(teacherId, classId)
     expect(board.messages).toHaveLength(MESSAGE_RATE_LIMIT + 1)
+  })
+})
+
+const newDiscussion = async ({ publish = true } = {}) => {
+  const { teacherId, classId, studentId } = await newBoard()
+  // The discussion works with the class board closed
+  await classModel.setChatEnabled(teacherId, classId, false)
+  const { id: missionId } = await missionModel.create(teacherId, classId, {
+    name: 'A floresta',
+    description: '',
+    map: 'forest'
+  })
+  const objectiveIds: string[] = []
+  for (const name of ['A trilha', 'A ponte']) {
+    const { id } = await missionModel.createObjective(
+      teacherId,
+      classId,
+      missionId,
+      {
+        name,
+        story: 'A vila precisa de ajuda.',
+        dueOn: '',
+        xpReward: '10',
+        coinReward: '',
+        latePenaltyCoins: '',
+        latePenaltyHp: '',
+        discussionEnabled: true
+      }
+    )
+    objectiveIds.push(id)
+  }
+  if (publish) await missionModel.publish(teacherId, classId, missionId)
+  const [firstId, secondId] = objectiveIds as [string, string]
+  return { teacherId, classId, studentId, missionId, firstId, secondId }
+}
+
+const threadBodies = (
+  threads: { objectiveId: string; messages: { body: string }[] }[],
+  objectiveId: string
+) =>
+  threads
+    .find((thread) => thread.objectiveId === objectiveId)
+    ?.messages.map(({ body }) => body)
+
+describe('messageModel discussions', () => {
+  test('keeps the messages of a discussion off the class board', async () => {
+    const { teacherId, classId, studentId, missionId, firstId } =
+      await newDiscussion()
+    await classModel.setChatEnabled(teacherId, classId, true)
+
+    await messageModel.postToThreadAsStudent(
+      studentId,
+      classId,
+      firstId,
+      message('Posso usar o livro?')
+    )
+    await messageModel.postAsStudent(studentId, classId, message('Bom dia'))
+
+    const board = await messageModel.listForStudent(studentId, classId)
+    expect(board?.messages.map(({ body }) => body)).toEqual(['Bom dia'])
+    const teacherThreads = await messageModel.listThreadsForTeacher(
+      teacherId,
+      classId,
+      missionId
+    )
+    expect(threadBodies(teacherThreads, firstId)).toEqual([
+      'Posso usar o livro?'
+    ])
+  })
+
+  test('hides the discussion of a locked objective from the student', async () => {
+    const { classId, studentId, missionId, firstId, secondId } =
+      await newDiscussion()
+
+    const discussions = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    expect(discussions?.threads.map(({ objectiveId }) => objectiveId)).toEqual([
+      firstId
+    ])
+    await expect(
+      messageModel.postToThreadAsStudent(
+        studentId,
+        classId,
+        secondId,
+        message()
+      )
+    ).rejects.toBeInstanceOf(NotFoundError)
+  })
+
+  test('opens the discussion once the student reaches the objective', async () => {
+    const { classId, studentId, missionId, firstId, secondId } =
+      await newDiscussion()
+
+    await objectiveSubmissionModel.submit(studentId, classId, firstId, {
+      text: 'Fiz a pesquisa.',
+      link: ''
+    })
+    await messageModel.postToThreadAsStudent(
+      studentId,
+      classId,
+      secondId,
+      message('Cheguei à ponte')
+    )
+
+    const discussions = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    expect(threadBodies(discussions!.threads, secondId)).toEqual([
+      'Cheguei à ponte'
+    ])
+  })
+
+  test('keeps a closed discussion readable without letting anyone post', async () => {
+    const { teacherId, classId, studentId, missionId, firstId } =
+      await newDiscussion()
+    await messageModel.postToThreadAsTeacher(
+      teacherId,
+      classId,
+      firstId,
+      message('Dúvidas aqui')
+    )
+
+    await database
+      .update(objectives)
+      .set({ discussionEnabled: false })
+      .where(eq(objectives.id, firstId))
+
+    await expect(
+      messageModel.postToThreadAsStudent(studentId, classId, firstId, message())
+    ).rejects.toBeInstanceOf(ValidationError)
+    await expect(
+      messageModel.postToThreadAsTeacher(teacherId, classId, firstId, message())
+    ).rejects.toBeInstanceOf(ValidationError)
+    const discussions = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    expect(discussions?.threads).toEqual([
+      expect.objectContaining({
+        objectiveId: firstId,
+        discussionEnabled: false
+      })
+    ])
+    expect(threadBodies(discussions!.threads, firstId)).toEqual([
+      'Dúvidas aqui'
+    ])
+  })
+
+  test('leaves out a closed discussion without messages', async () => {
+    const { teacherId, classId, studentId, missionId, firstId } =
+      await newDiscussion()
+
+    await database
+      .update(objectives)
+      .set({ discussionEnabled: false })
+      .where(eq(objectives.id, firstId))
+
+    const discussions = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    expect(discussions?.threads).toEqual([])
+    const teacherThreads = await messageModel.listThreadsForTeacher(
+      teacherId,
+      classId,
+      missionId
+    )
+    expect(teacherThreads.map(({ objectiveId }) => objectiveId)).not.toContain(
+      firstId
+    )
+  })
+
+  test('applies the mute of the board to the discussions', async () => {
+    const { teacherId, classId, studentId, missionId, firstId } =
+      await newDiscussion()
+
+    await messageModel.setMuted(teacherId, classId, studentId, true)
+
+    await expect(
+      messageModel.postToThreadAsStudent(studentId, classId, firstId, message())
+    ).rejects.toBeInstanceOf(ValidationError)
+    const discussions = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    expect(discussions?.muted).toBe(true)
+  })
+
+  test('counts the board and the discussions in the same rate limit', async () => {
+    const { teacherId, classId, studentId, firstId } = await newDiscussion()
+    await classModel.setChatEnabled(teacherId, classId, true)
+    for (let index = 0; index < MESSAGE_RATE_LIMIT; index++) {
+      await messageModel.postAsStudent(studentId, classId, message())
+    }
+
+    await expect(
+      messageModel.postToThreadAsStudent(studentId, classId, firstId, message())
+    ).rejects.toBeInstanceOf(TooManyRequestsError)
+  })
+
+  test('lets the student remove their own message from a closed discussion', async () => {
+    const { classId, studentId, missionId, firstId } = await newDiscussion()
+    await messageModel.postToThreadAsStudent(
+      studentId,
+      classId,
+      firstId,
+      message('Mensagem errada')
+    )
+    await database
+      .update(objectives)
+      .set({ discussionEnabled: false })
+      .where(eq(objectives.id, firstId))
+    const discussions = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    const { id } = discussions!.threads[0]!.messages[0]!
+
+    await messageModel.removeAsStudent(studentId, classId, id)
+
+    const after = await messageModel.listThreadsForStudent(
+      studentId,
+      classId,
+      missionId
+    )
+    expect(after?.threads).toEqual([])
+  })
+
+  test("hides a draft's discussions from the student and opens them to the teacher", async () => {
+    const { teacherId, classId, studentId, missionId, firstId } =
+      await newDiscussion({ publish: false })
+
+    await messageModel.postToThreadAsTeacher(
+      teacherId,
+      classId,
+      firstId,
+      message('Preparando')
+    )
+
+    await expect(
+      messageModel.postToThreadAsStudent(studentId, classId, firstId, message())
+    ).rejects.toBeInstanceOf(NotFoundError)
+    expect(
+      await messageModel.listThreadsForStudent(studentId, classId, missionId)
+    ).toBeUndefined()
   })
 })

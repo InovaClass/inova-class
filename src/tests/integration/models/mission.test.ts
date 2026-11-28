@@ -367,7 +367,8 @@ describe('missionModel', () => {
           xpReward: '30',
           coinReward: '5',
           latePenaltyCoins: '2',
-          latePenaltyHp: '3'
+          latePenaltyHp: '3',
+          discussionEnabled: true
         })
       )
       await missionModel.removeObjective(

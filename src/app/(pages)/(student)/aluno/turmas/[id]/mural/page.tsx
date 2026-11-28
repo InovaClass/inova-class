@@ -49,8 +49,8 @@ const StudentBoardPage = async ({
       </header>
       {board.muted ? (
         <p className="text-xs leading-relaxed text-muted-foreground">
-          O professor silenciou você neste mural. Você ainda pode ler as
-          mensagens da turma.
+          O professor silenciou você nas mensagens da turma. Você ainda pode ler
+          o mural.
         </p>
       ) : (
         <MessageComposer

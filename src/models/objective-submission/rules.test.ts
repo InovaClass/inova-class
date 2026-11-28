@@ -4,6 +4,7 @@ import {
   currentObjectiveIndex,
   isAvailable,
   isLate,
+  isUnlocked,
   latePenaltyOf,
   objectiveStatesOf
 } from './rules'
@@ -71,6 +72,33 @@ describe('isAvailable', () => {
 
   test('rejects an objective outside the mission', () => {
     expect(isAvailable(objectiveIds, new Set(objectiveIds), 'other')).toBe(
+      false
+    )
+  })
+})
+
+describe('isUnlocked', () => {
+  const objectiveIds = ['first', 'second', 'third']
+
+  test('unlocks an available objective', () => {
+    expect(
+      isUnlocked(
+        {
+          objectiveIds,
+          submittedObjectiveIds: new Set(['first']),
+          hasOpenSubmission: false
+        },
+        'second'
+      )
+    ).toBe(true)
+  })
+
+  test('keeps an objective with an open submission unlocked after a move', () => {
+    const state = { objectiveIds, submittedObjectiveIds: new Set(['third']) }
+    expect(isUnlocked({ ...state, hasOpenSubmission: true }, 'third')).toBe(
+      true
+    )
+    expect(isUnlocked({ ...state, hasOpenSubmission: false }, 'third')).toBe(
       false
     )
   })

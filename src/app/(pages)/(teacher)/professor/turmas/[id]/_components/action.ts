@@ -126,6 +126,8 @@ export const setStudentMuted = async (
     await messageModel.setMuted(user.id, classId, studentId, muted)
     revalidatePath('/professor', 'layout')
     return formSuccess(
-      muted ? 'Aluno silenciado no mural.' : 'Aluno reativado no mural.'
+      muted
+        ? 'Aluno silenciado nas mensagens da turma.'
+        : 'Aluno reativado nas mensagens da turma.'
     )
   })

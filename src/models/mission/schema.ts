@@ -63,7 +63,8 @@ export const objectiveSchema = z
     xpReward: points('XP', OBJECTIVE_XP_MAX),
     coinReward: points('Moedas', OBJECTIVE_COINS_MAX),
     latePenaltyCoins: points('Moedas por atraso', OBJECTIVE_COINS_MAX),
-    latePenaltyHp: points('HP por atraso', HP_MAX)
+    latePenaltyHp: points('HP por atraso', HP_MAX),
+    discussionEnabled: z.boolean().default(false)
   })
   .superRefine((values, context) => {
     if (values.xpReward + values.coinReward === 0) {

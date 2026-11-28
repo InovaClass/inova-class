@@ -37,6 +37,22 @@ export const isAvailable = (
   return index === 0 || submittedObjectiveIds.has(objectiveIds[index - 1]!)
 }
 
+// The same test as `objectiveStatesOf` for a single objective: anything but `locked`
+export const isUnlocked = (
+  {
+    objectiveIds,
+    submittedObjectiveIds,
+    hasOpenSubmission
+  }: {
+    objectiveIds: readonly string[]
+    submittedObjectiveIds: ReadonlySet<string>
+    hasOpenSubmission: boolean
+  },
+  objectiveId: string
+) =>
+  hasOpenSubmission ||
+  isAvailable(objectiveIds, submittedObjectiveIds, objectiveId)
+
 export type ObjectiveState =
   'locked' | 'available' | 'pending' | 'returned' | 'approved'
 

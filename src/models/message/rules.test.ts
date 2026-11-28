@@ -1,19 +1,19 @@
 import { describe, expect, test } from 'vitest'
 
 import { MESSAGE_RATE_LIMIT, MESSAGES_MAX_PAGES } from './constants'
-import { boardPagesOf, canRemove, postBlockOf } from './rules'
+import { boardPagesOf, canRemove, isThreadShown, postBlockOf } from './rules'
 
 describe('postBlockOf', () => {
-  const open = { chatEnabled: true, mutedAt: null, recentCount: 0 }
+  const open = { open: true, mutedAt: null, recentCount: 0 }
 
-  test('lets a student post to an open board', () => {
+  test('lets a student post where the board or the discussion is open', () => {
     expect(postBlockOf(open)).toBeUndefined()
   })
 
-  test('blocks a closed board before anything else', () => {
+  test('blocks a closed board or a closed discussion before anything else', () => {
     expect(
       postBlockOf({
-        chatEnabled: false,
+        open: false,
         mutedAt: new Date(),
         recentCount: MESSAGE_RATE_LIMIT
       })
@@ -71,5 +71,22 @@ describe('boardPagesOf', () => {
     expect(boardPagesOf(-2)).toBe(1)
     expect(boardPagesOf(NaN)).toBe(1)
     expect(boardPagesOf(MESSAGES_MAX_PAGES + 5)).toBe(MESSAGES_MAX_PAGES)
+  })
+})
+
+describe('isThreadShown', () => {
+  test('shows an open discussion even before its first message', () => {
+    expect(isThreadShown({ discussionEnabled: true, messageCount: 0 })).toBe(
+      true
+    )
+  })
+
+  test('keeps a closed discussion readable while it has messages', () => {
+    expect(isThreadShown({ discussionEnabled: false, messageCount: 1 })).toBe(
+      true
+    )
+    expect(isThreadShown({ discussionEnabled: false, messageCount: 0 })).toBe(
+      false
+    )
   })
 })
